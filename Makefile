@@ -8,7 +8,10 @@ build:
 run: build
 	./$(BINDIR)/$(TARGET)
 
-clean:
-	rm -rf $(BINDIR)
+test: build
+	./test.sh
 
-.PHONY: build run clean
+clean:
+	rm -rf $(BINDIR) tmp.ll
+
+.PHONY: build run test clean
