@@ -1,26 +1,28 @@
 package main
 
 import (
-  "fmt"
-  "log"
-  "os"
-  "strconv"
+	"bufio"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
-  if len(os.Args) != 2 {
-    fmt.Println("Usage: solitude <number>")
-    os.Exit(1)
-  }
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	input := scanner.Text()
+	input = strings.TrimRight(input, "\n")
 
-  n, err := strconv.Atoi(os.Args[1])
-  if err != nil {
-    log.Fatal(err)
-    os.Exit(1)
-  }
+	n, err := strconv.Atoi(input)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 
-  fmt.Println("define i32 @main() nounwind {")
-  fmt.Printf("  ret i32 %d\n", n)
-  fmt.Println("}")
+	fmt.Println("define i32 @main() nounwind {")
+	fmt.Printf("  ret i32 %d\n", n)
+	fmt.Println("}")
 
 }
