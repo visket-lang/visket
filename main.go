@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
+	"github.com/arata-nvm/Solitude/lexer"
+	"github.com/arata-nvm/Solitude/token"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -15,71 +15,55 @@ func main() {
 	input := scanner.Text()
 	input = strings.TrimRight(input, "\n")
 
+	l := lexer.New(input)
+
 	fmt.Println("define i32 @main() nounwind {")
 
-	pos := 0
-
-	n := readNumber(input, &pos)
+	tok := expectRead(l, token.INT)
 
 	fmt.Println("  %1 = alloca i32, align 4")
-	fmt.Printf("  store i32 %d, i32* %%1\n", n)
+	fmt.Printf("  store i32 %d, i32* %%1\n", tok.Val)
 
-	if pos == len(input) {
+	op := l.NextToken()
+
+	if op.Type == token.EOF {
 		fmt.Println("  %2 = load i32, i32* %1, align 4")
 		fmt.Println("  ret i32 %2")
 		fmt.Println("}")
 		os.Exit(1)
 	}
 
-	op := input[pos]
-	pos ++
-
-	n = readNumber(input, &pos)
+	tok = expectRead(l, token.INT)
 
 	fmt.Println("  %2 = alloca i32, align 4")
-	fmt.Printf("  store i32 %d, i32* %%2", n)
+	fmt.Printf("  store i32 %d, i32* %%2", tok.Val)
 
 	fmt.Println("  %3 = load i32, i32* %1, align 4")
 	fmt.Println("  %4 = load i32, i32* %2, align 4")
 
-	switch op {
-	case '+':
+	switch op.Type {
+	case token.PLUS:
 		fmt.Println("  %5 = add i32 %3, %4")
-	case '-':
+	case token.MINUS:
 		fmt.Println("  %5 = sub i32 %3, %4")
 	default:
-		fmt.Printf("Unexpected char: %c\n", op)
+		fmt.Printf("Unexpected token: %s\n", op)
 		os.Exit(1)
 	}
-
 
 	fmt.Println("  %6 = alloca i32, align 4")
 	fmt.Println("  store i32 %5, i32* %6, align 4")
 
-
 	fmt.Println("  ret i32 %5")
 	fmt.Println("}")
-
 }
 
-func readNumber(input string, pos *int) int {
-	readPos := *pos
-	for readPos < len(input) && isDigit(input[readPos]) {
-		readPos ++
-	}
-
-	numLiteral := input[*pos:readPos]
-	*pos = readPos
-
-	n, err := strconv.Atoi(numLiteral)
-	if err != nil {
-		log.Fatal(err)
+func expectRead(l *lexer.Lexer, tokenType token.TokenType) token.Token {
+	tok := l.NextToken()
+	if tok.Type != tokenType {
+		fmt.Printf("Unexpected token: %s\n", tok)
 		os.Exit(1)
 	}
 
-	return n
-}
-
-func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
+	return tok
 }
