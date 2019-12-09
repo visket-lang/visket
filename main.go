@@ -3,8 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/arata-nvm/Solitude/ast"
 	"github.com/arata-nvm/Solitude/lexer"
-	"github.com/arata-nvm/Solitude/token"
+	"github.com/arata-nvm/Solitude/parser"
 	"os"
 	"strings"
 )
@@ -16,54 +17,70 @@ func main() {
 	input = strings.TrimRight(input, "\n")
 
 	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
 
+	genCode(program)
+}
+
+func genCode(program ast.Program) {
 	fmt.Println("define i32 @main() nounwind {")
 
-	tok := expectRead(l, token.INT)
+	index := 0
 
-	fmt.Println("  %1 = alloca i32, align 4")
-	fmt.Printf("  store i32 %d, i32* %%1\n", tok.Val)
+	index = gen(program.Code, index)
 
-	op := l.NextToken()
+	numProcLastIndex := index
+	index++
+	regIndex := index
 
-	if op.Type == token.EOF {
-		fmt.Println("  %2 = load i32, i32* %1, align 4")
-		fmt.Println("  ret i32 %2")
-		fmt.Println("}")
-		os.Exit(1)
-	}
-
-	tok = expectRead(l, token.INT)
-
-	fmt.Println("  %2 = alloca i32, align 4")
-	fmt.Printf("  store i32 %d, i32* %%2", tok.Val)
-
-	fmt.Println("  %3 = load i32, i32* %1, align 4")
-	fmt.Println("  %4 = load i32, i32* %2, align 4")
-
-	switch op.Type {
-	case token.PLUS:
-		fmt.Println("  %5 = add i32 %3, %4")
-	case token.MINUS:
-		fmt.Println("  %5 = sub i32 %3, %4")
-	default:
-		fmt.Printf("Unexpected token: %s\n", op)
-		os.Exit(1)
-	}
-
-	fmt.Println("  %6 = alloca i32, align 4")
-	fmt.Println("  store i32 %5, i32* %6, align 4")
-
-	fmt.Println("  ret i32 %5")
+	fmt.Printf("  %%%d = load i32, i32* %%%d, align 4\n", regIndex, numProcLastIndex)
+	fmt.Printf("  ret i32 %%%d\n", regIndex)
 	fmt.Println("}")
 }
 
-func expectRead(l *lexer.Lexer, tokenType token.TokenType) token.Token {
-	tok := l.NextToken()
-	if tok.Type != tokenType {
-		fmt.Printf("Unexpected token: %s\n", tok)
-		os.Exit(1)
+func gen(node ast.Node, index int) int {
+	switch node := node.(type) {
+	case *ast.InfixExpression:
+		return genInfix(node, index)
+	case *ast.IntegerLiteral:
+		index++
+		fmt.Println("  ; Assign")
+		fmt.Printf("  %%%d = alloca i32, align 4\n", index)
+		fmt.Printf("  store i32 %d, i32* %%%d\n", node.Value, index)
+	}
+	return index
+}
+
+func genInfix(ie *ast.InfixExpression, index int) int {
+	index = gen(ie.Left, index)
+	lhsIndex := index
+	index = gen(ie.Right, index)
+	rhsIndex := index
+
+	index++
+	lhsRegIndex := index
+	fmt.Printf("  %%%d= load i32, i32* %%%d, align 4\n", index, lhsIndex)
+
+	index++
+	rhsRegIndex := index
+	fmt.Printf("  %%%d = load i32, i32* %%%d, align 4\n", index, rhsIndex)
+
+	index++
+	resRegIndex := index
+
+	switch ie.Operator {
+	case "+":
+		fmt.Printf("  %%%d = add i32 %%%d, %%%d\n", index, lhsRegIndex, rhsRegIndex)
+	case "-":
+		fmt.Printf("  %%%d = sub i32 %%%d, %%%d\n", index, lhsRegIndex, rhsRegIndex)
 	}
 
-	return tok
+	index++
+	resMemIndex := index
+	fmt.Printf("  %%%d = alloca i32, align 4\n", index)
+
+	fmt.Printf("  store i32 %%%d, i32* %%%d, align 4\n", resRegIndex, resMemIndex)
+
+	return index
 }
