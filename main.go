@@ -21,35 +21,43 @@ func main() {
 	)
 	flag.Parse()
 
+	input := scanInput()
+	l := lexer.New(input)
+
+	p := parser.New(l)
+	program := p.ParseProgram()
+	printErrors(p)
+
+	w := getWriter(*output)
+	c := codegen.New(program, *isDebug, w)
+	c.GenerateCode()
+}
+
+func scanInput() string {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	input := scanner.Text()
-	input = strings.TrimRight(input, "\n")
+	return strings.TrimRight(input, "\n")
+}
 
-	l := lexer.New(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-
+func printErrors(p *parser.Parser) {
 	if len(p.Errors) != 0 {
 		for _, e := range p.Errors {
 			fmt.Println(e)
 		}
 		os.Exit(1)
 	}
+}
 
-	var w io.Writer
-	if *output == "" {
-		w = os.Stdout
+func getWriter(output string) io.Writer {
+	if output == "" {
+		return os.Stdout
 	} else {
-		file, err := os.Create(*output)
+		file, err := os.Create(output)
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		w = file
+		return file
 	}
-
-	c := codegen.New(program, *isDebug, w)
-
-	c.GenerateCode()
 }
