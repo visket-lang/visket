@@ -10,13 +10,15 @@ type Pointer int
 type Value int
 
 type CodeGen struct {
-	p     *parser.Parser
-	index int
+	p       *parser.Parser
+	index   int
+	isDebug bool
 }
 
-func New(p *parser.Parser) *CodeGen {
+func New(p *parser.Parser, isDebug bool) *CodeGen {
 	c := &CodeGen{
-		p: p,
+		p:       p,
+		isDebug: isDebug,
 	}
 
 	return c
@@ -78,6 +80,10 @@ func (c *CodeGen) gen(format string, a ...interface{}) {
 }
 
 func (c *CodeGen) comment(format string, a ...interface{}) {
+	if !c.isDebug {
+		return
+	}
+
 	fmt.Println("")
 	fmt.Printf(format, a...)
 }

@@ -17,7 +17,7 @@ func main() {
 
 	l := lexer.New(input)
 	p := parser.New(l)
-	c := codegen.New(p)
+	c := codegen.New(p, true)
 
 	c.GenerateCode()
 }
