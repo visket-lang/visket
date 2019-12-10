@@ -2,18 +2,17 @@ package codegen
 
 import (
 	"github.com/arata-nvm/Solitude/ast"
-	"github.com/arata-nvm/Solitude/parser"
 )
 
 type CodeGen struct {
-	p       *parser.Parser
+	program *ast.Program
 	index   int
 	isDebug bool
 }
 
-func New(p *parser.Parser, isDebug bool) *CodeGen {
+func New(program *ast.Program, isDebug bool) *CodeGen {
 	c := &CodeGen{
-		p:       p,
+		program: program,
 		isDebug: isDebug,
 	}
 
@@ -21,10 +20,9 @@ func New(p *parser.Parser, isDebug bool) *CodeGen {
 }
 
 func (c *CodeGen) GenerateCode() {
-	program := c.p.ParseProgram()
 	c.gen("define i32 @main() nounwind {\n")
 
-	result := c.genExpr(program.Code)
+	result := c.genExpr(c.program.Code)
 
 	c.comment("  ; Ret\n")
 	returnPtr := c.genLoad(result)
