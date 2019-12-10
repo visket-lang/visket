@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"github.com/arata-nvm/Solitude/codegen"
 	"github.com/arata-nvm/Solitude/lexer"
 	"github.com/arata-nvm/Solitude/parser"
@@ -10,6 +11,9 @@ import (
 )
 
 func main() {
+	isDebug := flag.Bool("debug", false, "for debugging")
+	flag.Parse()
+
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	input := scanner.Text()
@@ -17,7 +21,7 @@ func main() {
 
 	l := lexer.New(input)
 	p := parser.New(l)
-	c := codegen.New(p, true)
+	c := codegen.New(p, *isDebug)
 
 	c.GenerateCode()
 }
