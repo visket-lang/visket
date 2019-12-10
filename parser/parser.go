@@ -8,6 +8,20 @@ import (
 	"strconv"
 )
 
+const (
+	_ int = iota
+	LOWEST
+	SUM
+	PRODUCT
+)
+
+var precedences = map[token.TokenType]int{
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.ASTERISK: PRODUCT,
+	token.SLASH:    PRODUCT,
+}
+
 type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
@@ -42,21 +56,36 @@ func (p *Parser) peekTokenIs(tokenType token.TokenType) bool {
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 
-	program.Code = p.parseExpr()
+	program.Code = p.parseExpr(LOWEST)
 
 	return program
 }
 
-func (p *Parser) parseExpr() ast.Node {
+func (p *Parser) parseExpr(precedence int) ast.Node {
 	left := p.parseIntegerLiteral()
 
-	for !p.peekTokenIs(token.EOF) {
+	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
 		p.nextToken()
-
 		left = p.parseInfixExpression(left)
 	}
 
 	return left
+}
+
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+
+	return LOWEST
+}
+
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+
+	return LOWEST
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Node {
@@ -81,7 +110,7 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 	}
 
 	p.nextToken()
-	expr.Right = p.parseExpr()
+	expr.Right = p.parseExpr(LOWEST)
 
 	return expr
 }
