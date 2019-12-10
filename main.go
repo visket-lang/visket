@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"github.com/arata-nvm/Solitude/codegen"
 	"github.com/arata-nvm/Solitude/lexer"
 	"github.com/arata-nvm/Solitude/parser"
@@ -21,7 +22,16 @@ func main() {
 
 	l := lexer.New(input)
 	p := parser.New(l)
-	c := codegen.New(p, *isDebug)
+	program := p.ParseProgram()
+
+	if len(p.Errors) != 0 {
+		for _, e := range p.Errors {
+			fmt.Println(e)
+		}
+		os.Exit(1)
+	}
+
+	c := codegen.New(program, *isDebug)
 
 	c.GenerateCode()
 }

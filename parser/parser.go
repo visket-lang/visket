@@ -39,8 +39,8 @@ func (p *Parser) peekTokenIs(tokenType token.TokenType) bool {
 	return p.peekToken.Type == tokenType
 }
 
-func (p *Parser) ParseProgram() ast.Program {
-	program := ast.Program{}
+func (p *Parser) ParseProgram() *ast.Program {
+	program := &ast.Program{}
 
 	program.Code = p.parseExpr()
 
