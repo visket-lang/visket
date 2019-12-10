@@ -2,18 +2,21 @@ package codegen
 
 import (
 	"github.com/arata-nvm/Solitude/ast"
+	"io"
 )
 
 type CodeGen struct {
 	program *ast.Program
 	index   int
 	isDebug bool
+	output  io.Writer
 }
 
-func New(program *ast.Program, isDebug bool) *CodeGen {
+func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 	c := &CodeGen{
 		program: program,
 		isDebug: isDebug,
+		output:  w,
 	}
 
 	return c
