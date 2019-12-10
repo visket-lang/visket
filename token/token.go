@@ -3,11 +3,13 @@ package token
 type TokenType string
 
 const (
-	ILLEGAL TokenType = "ILLEGAL"
-	INT               = "INT"
-	PLUS              = "PLUS"
-	MINUS             = "MINUS"
-	EOF               = "EOF"
+	ILLEGAL  TokenType = "ILLEGAL"
+	INT                = "INT"
+	PLUS               = "PLUS"
+	MINUS              = "MINUS"
+	ASTERISK           = "ASTERISK"
+	SLASH              = "SLASH"
+	EOF                = "EOF"
 )
 
 type Token struct {

@@ -33,6 +33,10 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.New(token.PLUS, "+")
 	case '-':
 		tok = token.New(token.MINUS, "-")
+	case '*':
+		tok = token.New(token.ASTERISK, "*")
+	case '/':
+		tok = token.New(token.SLASH, "/")
 	default:
 		if isDigit(l.ch) {
 			numLit := l.readNumber()
