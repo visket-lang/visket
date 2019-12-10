@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"log"
 )
 
 type Pointer int
@@ -18,7 +19,10 @@ func (c *CodeGen) nextValue() Value {
 }
 
 func (c *CodeGen) gen(format string, a ...interface{}) {
-	fmt.Printf(format, a...)
+	_, err := fmt.Fprintf(c.output, format, a...)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (c *CodeGen) comment(format string, a ...interface{}) {
@@ -26,8 +30,8 @@ func (c *CodeGen) comment(format string, a ...interface{}) {
 		return
 	}
 
-	fmt.Println("")
-	fmt.Printf(format, a...)
+	c.gen("")
+	c.gen(format, a...)
 }
 
 func (c *CodeGen) genAlloca() Pointer {

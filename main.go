@@ -7,12 +7,18 @@ import (
 	"github.com/arata-nvm/Solitude/codegen"
 	"github.com/arata-nvm/Solitude/lexer"
 	"github.com/arata-nvm/Solitude/parser"
+	"io"
+	"log"
 	"os"
 	"strings"
 )
 
 func main() {
-	isDebug := flag.Bool("debug", false, "for debugging")
+	var (
+		isDebug = flag.Bool("debug", false, "for debugging")
+
+		output = flag.String("output", "", "specify file to output")
+	)
 	flag.Parse()
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -31,7 +37,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	c := codegen.New(program, *isDebug)
+	var w io.Writer
+	if *output == "" {
+		w = os.Stdout
+	} else {
+		file, err := os.Create(*output)
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
+		w = file
+	}
+
+	c := codegen.New(program, *isDebug, w)
 
 	c.GenerateCode()
 }
