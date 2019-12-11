@@ -53,6 +53,18 @@ func (p *Parser) peekTokenIs(tokenType token.TokenType) bool {
 	return p.peekToken.Type == tokenType
 }
 
+func (p *Parser) expectPeek(tokenType token.TokenType) bool {
+	if p.peekTokenIs(tokenType) {
+		p.nextToken()
+		return true
+	}
+
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", tokenType, p.peekToken.Type)
+	p.Errors = append(p.Errors, msg)
+
+	return false
+}
+
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 
@@ -62,7 +74,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseExpr(precedence int) ast.Node {
-	left := p.parseIntegerLiteral()
+	left := p.parsePrefixExpression()
 
 	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
 		p.nextToken()
@@ -88,6 +100,17 @@ func (p *Parser) curPrecedence() int {
 	return LOWEST
 }
 
+func (p *Parser) parsePrefixExpression() ast.Node {
+	switch p.curToken.Type {
+	case token.INT:
+		return p.parseIntegerLiteral()
+	case token.LPAREN:
+		return p.parseGroupedExpression()
+	}
+
+	return nil
+}
+
 func (p *Parser) parseIntegerLiteral() ast.Node {
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 
@@ -100,6 +123,17 @@ func (p *Parser) parseIntegerLiteral() ast.Node {
 
 	lit.Value = n
 	return lit
+}
+
+func (p *Parser) parseGroupedExpression() ast.Node {
+	p.nextToken()
+
+	exp := p.parseExpr(LOWEST)
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return exp
 }
 
 func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
