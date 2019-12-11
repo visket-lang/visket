@@ -67,6 +67,12 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Pointer {
 	case "-":
 		c.comment("  ; Sub\n")
 		result = c.genSub(lhs, rhs)
+	case "*":
+		c.comment("  ; Mul\n")
+		result = c.genMul(lhs, rhs)
+	case "/":
+		c.comment("  ; Div\n")
+		result = c.genIDiv(lhs, rhs)
 	}
 
 	resultPtr := c.genAlloca()

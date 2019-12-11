@@ -65,3 +65,15 @@ func (c *CodeGen) genSub(op1 Value, op2 Value) Value {
 	c.gen("  %%%d = sub i32 %%%d, %%%d\n", result, op1, op2)
 	return result
 }
+
+func (c *CodeGen) genMul(op1 Value, op2 Value) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = mul i32 %%%d, %%%d\n", result, op1, op2)
+	return result
+}
+
+func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = idiv i32 %%%d, %%%d\n", result, op1, op2)
+	return result
+}
