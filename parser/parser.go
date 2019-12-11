@@ -109,8 +109,9 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 		Operator: p.curToken.Literal,
 	}
 
+	precedence := p.curPrecedence()
 	p.nextToken()
-	expr.Right = p.parseExpr(LOWEST)
+	expr.Right = p.parseExpr(precedence)
 
 	return expr
 }
