@@ -26,6 +26,9 @@ func main() {
 
 	p := parser.New(l)
 	program := p.ParseProgram()
+	if *isDebug {
+		fmt.Printf("%s\n", program.Inspect())
+	}
 	printErrors(p)
 
 	w := getWriter(*output)
@@ -43,7 +46,7 @@ func scanInput() string {
 func printErrors(p *parser.Parser) {
 	if len(p.Errors) != 0 {
 		for _, e := range p.Errors {
-			fmt.Println(e)
+			_, _ = fmt.Fprintln(os.Stderr, e)
 		}
 		os.Exit(1)
 	}
@@ -56,7 +59,6 @@ func getWriter(output string) io.Writer {
 		file, err := os.Create(output)
 		if err != nil {
 			log.Fatal(err)
-			os.Exit(1)
 		}
 		return file
 	}
