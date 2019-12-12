@@ -12,6 +12,8 @@ func TestNextToken(t *testing.T) {
 42 * 89
 32 / 4
 ((10 + 10) * 2)
+57 == 72
+43 != 83
 `
 
 	tests := []struct {
@@ -39,6 +41,12 @@ func TestNextToken(t *testing.T) {
 		{token.ASTERISK, "*"},
 		{token.INT, "2"},
 		{token.RPAREN, ")"},
+		{token.INT, "57"},
+		{token.EQ, "=="},
+		{token.INT, "72"},
+		{token.INT, "43"},
+		{token.NEQ, "!="},
+		{token.INT, "83"},
 		{token.EOF, ""},
 	}
 
