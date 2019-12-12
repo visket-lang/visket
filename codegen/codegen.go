@@ -78,6 +78,14 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Pointer {
 	case "/":
 		c.comment("  ; Div\n")
 		result = c.genIDiv(lhs, rhs)
+	case "==":
+		c.comment("  ; Equal\n")
+		result = c.genIcmp(EQUAL, lhs, rhs)
+		result = c.genZext("i1", "i32", result)
+	case "!=":
+		c.comment("  ; Not Equal\n")
+		result = c.genIcmp(NotEqual, lhs, rhs)
+		result = c.genZext("i1", "i32", result)
 	}
 
 	resultPtr := c.genAlloca()
