@@ -41,6 +41,16 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.New(token.LPAREN, "(")
 	case ')':
 		tok = token.New(token.RPAREN, ")")
+	case '=':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.EQ, "==")
+		}
+	case '!':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.NEQ, "!=")
+		}
 	default:
 		if isDigit(l.ch) {
 			numLit := l.readNumber()
@@ -64,6 +74,14 @@ func (l *Lexer) readChar() {
 
 	l.position = l.readPosition
 	l.readPosition++
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
+	}
 }
 
 func (l *Lexer) readNumber() string {

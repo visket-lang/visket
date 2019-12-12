@@ -11,12 +11,15 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	RELATIONAL
 	SUM
 	PRODUCT
 	PREFIX
 )
 
 var precedences = map[token.TokenType]int{
+	token.EQ:       RELATIONAL,
+	token.NEQ:      RELATIONAL,
 	token.PLUS:     SUM,
 	token.MINUS:    SUM,
 	token.ASTERISK: PRODUCT,

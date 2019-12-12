@@ -77,3 +77,22 @@ func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
 	c.gen("  %%%d = idiv i32 %%%d, %%%d\n", result, op1, op2)
 	return result
 }
+
+type IcmpCond string
+
+const (
+	EQUAL    IcmpCond = "eq"
+	NotEqual IcmpCond = "ne"
+)
+
+func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = icmp %s i32 %%%d, %%%d\n", result, cond, op1, op2)
+	return result
+}
+
+func (c *CodeGen) genZext(typeFrom, typeTo string, value Value) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = zext %s %%%d to %s\n", result, typeFrom, value, typeTo)
+	return result
+}

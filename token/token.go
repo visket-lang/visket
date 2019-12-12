@@ -4,18 +4,20 @@ type TokenType string
 
 const (
 	ILLEGAL TokenType = "ILLEGAL"
+	EOF               = "EOF"
 
 	INT = "INT"
 
-	PLUS     = "PLUS"
-	MINUS    = "MINUS"
-	ASTERISK = "ASTERISK"
-	SLASH    = "SLASH"
+	PLUS     = "+"
+	MINUS    = "-"
+	ASTERISK = "*"
+	SLASH    = "/"
+
+	EQ  = "=="
+	NEQ = "!="
 
 	LPAREN = "("
 	RPAREN = ")"
-
-	EOF = "EOF"
 )
 
 type Token struct {
