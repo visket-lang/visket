@@ -42,7 +42,7 @@ type PrefixExpression struct {
 }
 
 func (pe PrefixExpression) Inspect() string {
-	return fmt.Sprintf("Prefix(%s %s)", pe.Operator, pe.Right.String())
+	return fmt.Sprintf("Prefix(%s %s)", pe.Operator, pe.Right.Inspect())
 }
 
 func (pe PrefixExpression) String() string {
@@ -57,7 +57,7 @@ type InfixExpression struct {
 }
 
 func (ie InfixExpression) Inspect() string {
-	return fmt.Sprintf("Infix(%s %s %s)", ie.Left.String(), ie.Operator, ie.Right.String())
+	return fmt.Sprintf("Infix(%s %s %s)", ie.Left.Inspect(), ie.Operator, ie.Right.Inspect())
 }
 
 func (ie InfixExpression) String() string {
