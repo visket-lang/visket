@@ -75,20 +75,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseExpr(precedence int) ast.Node {
-	var left ast.Node
-
-	switch p.curToken.Type {
-	case token.MINUS:
-		left =  p.parsePrefixExpression()
-	case token.INT:
-		left =  p.parseIntegerLiteral()
-	case token.LPAREN:
-		left = p.parseGroupedExpression()
-	default:
-		msg := fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type)
-		p.Errors = append(p.Errors, msg)
-		return nil
-	}
+	left := p.parsePrefixExpression()
 
 	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
 		p.nextToken()
@@ -115,13 +102,32 @@ func (p *Parser) curPrecedence() int {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Node {
-	expr :=  &ast.PrefixExpression{
+	var left ast.Node
+
+	switch p.curToken.Type {
+	case token.MINUS:
+		left = p.parseMinusPrefix()
+	case token.INT:
+		left = p.parseIntegerLiteral()
+	case token.LPAREN:
+		left = p.parseGroupedExpression()
+	default:
+		msg := fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type)
+		p.Errors = append(p.Errors, msg)
+		return nil
+	}
+
+	return left
+}
+
+func (p *Parser) parseMinusPrefix() ast.Node {
+	expr := &ast.InfixExpression{
 		Token:    p.curToken,
+		Left:     &ast.IntegerLiteral{Token: token.New(token.INT, "0"), Value: 0},
 		Operator: p.curToken.Literal,
 	}
 
 	p.nextToken()
-
 	expr.Right = p.parseExpr(PREFIX)
 
 	return expr
