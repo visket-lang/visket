@@ -81,8 +81,12 @@ func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
 type IcmpCond string
 
 const (
-	EQUAL    IcmpCond = "eq"
-	NotEqual IcmpCond = "ne"
+	EQ  IcmpCond = "eq"
+	NEQ          = "ne"
+	LT           = "slt"
+	LTE          = "sle"
+	GT           = "sgt"
+	GTE          = "sge"
 )
 
 func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
