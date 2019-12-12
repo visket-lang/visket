@@ -15,6 +15,10 @@ const (
 
 	EQ  = "=="
 	NEQ = "!="
+	LT  = "<"
+	LTE = "<="
+	GT  = ">"
+	GTE = ">="
 
 	LPAREN = "("
 	RPAREN = ")"
