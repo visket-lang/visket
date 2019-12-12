@@ -1,8 +1,10 @@
 package codegen
 
 import (
+	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
 	"io"
+	"os"
 )
 
 type CodeGen struct {
@@ -42,6 +44,9 @@ func (c *CodeGen) genExpr(node ast.Node) Pointer {
 		c.comment("  ; Assign\n")
 		result = c.genAlloca()
 		c.genStoreImmediate(node.Value, result)
+	default:
+		fmt.Printf("unexpexted node: %s\n", node.Inspect())
+		os.Exit(1)
 	}
 
 	return result

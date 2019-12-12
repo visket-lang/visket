@@ -35,6 +35,20 @@ func (il IntegerLiteral) String() string {
 	return il.Token.Literal
 }
 
+type PrefixExpression struct {
+	Token    token.Token
+	Operator string
+	Right    Node
+}
+
+func (pe PrefixExpression) Inspect() string {
+	return fmt.Sprintf("Prefix(%s %s)", pe.Operator, pe.Right.Inspect())
+}
+
+func (pe PrefixExpression) String() string {
+	return fmt.Sprintf("%s %s", pe.Operator, pe.Right.String())
+}
+
 type InfixExpression struct {
 	Token    token.Token
 	Left     Node
@@ -43,7 +57,7 @@ type InfixExpression struct {
 }
 
 func (ie InfixExpression) Inspect() string {
-	return fmt.Sprintf("Infix(%s %s %s)", ie.Left.String(), ie.Operator, ie.Right.String())
+	return fmt.Sprintf("Infix(%s %s %s)", ie.Left.Inspect(), ie.Operator, ie.Right.Inspect())
 }
 
 func (ie InfixExpression) String() string {
