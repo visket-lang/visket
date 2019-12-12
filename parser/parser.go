@@ -20,6 +20,10 @@ const (
 var precedences = map[token.TokenType]int{
 	token.EQ:       RELATIONAL,
 	token.NEQ:      RELATIONAL,
+	token.LT:       RELATIONAL,
+	token.LTE:      RELATIONAL,
+	token.GT:       RELATIONAL,
+	token.GTE:      RELATIONAL,
 	token.PLUS:     SUM,
 	token.MINUS:    SUM,
 	token.ASTERISK: PRODUCT,

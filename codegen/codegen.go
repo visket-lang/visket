@@ -80,11 +80,27 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Pointer {
 		result = c.genIDiv(lhs, rhs)
 	case "==":
 		c.comment("  ; Equal\n")
-		result = c.genIcmp(EQUAL, lhs, rhs)
+		result = c.genIcmp(EQ, lhs, rhs)
 		result = c.genZext("i1", "i32", result)
 	case "!=":
 		c.comment("  ; Not Equal\n")
-		result = c.genIcmp(NotEqual, lhs, rhs)
+		result = c.genIcmp(NEQ, lhs, rhs)
+		result = c.genZext("i1", "i32", result)
+	case "<":
+		c.comment("  ; Less Than\n")
+		result = c.genIcmp(LT, lhs, rhs)
+		result = c.genZext("i1", "i32", result)
+	case "<=":
+		c.comment("  ; Less Than or Equal\n")
+		result = c.genIcmp(LTE, lhs, rhs)
+		result = c.genZext("i1", "i32", result)
+	case ">":
+		c.comment("  ; Greater Than\n")
+		result = c.genIcmp(GT, lhs, rhs)
+		result = c.genZext("i1", "i32", result)
+	case ">=":
+		c.comment("  ; Greater Than or Equal\n")
+		result = c.genIcmp(GTE, lhs, rhs)
 		result = c.genZext("i1", "i32", result)
 	}
 

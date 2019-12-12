@@ -51,6 +51,20 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			tok = token.New(token.NEQ, "!=")
 		}
+	case '<':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.LTE, "<=")
+		} else {
+			tok = token.New(token.LT, "<")
+		}
+	case '>':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.GTE, ">=")
+		} else {
+			tok = token.New(token.GT, ">")
+		}
 	default:
 		if isDigit(l.ch) {
 			numLit := l.readNumber()

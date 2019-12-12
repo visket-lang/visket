@@ -14,6 +14,8 @@ func TestNextToken(t *testing.T) {
 ((10 + 10) * 2)
 57 == 72
 43 != 83
+32 < 33 <= 33
+59 > 58 >= 58
 `
 
 	tests := []struct {
@@ -23,15 +25,19 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "10"},
 		{token.PLUS, "+"},
 		{token.INT, "2"},
+
 		{token.INT, "8"},
 		{token.MINUS, "-"},
 		{token.INT, "4"},
+
 		{token.INT, "42"},
 		{token.ASTERISK, "*"},
 		{token.INT, "89"},
+
 		{token.INT, "32"},
 		{token.SLASH, "/"},
 		{token.INT, "4"},
+
 		{token.LPAREN, "("},
 		{token.LPAREN, "("},
 		{token.INT, "10"},
@@ -41,12 +47,27 @@ func TestNextToken(t *testing.T) {
 		{token.ASTERISK, "*"},
 		{token.INT, "2"},
 		{token.RPAREN, ")"},
+
 		{token.INT, "57"},
 		{token.EQ, "=="},
 		{token.INT, "72"},
+
 		{token.INT, "43"},
 		{token.NEQ, "!="},
 		{token.INT, "83"},
+
+		{token.INT, "32"},
+		{token.LT, "<"},
+		{token.INT, "33"},
+		{token.LTE, "<="},
+		{token.INT, "33"},
+
+		{token.INT, "59"},
+		{token.GT, ">"},
+		{token.INT, "58"},
+		{token.GTE, ">="},
+		{token.INT, "58"},
+
 		{token.EOF, ""},
 	}
 
