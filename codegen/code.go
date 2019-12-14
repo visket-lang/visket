@@ -115,3 +115,7 @@ func (c *CodeGen) genZext(typeFrom, typeTo string, value Value) Value {
 	c.gen("  %%%d = zext %s %%%d to %s\n", result, typeFrom, value, typeTo)
 	return result
 }
+
+func (c *CodeGen) genRet(value Value) {
+	c.gen("  ret i32 %%%d\n", value)
+}
