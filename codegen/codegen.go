@@ -27,85 +27,100 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 func (c *CodeGen) GenerateCode() {
 	c.gen("define i32 @main() nounwind {\n")
 
-	result := c.genExpr(c.program.Code)
+	result := c.genStatement(c.program.Code)
 
 	c.comment("  ; Ret\n")
-	returnPtr := c.genLoad(result)
-	c.gen("  ret i32 %%%d\n", returnPtr)
+	c.gen("  ret i32 %%%d\n", result)
 	c.gen("}\n")
 }
 
-func (c *CodeGen) genExpr(node ast.Node) Pointer {
-	var result Pointer
-	switch node := node.(type) {
-	case *ast.InfixExpression:
-		result = c.genInfix(node)
-	case *ast.IntegerLiteral:
-		c.comment("  ; Assign\n")
-		result = c.genAlloca()
-		c.genStoreImmediate(node.Value, result)
-	default:
-		fmt.Printf("unexpexted node: %s\n", node.Inspect())
-		os.Exit(1)
+func (c *CodeGen) genStatement(stmt ast.Statement) Value {
+	switch stmt := stmt.(type) {
+	case *ast.VarStatement:
+		return c.genVarStatement(stmt)
+	case *ast.ExpressionStatement:
+		return c.genExpression(stmt.Expression)
 	}
 
-	return result
+	fmt.Printf("unexpexted statement: %s\n", stmt.Inspect())
+	os.Exit(1)
+	return -1
 }
 
-func (c *CodeGen) genInfix(ie *ast.InfixExpression) Pointer {
+func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) Value {
+	c.comment("  ; Var\n")
+	c.genNamedAlloca(stmt.Ident)
+	resultPtr := c.genExpression(stmt.Value)
+	// TODO Pointer への変換がよくわからない
+	c.genNamedStore(stmt.Ident, Pointer(resultPtr))
+	return c.genNamedLoad(stmt.Ident)
+}
+
+func (c *CodeGen) genExpression(expr ast.Expression) Value {
+	switch expr := expr.(type) {
+	case *ast.InfixExpression:
+		return c.genInfix(expr)
+	case *ast.IntegerLiteral:
+		c.comment("  ; Int\n")
+		result := c.genAlloca()
+		c.genStoreImmediate(expr.Value, result)
+		return c.genLoad(result)
+	case *ast.Identifier:
+		c.comment("  ; Ident\n")
+		return c.genNamedLoad(expr)
+	}
+
+	fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
+	os.Exit(1)
+	return -1
+}
+
+func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	c.comment("  ; Infix\n")
 
-	lhsPtr := c.genExpr(ie.Left)
-	rhsPtr := c.genExpr(ie.Right)
+	lhs := c.genExpression(ie.Left)
+	rhs := c.genExpression(ie.Right)
 
 	c.comment("  ; Op\n")
-
-	lhs := c.genLoad(lhsPtr)
-	rhs := c.genLoad(rhsPtr)
-
-	var result Value
 
 	switch ie.Operator {
 	case "+":
 		c.comment("  ; Add\n")
-		result = c.genAdd(lhs, rhs)
+		return c.genAdd(lhs, rhs)
 	case "-":
 		c.comment("  ; Sub\n")
-		result = c.genSub(lhs, rhs)
+		return c.genSub(lhs, rhs)
 	case "*":
 		c.comment("  ; Mul\n")
-		result = c.genMul(lhs, rhs)
+		return c.genMul(lhs, rhs)
 	case "/":
 		c.comment("  ; Div\n")
-		result = c.genIDiv(lhs, rhs)
+		return c.genIDiv(lhs, rhs)
 	case "==":
 		c.comment("  ; Equal\n")
-		result = c.genIcmp(EQ, lhs, rhs)
-		result = c.genZext("i1", "i32", result)
+		result := c.genIcmp(EQ, lhs, rhs)
+		return c.genZext("i1", "i32", result)
 	case "!=":
 		c.comment("  ; Not Equal\n")
-		result = c.genIcmp(NEQ, lhs, rhs)
-		result = c.genZext("i1", "i32", result)
+		result := c.genIcmp(NEQ, lhs, rhs)
+		return c.genZext("i1", "i32", result)
 	case "<":
 		c.comment("  ; Less Than\n")
-		result = c.genIcmp(LT, lhs, rhs)
-		result = c.genZext("i1", "i32", result)
+		result := c.genIcmp(LT, lhs, rhs)
+		return c.genZext("i1", "i32", result)
 	case "<=":
 		c.comment("  ; Less Than or Equal\n")
-		result = c.genIcmp(LTE, lhs, rhs)
-		result = c.genZext("i1", "i32", result)
+		result := c.genIcmp(LTE, lhs, rhs)
+		return c.genZext("i1", "i32", result)
 	case ">":
 		c.comment("  ; Greater Than\n")
-		result = c.genIcmp(GT, lhs, rhs)
-		result = c.genZext("i1", "i32", result)
+		result := c.genIcmp(GT, lhs, rhs)
+		return c.genZext("i1", "i32", result)
 	case ">=":
 		c.comment("  ; Greater Than or Equal\n")
-		result = c.genIcmp(GTE, lhs, rhs)
-		result = c.genZext("i1", "i32", result)
+		result := c.genIcmp(GTE, lhs, rhs)
+		return c.genZext("i1", "i32", result)
 	}
 
-	resultPtr := c.genAlloca()
-	c.genStore(result, resultPtr)
-
-	return resultPtr
+	return Value(c.index)
 }

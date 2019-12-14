@@ -14,7 +14,12 @@ func TestIntegerLiteral(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	il, ok := program.Code.(*ast.IntegerLiteral)
+	es, ok := program.Code.(*ast.ExpressionStatement)
+	if !ok {
+		t.Errorf("code is not ast.ExpressionStatement. got=%T", program.Code)
+	}
+
+	il, ok := es.Expression.(*ast.IntegerLiteral)
 	if !ok {
 		t.Fatalf("code is not ast.IntegerLiteral. got=%T", program.Code)
 	}
@@ -49,7 +54,12 @@ func TestInfixExpression(t *testing.T) {
 		program := p.ParseProgram()
 		checkParserErrors(t, p)
 
-		ie, ok := program.Code.(*ast.InfixExpression)
+		es, ok := program.Code.(*ast.ExpressionStatement)
+		if !ok {
+			t.Errorf("tests[%d] - code is not ast.ExpressionStatement. got=%T", i, program.Code)
+		}
+
+		ie, ok := es.Expression.(*ast.InfixExpression)
 		if !ok {
 			t.Errorf("tests[%d] - code is not ast.InfixExpression. got=%T", i, program.Code)
 		}

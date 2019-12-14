@@ -6,8 +6,10 @@ const (
 	ILLEGAL TokenType = "ILLEGAL"
 	EOF               = "EOF"
 
-	INT = "INT"
+	IDENT = "IDENT"
+	INT   = "INT"
 
+	ASSIGN   = "="
 	PLUS     = "+"
 	MINUS    = "-"
 	ASTERISK = "*"
@@ -22,7 +24,13 @@ const (
 
 	LPAREN = "("
 	RPAREN = ")"
+
+	VAR = "var"
 )
+
+var keywords = map[string]TokenType{
+	"var": VAR,
+}
 
 type Token struct {
 	Type    TokenType
@@ -36,4 +44,12 @@ func New(tokenType TokenType, literal string) Token {
 	}
 
 	return tok
+}
+
+func LookUpIdent(ident string) TokenType {
+	if t, ok := keywords[ident]; ok {
+		return t
+	}
+
+	return IDENT
 }

@@ -73,25 +73,6 @@ func (p *Parser) expectPeek(tokenType token.TokenType) bool {
 	return false
 }
 
-func (p *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{}
-
-	program.Code = p.parseExpr(LOWEST)
-
-	return program
-}
-
-func (p *Parser) parseExpr(precedence int) ast.Node {
-	left := p.parsePrefixExpression()
-
-	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
-		p.nextToken()
-		left = p.parseInfixExpression(left)
-	}
-
-	return left
-}
-
 func (p *Parser) peekPrecedence() int {
 	if p, ok := precedences[p.peekToken.Type]; ok {
 		return p
@@ -108,8 +89,64 @@ func (p *Parser) curPrecedence() int {
 	return LOWEST
 }
 
-func (p *Parser) parsePrefixExpression() ast.Node {
-	var left ast.Node
+func (p *Parser) ParseProgram() *ast.Program {
+	program := &ast.Program{}
+
+	program.Code = p.parseStatement()
+
+	return program
+}
+
+func (p *Parser) parseStatement() ast.Statement {
+	switch p.curToken.Type {
+	case token.VAR:
+		return p.parseVarStatement()
+	default:
+		return p.parseExpressionStatement()
+	}
+
+	return nil
+}
+
+func (p *Parser) parseVarStatement() *ast.VarStatement {
+	stmt := &ast.VarStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	stmt.Ident = &ast.Identifier{Token: p.curToken}
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
+
+	return stmt
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	left := p.parsePrefixExpression()
+
+	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
+		p.nextToken()
+		left = p.parseInfixExpression(left)
+	}
+
+	return left
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	var left ast.Expression
 
 	switch p.curToken.Type {
 	case token.MINUS:
@@ -127,7 +164,7 @@ func (p *Parser) parsePrefixExpression() ast.Node {
 	return left
 }
 
-func (p *Parser) parseMinusPrefix() ast.Node {
+func (p *Parser) parseMinusPrefix() *ast.InfixExpression {
 	expr := &ast.InfixExpression{
 		Token:    p.curToken,
 		Left:     &ast.IntegerLiteral{Token: token.New(token.INT, "0"), Value: 0},
@@ -135,12 +172,12 @@ func (p *Parser) parseMinusPrefix() ast.Node {
 	}
 
 	p.nextToken()
-	expr.Right = p.parseExpr(PREFIX)
+	expr.Right = p.parseExpression(PREFIX)
 
 	return expr
 }
 
-func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
+func (p *Parser) parseInfixExpression(left ast.Expression) *ast.InfixExpression {
 	expr := &ast.InfixExpression{
 		Token:    p.curToken,
 		Left:     left,
@@ -149,12 +186,12 @@ func (p *Parser) parseInfixExpression(left ast.Node) ast.Node {
 
 	precedence := p.curPrecedence()
 	p.nextToken()
-	expr.Right = p.parseExpr(precedence)
+	expr.Right = p.parseExpression(precedence)
 
 	return expr
 }
 
-func (p *Parser) parseIntegerLiteral() ast.Node {
+func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 
 	n, err := strconv.Atoi(p.curToken.Literal)
@@ -168,10 +205,10 @@ func (p *Parser) parseIntegerLiteral() ast.Node {
 	return lit
 }
 
-func (p *Parser) parseGroupedExpression() ast.Node {
+func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.nextToken()
 
-	exp := p.parseExpr(LOWEST)
+	exp := p.parseExpression(LOWEST)
 	if !p.expectPeek(token.RPAREN) {
 		return nil
 	}

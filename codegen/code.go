@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"github.com/arata-nvm/Solitude/ast"
 	"log"
 )
 
@@ -40,8 +41,16 @@ func (c *CodeGen) genAlloca() Pointer {
 	return result
 }
 
+func (c *CodeGen) genNamedAlloca(ident *ast.Identifier) {
+	c.gen("  %%%s = alloca i32, align 4\n", ident.Token.Literal)
+}
+
 func (c *CodeGen) genStore(value Value, ptrToStore Pointer) {
 	c.gen("  store i32 %%%d, i32* %%%d\n", value, ptrToStore)
+}
+
+func (c *CodeGen) genNamedStore(ident *ast.Identifier, ptrToStore Pointer) {
+	c.gen("  store i32 %%%d, i32* %%%s\n", ptrToStore, ident.Token.Literal)
 }
 
 func (c *CodeGen) genStoreImmediate(value int, ptrToStore Pointer) {
@@ -51,6 +60,12 @@ func (c *CodeGen) genStoreImmediate(value int, ptrToStore Pointer) {
 func (c *CodeGen) genLoad(ptrToLoad Pointer) Value {
 	result := c.nextValue()
 	c.gen("  %%%d = load i32, i32* %%%d, align 4\n", result, ptrToLoad)
+	return result
+}
+
+func (c *CodeGen) genNamedLoad(ident *ast.Identifier) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = load i32, i32* %%%s, align 4\n", result, ident.Token.Literal)
 	return result
 }
 
