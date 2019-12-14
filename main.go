@@ -25,10 +25,10 @@ func main() {
 
 	p := parser.New(l)
 	program := p.ParseProgram()
+	printErrors(p)
 	if *isDebug {
 		fmt.Printf("%s\n", program.Inspect())
 	}
-	printErrors(p)
 
 	w := getWriter(*output)
 	c := codegen.New(program, *isDebug, w)
