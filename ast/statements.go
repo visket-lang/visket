@@ -1,9 +1,37 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/token"
 )
+
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) Inspect() string {
+	var buf bytes.Buffer
+	buf.WriteString("{")
+	for _, s := range bs.Statements {
+		buf.WriteString(s.Inspect())
+	}
+	buf.WriteString("}")
+	return buf.String()
+}
+
+func (bs *BlockStatement) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("{")
+	for _, s := range bs.Statements {
+		buf.WriteString(s.String())
+	}
+	buf.WriteString("}")
+	return buf.String()
+}
+
+func (bs *BlockStatement) statementNode() {}
 
 type ExpressionStatement struct {
 	Token      token.Token

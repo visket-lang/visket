@@ -234,3 +234,18 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 func (p *Parser) parseIdentifier() *ast.Identifier {
 	return &ast.Identifier{Token: p.curToken}
 }
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.curToken}
+
+	p.nextToken()
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return block
+}
