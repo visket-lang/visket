@@ -122,7 +122,7 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	if !p.expectPeek(token.IDENT) {
 		return nil
 	}
-	stmt.Ident = &ast.Identifier{Token: p.curToken}
+	stmt.Ident = p.parseIdentifier()
 
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
@@ -163,22 +163,20 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	var left ast.Expression
-
 	switch p.curToken.Type {
 	case token.MINUS:
-		left = p.parseMinusPrefix()
+		return p.parseMinusPrefix()
 	case token.INT:
-		left = p.parseIntegerLiteral()
+		return p.parseIntegerLiteral()
 	case token.LPAREN:
-		left = p.parseGroupedExpression()
-	default:
-		msg := fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type)
-		p.Errors = append(p.Errors, msg)
-		return nil
+		return p.parseGroupedExpression()
+	case token.IDENT:
+		return p.parseIdentifier()
 	}
 
-	return left
+	msg := fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type)
+	p.Errors = append(p.Errors, msg)
+	return nil
 }
 
 func (p *Parser) parseMinusPrefix() *ast.InfixExpression {
@@ -231,4 +229,8 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 
 	return exp
+}
+
+func (p *Parser) parseIdentifier() *ast.Identifier {
+	return &ast.Identifier{Token: p.curToken}
 }
