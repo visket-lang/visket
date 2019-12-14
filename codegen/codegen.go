@@ -27,7 +27,9 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 func (c *CodeGen) GenerateCode() {
 	c.gen("define i32 @main() nounwind {\n")
 
-	c.genStatement(c.program.Code)
+	for _, s := range c.program.Statements {
+		c.genStatement(s)
+	}
 
 	c.gen("}\n")
 }

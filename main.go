@@ -1,16 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"github.com/arata-nvm/Solitude/codegen"
 	"github.com/arata-nvm/Solitude/lexer"
 	"github.com/arata-nvm/Solitude/parser"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -37,10 +36,11 @@ func main() {
 }
 
 func scanInput() string {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	input := scanner.Text()
-	return strings.TrimRight(input, "\n")
+	b, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(b)
 }
 
 func printErrors(p *parser.Parser) {
