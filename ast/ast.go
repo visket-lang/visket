@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/token"
 )
@@ -21,15 +22,23 @@ type Expression interface {
 }
 
 type Program struct {
-	Code Statement
+	Statements []Statement
 }
 
 func (p *Program) Inspect() string {
-	return p.Code.Inspect()
+	var buf bytes.Buffer
+	for _, s := range p.Statements {
+		buf.WriteString(s.Inspect())
+	}
+	return buf.String()
 }
 
 func (p *Program) String() string {
-	return p.Code.String()
+	var buf bytes.Buffer
+	for _, s := range p.Statements {
+		buf.WriteString(s.String())
+	}
+	return buf.String()
 }
 
 type Identifier struct {
