@@ -14,11 +14,11 @@ type Program struct {
 	Code Node
 }
 
-func (p Program) Inspect() string {
+func (p *Program) Inspect() string {
 	return p.Code.Inspect()
 }
 
-func (p Program) String() string {
+func (p *Program) String() string {
 	return p.Code.String()
 }
 
@@ -27,11 +27,11 @@ type IntegerLiteral struct {
 	Value int
 }
 
-func (il IntegerLiteral) Inspect() string {
+func (il *IntegerLiteral) Inspect() string {
 	return fmt.Sprintf("Int(%d)", il.Value)
 }
 
-func (il IntegerLiteral) String() string {
+func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
 }
 
@@ -41,11 +41,11 @@ type PrefixExpression struct {
 	Right    Node
 }
 
-func (pe PrefixExpression) Inspect() string {
+func (pe *PrefixExpression) Inspect() string {
 	return fmt.Sprintf("Prefix(%s %s)", pe.Operator, pe.Right.Inspect())
 }
 
-func (pe PrefixExpression) String() string {
+func (pe *PrefixExpression) String() string {
 	return fmt.Sprintf("%s %s", pe.Operator, pe.Right.String())
 }
 
@@ -56,10 +56,10 @@ type InfixExpression struct {
 	Right    Node
 }
 
-func (ie InfixExpression) Inspect() string {
+func (ie *InfixExpression) Inspect() string {
 	return fmt.Sprintf("Infix(%s %s %s)", ie.Left.Inspect(), ie.Operator, ie.Right.Inspect())
 }
 
-func (ie InfixExpression) String() string {
+func (ie *InfixExpression) String() string {
 	return fmt.Sprintf("%s %s %s", ie.Left.String(), ie.Operator, ie.Right.String())
 }
