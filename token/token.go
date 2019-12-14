@@ -24,6 +24,8 @@ const (
 
 	LPAREN = "("
 	RPAREN = ")"
+	LBRACE = "{"
+	RBRACE = "}"
 
 	VAR    = "var"
 	RETURN = "return"
