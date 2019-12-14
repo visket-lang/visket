@@ -55,7 +55,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Pointer {
 	case *ast.InfixExpression:
 		result = c.genInfix(expr)
 	case *ast.IntegerLiteral:
-		c.comment("  ; Assign\n")
+		c.comment("  ; Int\n")
 		result = c.genAlloca()
 		c.genStoreImmediate(expr.Value, result)
 	default:
