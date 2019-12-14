@@ -16,6 +16,8 @@ func TestNextToken(t *testing.T) {
 43 != 83
 32 < 33 <= 33
 59 > 58 >= 58
+
+var a = 1
 `
 
 	tests := []struct {
@@ -67,6 +69,11 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "58"},
 		{token.GTE, ">="},
 		{token.INT, "58"},
+
+		{token.VAR, "var"},
+		{token.IDENT, "a"},
+		{token.ASSIGN, "="},
+		{token.INT, "1"},
 
 		{token.EOF, ""},
 	}
