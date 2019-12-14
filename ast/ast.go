@@ -77,6 +77,21 @@ func (vs *VarStatement) String() string {
 
 func (vs *VarStatement) statementNode() {}
 
+type ReturnStatement struct {
+	Token token.Token
+	Value Expression
+}
+
+func (rs *ReturnStatement) Inspect() string {
+	return fmt.Sprintf("return %s", rs.Value.Inspect())
+}
+
+func (rs *ReturnStatement) String() string {
+	return fmt.Sprintf("return %s", rs.Value.String())
+}
+
+func (rs *ReturnStatement) statementNode() {}
+
 type IntegerLiteral struct {
 	Token token.Token
 	Value int
