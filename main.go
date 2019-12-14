@@ -14,9 +14,8 @@ import (
 
 func main() {
 	var (
-		isDebug = flag.Bool("debug", false, "for debugging")
-
-		output = flag.String("output", "", "specify file to output")
+		isDebug = flag.Bool("v", false, "Use verbose output")
+		output = flag.String("o", "", "Specify file to output")
 	)
 	flag.Parse()
 
@@ -25,10 +24,10 @@ func main() {
 
 	p := parser.New(l)
 	program := p.ParseProgram()
+	printErrors(p)
 	if *isDebug {
 		fmt.Printf("%s\n", program.Inspect())
 	}
-	printErrors(p)
 
 	w := getWriter(*output)
 	c := codegen.New(program, *isDebug, w)
