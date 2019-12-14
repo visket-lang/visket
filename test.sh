@@ -7,7 +7,7 @@ try() {
   expected="$1"
   input="$2"
 
-  echo "$input" | $TARGET $OPT > tmp.ll
+  echo "$input" | $TARGET $OPT -o tmp.ll
   lli tmp.ll
   actual=$?
 

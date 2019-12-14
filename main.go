@@ -14,9 +14,8 @@ import (
 
 func main() {
 	var (
-		isDebug = flag.Bool("debug", false, "for debugging")
-
-		output = flag.String("output", "", "specify file to output")
+		isDebug = flag.Bool("v", false, "Use verbose output")
+		output = flag.String("o", "", "Specify file to output")
 	)
 	flag.Parse()
 
