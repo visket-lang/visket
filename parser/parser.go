@@ -97,7 +97,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
-func (p *Parser) parseExpression(precedence int) ast.Node {
+func (p *Parser) parseExpression(precedence int) ast.Expression {
 	left := p.parsePrefixExpression()
 
 	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
@@ -108,8 +108,8 @@ func (p *Parser) parseExpression(precedence int) ast.Node {
 	return left
 }
 
-func (p *Parser) parsePrefixExpression() ast.Node {
-	var left ast.Node
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	var left ast.Expression
 
 	switch p.curToken.Type {
 	case token.MINUS:
@@ -168,7 +168,7 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 	return lit
 }
 
-func (p *Parser) parseGroupedExpression() ast.Node {
+func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.nextToken()
 
 	exp := p.parseExpression(LOWEST)

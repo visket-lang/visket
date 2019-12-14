@@ -10,8 +10,13 @@ type Node interface {
 	Inspect() string
 }
 
+type Expression interface {
+	Node
+	expressionNode()
+}
+
 type Program struct {
-	Code Node
+	Code Expression
 }
 
 func (p *Program) Inspect() string {
@@ -35,6 +40,8 @@ func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
 }
 
+func (il *IntegerLiteral) expressionNode() {}
+
 type PrefixExpression struct {
 	Token    token.Token
 	Operator string
@@ -48,6 +55,8 @@ func (pe *PrefixExpression) Inspect() string {
 func (pe *PrefixExpression) String() string {
 	return fmt.Sprintf("%s %s", pe.Operator, pe.Right.String())
 }
+
+func (pe *PrefixExpression) expressionNode() {}
 
 type InfixExpression struct {
 	Token    token.Token
@@ -63,3 +72,5 @@ func (ie *InfixExpression) Inspect() string {
 func (ie *InfixExpression) String() string {
 	return fmt.Sprintf("%s %s %s", ie.Left.String(), ie.Operator, ie.Right.String())
 }
+
+func (ie *InfixExpression) expressionNode() {}

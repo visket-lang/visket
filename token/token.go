@@ -7,7 +7,7 @@ const (
 	EOF               = "EOF"
 
 	IDENT = "IDENT"
-	INT = "INT"
+	INT   = "INT"
 
 	ASSIGN   = "="
 	PLUS     = "+"
@@ -28,7 +28,7 @@ const (
 	VAR = "var"
 )
 
-var keywords = map[string]TokenType {
+var keywords = map[string]TokenType{
 	"var": VAR,
 }
 
