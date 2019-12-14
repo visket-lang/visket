@@ -18,6 +18,7 @@ func TestNextToken(t *testing.T) {
 59 > 58 >= 58
 
 var a = 1
+return a
 `
 
 	tests := []struct {
@@ -74,6 +75,9 @@ var a = 1
 		{token.IDENT, "a"},
 		{token.ASSIGN, "="},
 		{token.INT, "1"},
+
+		{token.RETURN, "return"},
+		{token.IDENT, "a"},
 
 		{token.EOF, ""},
 	}

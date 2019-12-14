@@ -25,11 +25,13 @@ const (
 	LPAREN = "("
 	RPAREN = ")"
 
-	VAR = "var"
+	VAR    = "var"
+	RETURN = "return"
 )
 
 var keywords = map[string]TokenType{
-	"var": VAR,
+	"var":    VAR,
+	"return": RETURN,
 }
 
 type Token struct {

@@ -27,24 +27,23 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 func (c *CodeGen) GenerateCode() {
 	c.gen("define i32 @main() nounwind {\n")
 
-	result := c.genStatement(c.program.Code)
+	c.genStatement(c.program.Code)
 
-	c.comment("  ; Ret\n")
-	c.gen("  ret i32 %%%d\n", result)
 	c.gen("}\n")
 }
 
-func (c *CodeGen) genStatement(stmt ast.Statement) Value {
+func (c *CodeGen) genStatement(stmt ast.Statement) {
 	switch stmt := stmt.(type) {
 	case *ast.VarStatement:
-		return c.genVarStatement(stmt)
+		c.genVarStatement(stmt)
+	case *ast.ReturnStatement:
+		c.genReturnStatement(stmt)
 	case *ast.ExpressionStatement:
-		return c.genExpression(stmt.Expression)
+		c.genExpression(stmt.Expression)
+	default:
+		fmt.Printf("unexpexted statement: %s\n", stmt.Inspect())
+		os.Exit(1)
 	}
-
-	fmt.Printf("unexpexted statement: %s\n", stmt.Inspect())
-	os.Exit(1)
-	return -1
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) Value {
@@ -54,6 +53,12 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) Value {
 	// TODO Pointer への変換がよくわからない
 	c.genNamedStore(stmt.Ident, Pointer(resultPtr))
 	return c.genNamedLoad(stmt.Ident)
+}
+
+func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
+	c.comment("  ; Ret\n")
+	result := c.genExpression(stmt.Value)
+	c.genRet(result)
 }
 
 func (c *CodeGen) genExpression(expr ast.Expression) Value {
