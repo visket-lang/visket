@@ -98,7 +98,32 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
-	return p.parseExpressionStatement()
+	switch p.curToken.Type {
+	case token.VAR:
+		return p.parseVarStatement()
+	default:
+		return p.parseExpressionStatement()
+	}
+
+	return nil
+}
+
+func (p *Parser) parseVarStatement() *ast.VarStatement {
+	stmt := &ast.VarStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	stmt.Ident = &ast.Identifier{Token: p.curToken}
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
+
+	return stmt
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {

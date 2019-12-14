@@ -32,6 +32,20 @@ func (p *Program) String() string {
 	return p.Code.String()
 }
 
+type Identifier struct {
+	Token token.Token
+}
+
+func (i *Identifier) Inspect() string {
+	return fmt.Sprintf("Ident(%s)", i.Token.Literal)
+}
+
+func (i *Identifier) String() string {
+	return i.Token.Literal
+}
+
+func (i *Identifier) expressionNode() {}
+
 type ExpressionStatement struct {
 	Token      token.Token
 	Expression Expression
@@ -46,6 +60,22 @@ func (es *ExpressionStatement) String() string {
 }
 
 func (es *ExpressionStatement) statementNode() {}
+
+type VarStatement struct {
+	Token token.Token
+	Ident *Identifier
+	Value Expression
+}
+
+func (vs *VarStatement) Inspect() string {
+	return fmt.Sprintf("var %s = %s", vs.Ident.Inspect(), vs.Value.Inspect())
+}
+
+func (vs *VarStatement) String() string {
+	return fmt.Sprintf("var %s = %s", vs.Ident.String(), vs.Value.String())
+}
+
+func (vs *VarStatement) statementNode() {}
 
 type IntegerLiteral struct {
 	Token token.Token
