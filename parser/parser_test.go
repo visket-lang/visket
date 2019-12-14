@@ -1,79 +1,47 @@
 package parser
 
 import (
-	"github.com/arata-nvm/Solitude/ast"
 	"github.com/arata-nvm/Solitude/lexer"
 	"testing"
 )
 
-func TestIntegerLiteral(t *testing.T) {
-	input := `42`
-
-	l := lexer.New(input)
-	p := New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
-
-	es, ok := program.Statements[0].(*ast.ExpressionStatement)
-	if !ok {
-		t.Errorf("code is not ast.ExpressionStatement. got=%T", program.Statements)
-	}
-
-	il, ok := es.Expression.(*ast.IntegerLiteral)
-	if !ok {
-		t.Fatalf("code is not ast.IntegerLiteral. got=%T", program.Statements)
-	}
-
-	if il.Value != 42 {
-		t.Errorf("il.Value is not %d. got=%d", 42, il.Value)
-	}
-}
-
-func TestInfixExpression(t *testing.T) {
-	tests := []struct {
-		input      string
-		leftValue  interface{}
-		operator   string
-		rightValue interface{}
+func TestParse(t *testing.T) {
+	tests := []struct{
+		input string
+		expected string
 	}{
-		{"4 + 4", "4", "+", "4"},
-		{"4 - 4", "4", "-", "4"},
-		{"4 * 4", "4", "*", "4"},
-		{"4 / 4", "4", "/", "4"},
-		{"4 == 4", "4", "==", "4"},
-		{"4 != 4", "4", "!=", "4"},
-		{"4 < 4", "4", "<", "4"},
-		{"4 <= 4", "4", "<=", "4"},
-		{"4 > 4", "4", ">", "4"},
-		{"4 >= 4", "4", ">=", "4"},
+		{"0", "Int(0)"},
+		{"42", "Int(42)"},
+
+		{"4 + 4", "Infix(Int(4) + Int(4))"},
+		{"4 - 4", "Infix(Int(4) - Int(4))"},
+		{"4 * 4", "Infix(Int(4) * Int(4))"},
+		{"4 / 4", "Infix(Int(4) / Int(4))"},
+		{"4 == 4", "Infix(Int(4) == Int(4))"},
+		{"4 != 4", "Infix(Int(4) != Int(4))"},
+		{"4 < 4", "Infix(Int(4) < Int(4))"},
+		{"4 <= 4", "Infix(Int(4) <= Int(4))"},
+		{"4 > 4", "Infix(Int(4) > Int(4))"},
+		{"4 >= 4", "Infix(Int(4) >= Int(4))"},
+
+		{"4 + 4 * 4", "Infix(Int(4) + Infix(Int(4) * Int(4)))"},
+		{"4 * 4 + 4", "Infix(Infix(Int(4) * Int(4)) + Int(4))"},
+
+		{"var hoge = 1", "var Ident(hoge) = Int(1)"},
+		{"var fuga = hoge * 2 + 2", "var Ident(fuga) = Infix(Infix(Ident(hoge) * Int(2)) + Int(2))"},
+
+		{"return 0", "return Int(0)"},
+		{"return hoge", "return Ident(hoge)"},
 	}
 
 	for i, test := range tests {
 		l := lexer.New(test.input)
 		p := New(l)
-		program := p.ParseProgram()
+		actual := p.ParseProgram().Inspect()
 		checkParserErrors(t, p)
 
-		es, ok := program.Statements[0].(*ast.ExpressionStatement)
-		if !ok {
-			t.Errorf("tests[%d] - code is not ast.ExpressionStatement. got=%T", i, program.Statements)
-		}
-
-		ie, ok := es.Expression.(*ast.InfixExpression)
-		if !ok {
-			t.Errorf("tests[%d] - code is not ast.InfixExpression. got=%T", i, program.Statements)
-		}
-
-		if ie.Left.String() != test.leftValue {
-			t.Fatalf("tests[%d] - ie.Left wrong. expected=%q, got=%q", i, test.leftValue, ie.Left)
-		}
-
-		if ie.Operator != test.operator {
-			t.Fatalf("tests[%d] - ie.Operator wrong. expected=%q, got=%q", i, test.operator, ie.Operator)
-		}
-
-		if ie.Right.String() != test.rightValue {
-			t.Fatalf("tests[%d] - ie.Right wrong. expected=%q, got=%q", i, test.rightValue, ie.Right)
+		if actual != test.expected {
+			t.Fatalf("tests[%d] - expected=%q, got=%q", i, test.expected, actual)
 		}
 	}
 }
