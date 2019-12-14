@@ -27,7 +27,7 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 func (c *CodeGen) GenerateCode() {
 	c.gen("define i32 @main() nounwind {\n")
 
-	result := c.genExpr(c.program.Code)
+	result := c.genStatement(c.program.Code)
 
 	c.comment("  ; Ret\n")
 	returnPtr := c.genLoad(result)
@@ -35,17 +35,31 @@ func (c *CodeGen) GenerateCode() {
 	c.gen("}\n")
 }
 
-func (c *CodeGen) genExpr(node ast.Node) Pointer {
+func (c *CodeGen) genStatement(stmt ast.Statement) Pointer {
 	var result Pointer
-	switch node := node.(type) {
+
+	switch stmt := stmt.(type) {
+	case *ast.ExpressionStatement:
+		result = c.genExpression(stmt.Expression)
+	default:
+		fmt.Printf("unexpexted statement: %s\n", stmt.Inspect())
+		os.Exit(1)
+	}
+
+	return result
+}
+
+func (c *CodeGen) genExpression(expr ast.Expression) Pointer {
+	var result Pointer
+	switch expr := expr.(type) {
 	case *ast.InfixExpression:
-		result = c.genInfix(node)
+		result = c.genInfix(expr)
 	case *ast.IntegerLiteral:
 		c.comment("  ; Assign\n")
 		result = c.genAlloca()
-		c.genStoreImmediate(node.Value, result)
+		c.genStoreImmediate(expr.Value, result)
 	default:
-		fmt.Printf("unexpexted node: %s\n", node.Inspect())
+		fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
 		os.Exit(1)
 	}
 
@@ -55,8 +69,8 @@ func (c *CodeGen) genExpr(node ast.Node) Pointer {
 func (c *CodeGen) genInfix(ie *ast.InfixExpression) Pointer {
 	c.comment("  ; Infix\n")
 
-	lhsPtr := c.genExpr(ie.Left)
-	rhsPtr := c.genExpr(ie.Right)
+	lhsPtr := c.genExpression(ie.Left)
+	rhsPtr := c.genExpression(ie.Right)
 
 	c.comment("  ; Op\n")
 

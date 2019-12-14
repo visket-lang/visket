@@ -92,9 +92,21 @@ func (p *Parser) curPrecedence() int {
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 
-	program.Code = p.parseExpression(LOWEST)
+	program.Code = p.parseStatement()
 
 	return program
+}
+
+func (p *Parser) parseStatement() ast.Statement {
+	return p.parseExpressionStatement()
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	return stmt
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
@@ -140,7 +152,7 @@ func (p *Parser) parseMinusPrefix() *ast.InfixExpression {
 	return expr
 }
 
-func (p *Parser) parseInfixExpression(left ast.Node) *ast.InfixExpression {
+func (p *Parser) parseInfixExpression(left ast.Expression) *ast.InfixExpression {
 	expr := &ast.InfixExpression{
 		Token:    p.curToken,
 		Left:     left,

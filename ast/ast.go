@@ -10,13 +10,18 @@ type Node interface {
 	Inspect() string
 }
 
+type Statement interface {
+	Node
+	statementNode()
+}
+
 type Expression interface {
 	Node
 	expressionNode()
 }
 
 type Program struct {
-	Code Expression
+	Code Statement
 }
 
 func (p *Program) Inspect() string {
@@ -26,6 +31,21 @@ func (p *Program) Inspect() string {
 func (p *Program) String() string {
 	return p.Code.String()
 }
+
+type ExpressionStatement struct {
+	Token      token.Token
+	Expression Expression
+}
+
+func (es *ExpressionStatement) Inspect() string {
+	return es.Expression.Inspect()
+}
+
+func (es *ExpressionStatement) String() string {
+	return es.Expression.String()
+}
+
+func (es *ExpressionStatement) statementNode() {}
 
 type IntegerLiteral struct {
 	Token token.Token
@@ -45,7 +65,7 @@ func (il *IntegerLiteral) expressionNode() {}
 type PrefixExpression struct {
 	Token    token.Token
 	Operator string
-	Right    Node
+	Right    Expression
 }
 
 func (pe *PrefixExpression) Inspect() string {
@@ -60,9 +80,9 @@ func (pe *PrefixExpression) expressionNode() {}
 
 type InfixExpression struct {
 	Token    token.Token
-	Left     Node
+	Left     Expression
 	Operator string
-	Right    Node
+	Right    Expression
 }
 
 func (ie *InfixExpression) Inspect() string {
