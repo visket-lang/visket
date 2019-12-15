@@ -62,6 +62,7 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 }
 
 func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
+	c.resetIndex()
 	c.genDefineFunction(stmt.Ident)
 	if stmt.Parameter != nil {
 		c.genFunctionParameter(stmt.Parameter)
@@ -88,6 +89,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return c.genInfix(expr)
+	case *ast.CallExpression:
+		return c.genCallExpression(expr)
 	case *ast.IntegerLiteral:
 		c.comment("  ; Int\n")
 		result := c.genAlloca()
@@ -151,4 +154,12 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	}
 
 	return Value(c.index)
+}
+
+func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
+	if expr.Parameter == nil {
+		return c.genCallWithReturn(expr.Function, []Value{})
+	}
+	param := c.genExpression(expr.Parameter)
+	return c.genCallWithReturn(expr.Function, []Value{param})
 }
