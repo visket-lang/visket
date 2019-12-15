@@ -23,11 +23,13 @@ func (bs *BlockStatement) Inspect() string {
 
 func (bs *BlockStatement) String() string {
 	var buf bytes.Buffer
-	buf.WriteString("{")
+	buf.WriteString("{\n")
 	for _, s := range bs.Statements {
+		buf.WriteString("  ")
 		buf.WriteString(s.String())
+		buf.WriteString("\n")
 	}
-	buf.WriteString("}")
+	buf.WriteString("}\n\n")
 	return buf.String()
 }
 
