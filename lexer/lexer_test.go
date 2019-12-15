@@ -20,6 +20,7 @@ func TestNextToken(t *testing.T) {
 var a = 1
 return a
 { 1 }
+func f(arg) {}
 `
 
 	tests := []struct {
@@ -82,6 +83,14 @@ return a
 
 		{token.LBRACE, "{"},
 		{token.INT, "1"},
+		{token.RBRACE, "}"},
+
+		{token.FUNCTION, "func"},
+		{token.IDENT, "f"},
+		{token.LPAREN, "("},
+		{token.IDENT, "arg"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
 		{token.RBRACE, "}"},
 
 		{token.EOF, ""},
