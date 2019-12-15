@@ -6,8 +6,8 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	tests := []struct{
-		input string
+	tests := []struct {
+		input    string
 		expected string
 	}{
 		{"0", "Int(0)"},
