@@ -35,20 +35,6 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	return nil
 }
 
-func (p *Parser) parseInfixExpression(left ast.Expression) *ast.InfixExpression {
-	expr := &ast.InfixExpression{
-		Token:    p.curToken,
-		Left:     left,
-		Operator: p.curToken.Literal,
-	}
-
-	precedence := p.curPrecedence()
-	p.nextToken()
-	expr.Right = p.parseExpression(precedence)
-
-	return expr
-}
-
 func (p *Parser) parseMinusPrefix() *ast.InfixExpression {
 	expr := &ast.InfixExpression{
 		Token:    p.curToken,
@@ -89,4 +75,48 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 
 func (p *Parser) parseIdentifier() *ast.Identifier {
 	return &ast.Identifier{Token: p.curToken}
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	op := p.curToken.Literal
+
+	switch op {
+	case "(":
+		return p.parseCallExpression(left)
+	}
+
+	expr := &ast.InfixExpression{
+		Token:    p.curToken,
+		Left:     left,
+		Operator: op,
+	}
+
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expr.Right = p.parseExpression(precedence)
+
+	return expr
+}
+
+func (p *Parser) parseCallExpression(left ast.Expression) *ast.CallExpression {
+	function, ok := left.(*ast.Identifier)
+	if !ok {
+		return nil
+	}
+
+	expr := &ast.CallExpression{Token: p.curToken}
+	expr.Function = function
+
+	if p.peekTokenIs(token.LPAREN) {
+		return expr
+	}
+
+	p.nextToken()
+	expr.Parameter = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return expr
 }

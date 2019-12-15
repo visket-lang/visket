@@ -66,3 +66,19 @@ func (ie *InfixExpression) String() string {
 }
 
 func (ie *InfixExpression) expressionNode() {}
+
+type CallExpression struct {
+	Token     token.Token
+	Function  *Identifier
+	Parameter Expression
+}
+
+func (ce *CallExpression) Inspect() string {
+	return fmt.Sprintf("Call(%s(%s))", ce.Function.Inspect(), ce.Parameter.Inspect())
+}
+
+func (ce *CallExpression) String() string {
+	return fmt.Sprintf("%s(%s)", ce.Function.String(), ce.Parameter.String())
+}
+
+func (ce *CallExpression) expressionNode() {}

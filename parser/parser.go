@@ -14,6 +14,7 @@ const (
 	SUM
 	PRODUCT
 	PREFIX
+	CALL
 )
 
 var precedences = map[token.TokenType]int{
@@ -27,6 +28,7 @@ var precedences = map[token.TokenType]int{
 	token.MINUS:    SUM,
 	token.ASTERISK: PRODUCT,
 	token.SLASH:    PRODUCT,
+	token.LPAREN: CALL,
 }
 
 type Parser struct {
