@@ -57,14 +57,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		return nil
 	}
 
-	if p.peekTokenIs(token.IDENT) {
-		p.nextToken()
-		stmt.Parameter = p.parseIdentifier()
-	}
-
-	if !p.expectPeek(token.RPAREN) {
-		return nil
-	}
+	stmt.Parameters = p.parseFunctionParameters()
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
@@ -73,6 +66,31 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	stmt.Body = p.parseBlockStatement()
 
 	return stmt
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	var params []*ast.Identifier
+
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		return params
+	}
+
+	p.nextToken()
+
+	params = append(params, p.parseIdentifier())
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		params = append(params, p.parseIdentifier())
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return params
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {

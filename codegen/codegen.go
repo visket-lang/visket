@@ -64,17 +64,14 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.resetIndex()
 	c.genDefineFunction(stmt.Ident)
-	if stmt.Parameter != nil {
-		c.genFunctionParameter(stmt.Parameter)
-	}
+	c.genFunctionParameters(stmt.Parameters)
 	c.genBeginFunction()
 
-	if stmt.Parameter != nil {
-		c.genNamedAlloca(stmt.Parameter)
-		c.genNamedStore(stmt.Parameter, Pointer(c.index))
+	for _, param := range stmt.Parameters {
+		c.genNamedAlloca(param)
+		c.genNamedStore(param, Pointer(c.index))
 		c.nextPointer()
 	}
-
 	c.genBlockStatement(stmt.Body)
 	c.genEndFunction()
 }
@@ -157,9 +154,11 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 }
 
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
-	if expr.Parameter == nil {
-		return c.genCallWithReturn(expr.Function, []Value{})
+	var params []Value
+
+	for _, param := range expr.Parameters {
+		params = append(params, c.genExpression(param))
 	}
-	param := c.genExpression(expr.Parameter)
-	return c.genCallWithReturn(expr.Function, []Value{param})
+
+	return c.genCallWithReturn(expr.Function, params)
 }

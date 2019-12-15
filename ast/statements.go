@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/token"
+	"strings"
 )
 
 type BlockStatement struct {
@@ -51,21 +52,24 @@ func (es *ExpressionStatement) String() string {
 func (es *ExpressionStatement) statementNode() {}
 
 type FunctionStatement struct {
-	Token     token.Token
-	Ident     *Identifier
-	Parameter *Identifier
-	Body      *BlockStatement
+	Token      token.Token
+	Ident      *Identifier
+	Parameters []*Identifier
+	Body       *BlockStatement
 }
 
 func (fs *FunctionStatement) Inspect() string {
 	var buf bytes.Buffer
 
+	var p []string
+	for _, param := range fs.Parameters {
+		p = append(p, param.Inspect())
+	}
+
 	buf.WriteString("func ")
 	buf.WriteString(fs.Ident.Inspect())
 	buf.WriteString("(")
-	if fs.Parameter != nil {
-		buf.WriteString(fs.Parameter.Inspect())
-	}
+	buf.WriteString(strings.Join(p, ","))
 	buf.WriteString(") ")
 	buf.WriteString(fs.Body.Inspect())
 	return buf.String()
@@ -74,12 +78,15 @@ func (fs *FunctionStatement) Inspect() string {
 func (fs *FunctionStatement) String() string {
 	var buf bytes.Buffer
 
+	var p []string
+	for _, param := range fs.Parameters {
+		p = append(p, param.String())
+	}
+
 	buf.WriteString("func ")
 	buf.WriteString(fs.Ident.String())
 	buf.WriteString("(")
-	if fs.Parameter != nil {
-		buf.WriteString(fs.Parameter.String())
-	}
+	buf.WriteString(strings.Join(p, ","))
 	buf.WriteString(")")
 	buf.WriteString(fs.Body.String())
 	return buf.String()

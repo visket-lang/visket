@@ -106,18 +106,32 @@ func (p *Parser) parseCallExpression(left ast.Expression) *ast.CallExpression {
 
 	expr := &ast.CallExpression{Token: p.curToken}
 	expr.Function = function
+	expr.Parameters = p.parseCallParameters()
+
+	return expr
+}
+
+func (p *Parser) parseCallParameters() []ast.Expression {
+	var params []ast.Expression
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
-		return expr
+		return params
 	}
 
 	p.nextToken()
-	expr.Parameter = p.parseExpression(LOWEST)
+
+	params = append(params, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		params = append(params, p.parseExpression(LOWEST))
+	}
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil
 	}
 
-	return expr
+	return params
 }

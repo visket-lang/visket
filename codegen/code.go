@@ -129,8 +129,13 @@ func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
 	c.gen("define i32 @%s(", ident.Token.Literal)
 }
 
-func (c *CodeGen) genFunctionParameter(ident *ast.Identifier) {
-	c.gen("i32")
+func (c *CodeGen) genFunctionParameters(params []*ast.Identifier) {
+	var p []string
+	for _, _ = range params {
+		p = append(p, "i32")
+	}
+
+	c.gen(strings.Join(p, ","))
 }
 
 func (c *CodeGen) genBeginFunction() {

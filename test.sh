@@ -56,6 +56,8 @@ try 0 "func main() { return 9 >= 10 }"
 
 try 2 "func num() { return 2 }
 func main() { return num() }"
-
 try 4 "func add(n) { return n + 2 }
 func main() { return add(2) }"
+
+try 6 "func add(a, b) { return a + b }
+func main() { return add(2, 4) }"
