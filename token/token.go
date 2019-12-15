@@ -22,18 +22,22 @@ const (
 	GT  = ">"
 	GTE = ">="
 
+	COMMA = ","
+
 	LPAREN = "("
 	RPAREN = ")"
 	LBRACE = "{"
 	RBRACE = "}"
 
-	VAR    = "var"
-	RETURN = "return"
+	VAR      = "var"
+	RETURN   = "return"
+	FUNCTION = "func"
 )
 
 var keywords = map[string]TokenType{
 	"var":    VAR,
 	"return": RETURN,
+	"func":   FUNCTION,
 }
 
 type Token struct {

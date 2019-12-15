@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
 	"log"
+	"strings"
 )
 
 type Pointer int
 type Value int
+
+func (c *CodeGen) resetIndex() {
+	c.index = 0
+}
 
 func (c *CodeGen) nextPointer() Pointer {
 	c.index++
@@ -118,4 +123,46 @@ func (c *CodeGen) genZext(typeFrom, typeTo string, value Value) Value {
 
 func (c *CodeGen) genRet(value Value) {
 	c.gen("  ret i32 %%%d\n", value)
+}
+
+func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
+	c.gen("define i32 @%s(", ident.Token.Literal)
+}
+
+func (c *CodeGen) genFunctionParameters(params []*ast.Identifier) {
+	var p []string
+	for _, _ = range params {
+		p = append(p, "i32")
+	}
+
+	c.gen(strings.Join(p, ","))
+}
+
+func (c *CodeGen) genBeginFunction() {
+	c.gen(") nounwind {\n")
+}
+
+func (c *CodeGen) genEndFunction() {
+	c.gen("}\n\n")
+}
+
+func (c *CodeGen) genCall(function *ast.Identifier, params []Value) {
+	var p []string
+	for _, param := range params {
+		p = append(p, fmt.Sprintf("i32 %%%d", param))
+	}
+
+	c.gen("call i32 @%s(%s)\n", function.Token.Literal, strings.Join(p, ","))
+}
+
+func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Value {
+	result := c.nextValue()
+
+	var p []string
+	for _, param := range params {
+		p = append(p, fmt.Sprintf("i32 %%%d", param))
+	}
+
+	c.gen("  %%%d = call i32 @%s(%s)\n", result, function.Token.Literal, strings.Join(p, ","))
+	return result
 }

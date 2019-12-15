@@ -1,8 +1,10 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/token"
+	"strings"
 )
 
 type Identifier struct {
@@ -66,3 +68,39 @@ func (ie *InfixExpression) String() string {
 }
 
 func (ie *InfixExpression) expressionNode() {}
+
+type CallExpression struct {
+	Token      token.Token
+	Function   *Identifier
+	Parameters []Expression
+}
+
+func (ce *CallExpression) Inspect() string {
+	var buf bytes.Buffer
+
+	var p []string
+	for _, param := range ce.Parameters {
+		p = append(p, param.Inspect())
+	}
+
+	buf.WriteString(fmt.Sprintf("Call(%s(", ce.Function.Inspect()))
+	buf.WriteString(fmt.Sprintf("%s", strings.Join(p, ",")))
+	buf.WriteString("))")
+	return buf.String()
+}
+
+func (ce *CallExpression) String() string {
+	var buf bytes.Buffer
+
+	var p []string
+	for _, param := range ce.Parameters {
+		p = append(p, param.String())
+	}
+
+	buf.WriteString(fmt.Sprintf("Call(%s(", ce.Function.String()))
+	buf.WriteString(fmt.Sprintf("%s", strings.Join(p, ",")))
+	buf.WriteString("))")
+	return buf.String()
+}
+
+func (ce *CallExpression) expressionNode() {}

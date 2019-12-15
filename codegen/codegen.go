@@ -25,13 +25,9 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 }
 
 func (c *CodeGen) GenerateCode() {
-	c.gen("define i32 @main() nounwind {\n")
-
 	for _, s := range c.program.Statements {
 		c.genStatement(s)
 	}
-
-	c.gen("}\n")
 }
 
 func (c *CodeGen) genStatement(stmt ast.Statement) {
@@ -40,6 +36,8 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 		c.genVarStatement(stmt)
 	case *ast.ReturnStatement:
 		c.genReturnStatement(stmt)
+	case *ast.FunctionStatement:
+		c.genFunctionStatement(stmt)
 	case *ast.ExpressionStatement:
 		c.genExpression(stmt.Expression)
 	default:
@@ -63,10 +61,33 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 	c.genRet(result)
 }
 
+func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
+	c.resetIndex()
+	c.genDefineFunction(stmt.Ident)
+	c.genFunctionParameters(stmt.Parameters)
+	c.genBeginFunction()
+
+	for _, param := range stmt.Parameters {
+		c.genNamedAlloca(param)
+		c.genNamedStore(param, Pointer(c.index))
+		c.nextPointer()
+	}
+	c.genBlockStatement(stmt.Body)
+	c.genEndFunction()
+}
+
+func (c *CodeGen) genBlockStatement(stmt *ast.BlockStatement) {
+	for _, s := range stmt.Statements {
+		c.genStatement(s)
+	}
+}
+
 func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return c.genInfix(expr)
+	case *ast.CallExpression:
+		return c.genCallExpression(expr)
 	case *ast.IntegerLiteral:
 		c.comment("  ; Int\n")
 		result := c.genAlloca()
@@ -130,4 +151,14 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	}
 
 	return Value(c.index)
+}
+
+func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
+	var params []Value
+
+	for _, param := range expr.Parameters {
+		params = append(params, c.genExpression(param))
+	}
+
+	return c.genCallWithReturn(expr.Function, params)
 }
