@@ -53,3 +53,9 @@ try 1 "func main() { return 10 > 9 }"
 try 0 "func main() { return 10 > 10 }"
 try 1 "func main() { return 10 >= 10 }"
 try 0 "func main() { return 9 >= 10 }"
+
+try 2 "func num() { return 2 }
+func main() { return num() }"
+
+try 4 "func add(n) { return n + 2 }
+func main() { return add(2) }"
