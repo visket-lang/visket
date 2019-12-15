@@ -119,3 +119,19 @@ func (c *CodeGen) genZext(typeFrom, typeTo string, value Value) Value {
 func (c *CodeGen) genRet(value Value) {
 	c.gen("  ret i32 %%%d\n", value)
 }
+
+func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
+	c.gen("define i32 @%s(", ident.Token.Literal)
+}
+
+func (c *CodeGen) genFunctionParameter(ident *ast.Identifier) {
+	c.gen("i32")
+}
+
+func (c *CodeGen) genBeginFunction() {
+	c.gen(") nounwind {\n")
+}
+
+func (c *CodeGen) genEndFunction() {
+	c.gen("}\n")
+}
