@@ -107,7 +107,8 @@ func (p *Parser) parseCallExpression(left ast.Expression) *ast.CallExpression {
 	expr := &ast.CallExpression{Token: p.curToken}
 	expr.Function = function
 
-	if p.peekTokenIs(token.LPAREN) {
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
 		return expr
 	}
 

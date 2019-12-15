@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/token"
 )
@@ -74,11 +75,21 @@ type CallExpression struct {
 }
 
 func (ce *CallExpression) Inspect() string {
-	return fmt.Sprintf("Call(%s(%s))", ce.Function.Inspect(), ce.Parameter.Inspect())
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("Call(%s)", ce.Function.Inspect()))
+	if ce.Parameter != nil {
+		buf.WriteString(fmt.Sprintf("(%s)", ce.Parameter.Inspect()))
+	}
+	return buf.String()
 }
 
 func (ce *CallExpression) String() string {
-	return fmt.Sprintf("%s(%s)", ce.Function.String(), ce.Parameter.String())
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("%s", ce.Function.String()))
+	if ce.Parameter != nil {
+		buf.WriteString(fmt.Sprintf("(%s)", ce.Parameter.String()))
+	}
+	return buf.String()
 }
 
 func (ce *CallExpression) expressionNode() {}
