@@ -61,7 +61,9 @@ func (fs *FunctionStatement) Inspect() string {
 	buf.WriteString("func ")
 	buf.WriteString(fs.Ident.Inspect())
 	buf.WriteString("(")
-	buf.WriteString(fs.Parameter.Inspect())
+	if fs.Parameter != nil {
+		buf.WriteString(fs.Parameter.Inspect())
+	}
 	buf.WriteString(") ")
 	buf.WriteString(fs.Body.Inspect())
 	return buf.String()
@@ -73,7 +75,9 @@ func (fs *FunctionStatement) String() string {
 	buf.WriteString("func ")
 	buf.WriteString(fs.Ident.String())
 	buf.WriteString("(")
-	buf.WriteString(fs.Parameter.String())
+	if fs.Parameter != nil {
+		buf.WriteString(fs.Parameter.String())
+	}
 	buf.WriteString(")")
 	buf.WriteString(fs.Body.String())
 	return buf.String()

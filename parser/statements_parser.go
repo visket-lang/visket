@@ -57,8 +57,10 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		return nil
 	}
 
-	p.nextToken()
-	stmt.Parameter = p.parseIdentifier()
+	if p.peekTokenIs(token.IDENT) {
+		p.nextToken()
+		stmt.Parameter = p.parseIdentifier()
+	}
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil
