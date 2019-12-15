@@ -48,6 +48,39 @@ func (es *ExpressionStatement) String() string {
 
 func (es *ExpressionStatement) statementNode() {}
 
+type FunctionStatement struct {
+	Token     token.Token
+	Ident     *Identifier
+	Parameter *Identifier
+	Body      *BlockStatement
+}
+
+func (fs *FunctionStatement) Inspect() string {
+	var buf bytes.Buffer
+
+	buf.WriteString("func ")
+	buf.WriteString(fs.Ident.Inspect())
+	buf.WriteString("(")
+	buf.WriteString(fs.Parameter.Inspect())
+	buf.WriteString(") ")
+	buf.WriteString(fs.Body.Inspect())
+	return buf.String()
+}
+
+func (fs *FunctionStatement) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString("func ")
+	buf.WriteString(fs.Ident.String())
+	buf.WriteString("(")
+	buf.WriteString(fs.Parameter.String())
+	buf.WriteString(")")
+	buf.WriteString(fs.Body.String())
+	return buf.String()
+}
+
+func (fs *FunctionStatement) statementNode() {}
+
 type VarStatement struct {
 	Token token.Token
 	Ident *Identifier

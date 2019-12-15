@@ -32,6 +32,9 @@ func TestParse(t *testing.T) {
 
 		{"return 0", "return Int(0)"},
 		{"return hoge", "return Ident(hoge)"},
+
+		{"func f(a) {1}", "func Ident(f)(Ident(a)) {Int(1)}"},
+		{"func hoge(fuga) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
 	}
 
 	for i, test := range tests {

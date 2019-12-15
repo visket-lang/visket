@@ -109,6 +109,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseVarStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.FUNCTION:
+		return p.parseFunctionStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -139,6 +141,32 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
+
+	return stmt
+}
+
+func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
+	stmt := &ast.FunctionStatement{Token: p.curToken}
+
+	p.nextToken()
+	stmt.Ident = p.parseIdentifier()
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+	stmt.Parameter = p.parseIdentifier()
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
 
 	return stmt
 }
