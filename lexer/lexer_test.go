@@ -23,6 +23,7 @@ return a
 func f(arg) {}
 if a { return 1 }
 else { return 0 }
+while 1 { 1 }
 `
 
 	tests := []struct {
@@ -105,6 +106,12 @@ else { return 0 }
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
 		{token.INT, "0"},
+		{token.RBRACE, "}"},
+
+		{token.WHILE, "while"},
+		{token.INT, "1"},
+		{token.LBRACE, "{"},
+		{token.INT, "1"},
 		{token.RBRACE, "}"},
 
 		{token.EOF, ""},
