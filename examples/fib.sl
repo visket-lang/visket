@@ -6,5 +6,6 @@ func fib(n) {
 }
 
 func main() {
-  return fib(20)
+  print(fib(41))
+  return 0
 }
