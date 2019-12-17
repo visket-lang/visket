@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/codegen"
 	"github.com/arata-nvm/Solitude/lexer"
+	"github.com/arata-nvm/Solitude/optimizer"
 	"github.com/arata-nvm/Solitude/parser"
 	"io"
 	"io/ioutil"
@@ -28,6 +29,9 @@ func main() {
 	if *isDebug {
 		fmt.Printf("%s\n", program.Inspect())
 	}
+
+	o := optimizer.New(program)
+	o.Optimize()
 
 	w := getWriter(*output)
 	c := codegen.New(program, *isDebug, w)
