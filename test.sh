@@ -61,3 +61,51 @@ func main() { return add(2) }"
 
 try 6 "func add(a, b) { return a + b }
 func main() { return add(2, 4) }"
+
+try 2 "
+func main() {
+  if 1 {
+    return 2
+  } else {
+    return 1
+  }
+}
+"
+
+try 1 "
+func main() {
+  if 0 {
+    return 2
+  } else {
+    return 1
+  }
+}
+"
+
+try 2 "
+func main() {
+  if 1 {
+    if 0 {
+      return 3
+    } else {
+      return 2
+    }
+  } else {
+    return 1
+  }
+}
+"
+
+try 55 "
+func fib(n) {
+  if n <= 1 {
+    return n
+  } else {
+    return fib(n - 1) + fib(n - 2)
+  }
+}
+
+func main() {
+  return fib(10)
+}
+"
