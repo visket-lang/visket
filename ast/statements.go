@@ -126,8 +126,8 @@ func (rs *ReturnStatement) String() string {
 func (rs *ReturnStatement) statementNode() {}
 
 type IfStatement struct {
-	Token token.Token
-	Condition Expression
+	Token       token.Token
+	Condition   Expression
 	Consequence *BlockStatement
 	Alternative *BlockStatement
 }

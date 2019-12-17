@@ -96,7 +96,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 }
 
 func (p *Parser) parseIfStatement() *ast.IfStatement {
-	stmt := &ast.IfStatement{Token:p.curToken}
+	stmt := &ast.IfStatement{Token: p.curToken}
 
 	p.nextToken()
 	stmt.Condition = p.parseExpression(LOWEST)
