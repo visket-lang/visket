@@ -15,6 +15,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseFunctionStatement()
 	case token.IF:
 		return p.parseIfStatement()
+	case token.WHILE:
+		return p.parseWhileStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -116,6 +118,21 @@ func (p *Parser) parseIfStatement() *ast.IfStatement {
 		return nil
 	}
 	stmt.Alternative = p.parseBlockStatement()
+
+	return stmt
+}
+
+func (p *Parser) parseWhileStatement() *ast.WhileStatement {
+	stmt := &ast.WhileStatement{Token: p.curToken}
+
+	p.nextToken()
+	stmt.Condition = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
 
 	return stmt
 }
