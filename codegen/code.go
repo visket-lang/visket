@@ -28,7 +28,7 @@ func (c *CodeGen) nextValue() Value {
 
 func (c *CodeGen) nextLabel(name string) Label {
 	c.labelIndex++
-	return Label(fmt.Sprintf("%s_%d", name, c.labelIndex))
+	return Label(fmt.Sprintf("%s.%d", name, c.labelIndex))
 }
 
 func (c *CodeGen) gen(format string, a ...interface{}) {
@@ -38,7 +38,7 @@ func (c *CodeGen) gen(format string, a ...interface{}) {
 		log.Fatal(err)
 	}
 
-	c.isTerminated = strings.Contains(code, "ret")
+	c.isTerminated = strings.Contains(code, "ret") || strings.Contains(code, "br")
 }
 
 func (c *CodeGen) comment(format string, a ...interface{}) {
