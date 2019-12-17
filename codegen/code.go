@@ -162,7 +162,7 @@ func (c *CodeGen) genCall(function *ast.Identifier, params []Value) {
 		p = append(p, fmt.Sprintf("i32 %%%d", param))
 	}
 
-	c.gen("call i32 @%s(%s)\n", function.Token.Literal, strings.Join(p, ","))
+	c.gen("  call i32 @%s(%s)\n", function.Token.Literal, strings.Join(p, ","))
 }
 
 func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Value {
