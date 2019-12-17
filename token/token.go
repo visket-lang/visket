@@ -32,12 +32,16 @@ const (
 	VAR      = "var"
 	RETURN   = "return"
 	FUNCTION = "func"
+	IF       = "if"
+	ELSE     = "else"
 )
 
 var keywords = map[string]TokenType{
 	"var":    VAR,
 	"return": RETURN,
 	"func":   FUNCTION,
+	"if":     IF,
+	"else":   ELSE,
 }
 
 type Token struct {

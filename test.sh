@@ -61,3 +61,104 @@ func main() { return add(2) }"
 
 try 6 "func add(a, b) { return a + b }
 func main() { return add(2, 4) }"
+
+try 2 "
+func main() {
+  if 1 {
+    return 2
+  } else {
+    return 1
+  }
+}
+"
+
+try 1 "
+func main() {
+  if 0 {
+    return 2
+  } else {
+    return 1
+  }
+}
+"
+
+try 2 "
+func main() {
+  if 1 {
+    if 0 {
+      return 3
+    } else {
+      return 2
+    }
+  } else {
+    return 1
+  }
+}
+"
+
+try 0 "
+func main() {
+  if 1 {
+
+  }
+  return 0
+}
+"
+
+# should be an error
+#try 0 "
+#func main() {
+#  if 1 {
+#    return 0
+#  }
+#
+#}
+#"
+
+try 1 "
+func main() {
+  if 1 {
+    return 1
+  } else {
+
+  }
+
+  return 2
+}
+"
+
+try 0 "
+func main() {
+  if 1 {
+
+  } else {
+    return 1
+  }
+
+  return 0
+}
+"
+
+try 1 "
+func main(n) {
+  if n == 1 {
+    return n
+  } else {
+
+  }
+  return n
+}
+"
+
+try 55 "
+func fib(n) {
+  if n <= 1 {
+    return n
+  }
+  return fib(n - 1) + fib(n - 2)
+}
+
+func main() {
+  return fib(10)
+}
+"

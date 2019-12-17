@@ -21,6 +21,8 @@ var a = 1
 return a
 { 1 }
 func f(arg) {}
+if a { return 1 }
+else { return 0 }
 `
 
 	tests := []struct {
@@ -91,6 +93,18 @@ func f(arg) {}
 		{token.IDENT, "arg"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+
+		{token.IF, "if"},
+		{token.IDENT, "a"},
+		{token.LBRACE, "{"},
+		{token.RETURN, "return"},
+		{token.INT, "1"},
+		{token.RBRACE, "}"},
+		{token.ELSE, "else"},
+		{token.LBRACE, "{"},
+		{token.RETURN, "return"},
+		{token.INT, "0"},
 		{token.RBRACE, "}"},
 
 		{token.EOF, ""},

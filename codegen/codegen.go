@@ -6,10 +6,12 @@ import (
 )
 
 type CodeGen struct {
-	program *ast.Program
-	index   int
-	isDebug bool
-	output  io.Writer
+	program      *ast.Program
+	index        int
+	labelIndex   int
+	isDebug      bool
+	isTerminated bool
+	output       io.Writer
 }
 
 func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
@@ -19,6 +21,7 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 		output:  w,
 	}
 
+	c.resetIndex()
 	return c
 }
 

@@ -9,9 +9,11 @@ import (
 
 type Pointer int
 type Value int
+type Label string
 
 func (c *CodeGen) resetIndex() {
-	c.index = 0
+	c.index = -1
+	c.labelIndex = -1
 }
 
 func (c *CodeGen) nextPointer() Pointer {
@@ -24,11 +26,19 @@ func (c *CodeGen) nextValue() Value {
 	return Value(c.index)
 }
 
+func (c *CodeGen) nextLabel(name string) Label {
+	c.labelIndex++
+	return Label(fmt.Sprintf("%s.%d", name, c.labelIndex))
+}
+
 func (c *CodeGen) gen(format string, a ...interface{}) {
+	code := fmt.Sprintf(format, a...)
 	_, err := fmt.Fprintf(c.output, format, a...)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	c.isTerminated = strings.Contains(code, "ret") || strings.Contains(code, "br")
 }
 
 func (c *CodeGen) comment(format string, a ...interface{}) {
@@ -164,5 +174,23 @@ func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Va
 	}
 
 	c.gen("  %%%d = call i32 @%s(%s)\n", result, function.Token.Literal, strings.Join(p, ","))
+	return result
+}
+
+func (c *CodeGen) genLabel(name Label) {
+	c.gen("%s:\n", name)
+}
+
+func (c *CodeGen) genBr(label Label) {
+	c.gen("  br label %%%s\n", label)
+}
+
+func (c *CodeGen) genBrWithCond(condition Value, ifTrue Label, itFalse Label) {
+	c.gen("  br i1 %%%d, label %%%s, label %%%s\n", condition, ifTrue, itFalse)
+}
+
+func (c *CodeGen) genTrunc(typeFrom, typeTo string, value Value) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = trunc %s %%%d to %s\n", result, typeFrom, value, typeTo)
 	return result
 }

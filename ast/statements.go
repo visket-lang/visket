@@ -124,3 +124,38 @@ func (rs *ReturnStatement) String() string {
 }
 
 func (rs *ReturnStatement) statementNode() {}
+
+type IfStatement struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (is *IfStatement) Inspect() string {
+	var buf bytes.Buffer
+	buf.WriteString("if ")
+	buf.WriteString(is.Condition.Inspect())
+	buf.WriteString(" ")
+	buf.WriteString(is.Consequence.Inspect())
+	if is.Alternative != nil {
+		buf.WriteString(" else ")
+		buf.WriteString(is.Alternative.Inspect())
+	}
+	return buf.String()
+}
+
+func (is *IfStatement) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("if ")
+	buf.WriteString(is.Condition.String())
+	buf.WriteString(" ")
+	buf.WriteString(is.Consequence.String())
+	if is.Alternative != nil {
+		buf.WriteString(" else ")
+		buf.WriteString(is.Alternative.String())
+	}
+	return buf.String()
+}
+
+func (is *IfStatement) statementNode() {}
