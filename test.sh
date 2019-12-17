@@ -96,13 +96,66 @@ func main() {
 }
 "
 
+try 0 "
+func main() {
+  if 1 {
+
+  }
+  return 0
+}
+"
+
+# should be an error
+#try 0 "
+#func main() {
+#  if 1 {
+#    return 0
+#  }
+#
+#}
+#"
+
+try 1 "
+func main() {
+  if 1 {
+    return 1
+  } else {
+
+  }
+
+  return 2
+}
+"
+
+try 0 "
+func main() {
+  if 1 {
+
+  } else {
+    return 1
+  }
+
+  return 0
+}
+"
+
+try 1 "
+func main(n) {
+  if n == 1 {
+    return n
+  } else {
+
+  }
+  return n
+}
+"
+
 try 55 "
 func fib(n) {
   if n <= 1 {
     return n
-  } else {
-    return fib(n - 1) + fib(n - 2)
   }
+  return fib(n - 1) + fib(n - 2)
 }
 
 func main() {
