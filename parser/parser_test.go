@@ -33,13 +33,15 @@ func TestParse(t *testing.T) {
 		{"return 0", "return Int(0)"},
 		{"return hoge", "return Ident(hoge)"},
 
-		{"func f(a) {1}", "func Ident(f)(Ident(a)) {Int(1)}"},
+		{"func f(a) {return 1}", "func Ident(f)(Ident(a)) {return Int(1)}"},
 		{"func hoge(fuga) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
 
 		{"func num() {return 2} func main() {return num()}", "func Ident(num)() {return Int(2)}func Ident(main)() {return Call(Ident(num)())}"},
 		{"func add(n) {return n + 2} func main() {return num(1)}", "func Ident(add)(Ident(n)) {return Infix(Ident(n) + Int(2))}func Ident(main)() {return Call(Ident(num)(Int(1)))}"},
 		{"func add(a, b) {return a + b} func main() {return num(1, 2)}", "func Ident(add)(Ident(a),Ident(b)) {return Infix(Ident(a) + Ident(b))}func Ident(main)() {return Call(Ident(num)(Int(1),Int(2)))}"},
 		{"if 1 { 1 } else { 0 }", "if Int(1) {Int(1)} else {Int(0)}"},
+
+		{"while 1 { 1 }", "while Int(1) {Int(1)}"},
 	}
 
 	for i, test := range tests {

@@ -159,3 +159,29 @@ func (is *IfStatement) String() string {
 }
 
 func (is *IfStatement) statementNode() {}
+
+type WhileStatement struct {
+	Token     token.Token
+	Condition Expression
+	Body      *BlockStatement
+}
+
+func (ws *WhileStatement) Inspect() string {
+	var buf bytes.Buffer
+	buf.WriteString("while ")
+	buf.WriteString(ws.Condition.Inspect())
+	buf.WriteString(" ")
+	buf.WriteString(ws.Body.Inspect())
+	return buf.String()
+}
+
+func (ws *WhileStatement) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("while ")
+	buf.WriteString(ws.Condition.String())
+	buf.WriteString(" ")
+	buf.WriteString(ws.Body.String())
+	return buf.String()
+}
+
+func (ws *WhileStatement) statementNode() {}

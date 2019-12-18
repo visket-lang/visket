@@ -38,7 +38,17 @@ func (c *CodeGen) gen(format string, a ...interface{}) {
 		log.Fatal(err)
 	}
 
-	c.isTerminated = strings.Contains(code, "ret") || strings.Contains(code, "br")
+	c.isTerminated = c.isTerminatorInst(code)
+}
+
+func (c *CodeGen) isTerminatorInst(code string) bool {
+	rawCode := strings.TrimPrefix(code, "  ")
+	inst := strings.Split(rawCode, " ")[0]
+	switch inst {
+	case "ret", "br":
+		return true
+	}
+	return false
 }
 
 func (c *CodeGen) comment(format string, a ...interface{}) {

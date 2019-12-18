@@ -34,6 +34,7 @@ const (
 	FUNCTION = "func"
 	IF       = "if"
 	ELSE     = "else"
+	WHILE    = "while"
 )
 
 var keywords = map[string]TokenType{
@@ -42,6 +43,7 @@ var keywords = map[string]TokenType{
 	"func":   FUNCTION,
 	"if":     IF,
 	"else":   ELSE,
+	"while":  WHILE,
 }
 
 type Token struct {

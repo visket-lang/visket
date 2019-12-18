@@ -68,9 +68,7 @@ func (p *Parser) expectPeek(tokenType token.TokenType) bool {
 		return true
 	}
 
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead", tokenType, p.peekToken.Type)
-	p.Errors = append(p.Errors, msg)
-
+	p.error(fmt.Sprintf("expected next token to be %s, got %s instead", tokenType, p.peekToken.Type))
 	return false
 }
 
@@ -88,6 +86,10 @@ func (p *Parser) curPrecedence() int {
 	}
 
 	return LOWEST
+}
+
+func (p *Parser) error(msg string) {
+	p.Errors = append(p.Errors, msg)
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
