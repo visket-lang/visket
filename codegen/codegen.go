@@ -7,18 +7,20 @@ import (
 
 type CodeGen struct {
 	program      *ast.Program
+	output       io.Writer
 	index        int
 	labelIndex   int
 	isDebug      bool
 	isTerminated bool
-	output       io.Writer
+	variables    map[string]*Variable
 }
 
 func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 	c := &CodeGen{
-		program: program,
-		isDebug: isDebug,
-		output:  w,
+		program:   program,
+		isDebug:   isDebug,
+		output:    w,
+		variables: make(map[string]*Variable),
 	}
 
 	c.resetIndex()
