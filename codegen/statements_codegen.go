@@ -56,53 +56,36 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 }
 
 func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
-	if stmt.Alternative != nil {
-		c.genIfStatementWithElse(stmt)
-		return
-	}
-
 	c.comment("  ; If\n")
-	condition := c.genExpression(stmt.Condition)
-	lThen := c.nextLabel("if.then")
-	lMerge := c.nextLabel("if.merge")
-	conditionI1 := c.genTrunc("i32", "i1", condition)
-	c.genBrWithCond(conditionI1, lThen, lMerge)
 
-	c.genLabel(lThen)
-	c.genBlockStatement(stmt.Consequence)
-	terminated := c.isTerminated
-	if !terminated {
-		c.genBr(lMerge)
-	}
+	hasAlternative := stmt.Alternative != nil
 
-	c.genLabel(lMerge)
-}
-
-func (c *CodeGen) genIfStatementWithElse(stmt *ast.IfStatement) {
-	c.comment("  ; If\n")
 	condition := c.genExpression(stmt.Condition)
 	lThen := c.nextLabel("if.then")
 	lElse := c.nextLabel("if.else")
 	lMerge := c.nextLabel("if.merge")
 	conditionI1 := c.genTrunc("i32", "i1", condition)
-	c.genBrWithCond(conditionI1, lThen, lElse)
+	if hasAlternative {
+		c.genBrWithCond(conditionI1, lThen, lElse)
+	} else {
+		c.genBrWithCond(conditionI1, lThen, lMerge)
+	}
 
 	c.genLabel(lThen)
 	c.genBlockStatement(stmt.Consequence)
-	terminated := c.isTerminated
 	if !c.isTerminated {
 		c.genBr(lMerge)
 	}
 
-	c.genLabel(lElse)
-	c.genBlockStatement(stmt.Alternative)
-	terminated = terminated && c.isTerminated
-	if !c.isTerminated {
-		c.genBr(lMerge)
+	if hasAlternative {
+		c.genLabel(lElse)
+		c.genBlockStatement(stmt.Alternative)
+		if !c.isTerminated {
+			c.genBr(lMerge)
+		}
 	}
 
-	if !terminated {
-		c.genLabel(lMerge)
+	c.genLabel(lMerge)
 	}
 }
 
