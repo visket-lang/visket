@@ -110,6 +110,22 @@ func (vs *VarStatement) String() string {
 
 func (vs *VarStatement) statementNode() {}
 
+type ReassignStatement struct {
+	Token token.Token
+	Ident *Identifier
+	Value Expression
+}
+
+func (rs *ReassignStatement) Inspect() string {
+	return fmt.Sprintf("%s = %s", rs.Ident.Inspect(), rs.Value.Inspect())
+}
+
+func (rs *ReassignStatement) String() string {
+	return fmt.Sprintf("%s = %s", rs.Ident.String(), rs.Value.String())
+}
+
+func (rs *ReassignStatement) statementNode() {}
+
 type ReturnStatement struct {
 	Token token.Token
 	Value Expression
