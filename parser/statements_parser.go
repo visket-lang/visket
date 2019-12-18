@@ -69,6 +69,20 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 
 	stmt.Body = p.parseBlockStatement()
 
+	// 以下コード生成を簡単にするため
+
+	if len(stmt.Body.Statements) == 0 {
+		return stmt
+	}
+
+	// 関数の末尾は return を強制させる
+	lastBodyStatement := stmt.Body.Statements[len(stmt.Body.Statements) - 1]
+	_, ok := lastBodyStatement.(*ast.ReturnStatement)
+	if !ok {
+		p.error("missing return at end of function")
+		return nil
+	}
+
 	return stmt
 }
 
