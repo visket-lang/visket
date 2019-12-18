@@ -33,7 +33,7 @@ func TestParse(t *testing.T) {
 		{"return 0", "return Int(0)"},
 		{"return hoge", "return Ident(hoge)"},
 
-		{"func f(a) {1}", "func Ident(f)(Ident(a)) {Int(1)}"},
+		{"func f(a) {return 1}", "func Ident(f)(Ident(a)) {return Int(1)}"},
 		{"func hoge(fuga) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
 
 		{"func num() {return 2} func main() {return num()}", "func Ident(num)() {return Int(2)}func Ident(main)() {return Call(Ident(num)())}"},
