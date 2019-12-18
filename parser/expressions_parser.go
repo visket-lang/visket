@@ -30,8 +30,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		return p.parseIdentifier()
 	}
 
-	msg := fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type)
-	p.Errors = append(p.Errors, msg)
+	p.error(fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type))
 	return nil
 }
 
@@ -53,8 +52,7 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 
 	n, err := strconv.Atoi(p.curToken.Literal)
 	if err != nil {
-		msg := fmt.Sprintf("Could not parse %s as integer", p.curToken.Literal)
-		p.Errors = append(p.Errors, msg)
+		p.error(fmt.Sprintf("Could not parse %s as integer", p.curToken.Literal))
 		return nil
 	}
 
