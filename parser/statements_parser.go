@@ -76,7 +76,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	}
 
 	// 関数の末尾は return を強制させる
-	lastBodyStatement := stmt.Body.Statements[len(stmt.Body.Statements) - 1]
+	lastBodyStatement := stmt.Body.Statements[len(stmt.Body.Statements)-1]
 	_, ok := lastBodyStatement.(*ast.ReturnStatement)
 	if !ok {
 		p.error("missing return at end of function")
