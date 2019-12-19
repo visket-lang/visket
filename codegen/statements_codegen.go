@@ -10,6 +10,8 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	switch stmt := stmt.(type) {
 	case *ast.VarStatement:
 		c.genVarStatement(stmt)
+	case *ast.ReassignStatement:
+		c.genReassignStatement(stmt)
 	case *ast.ReturnStatement:
 		c.genReturnStatement(stmt)
 	case *ast.FunctionStatement:
@@ -26,13 +28,34 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	}
 }
 
-func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) Value {
+func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	c.comment("  ; Var\n")
-	c.genNamedAlloca(stmt.Ident)
+
+	_, ok := c.findVariable(stmt.Ident)
+	if ok {
+		fmt.Printf("already declared variable: %s\n", stmt.Ident.String())
+		os.Exit(1)
+	}
+
+	v := c.newVariable(stmt.Ident)
+	v.Next()
+
+	c.genNamedAlloca(v)
 	resultPtr := c.genExpression(stmt.Value)
 	// TODO Pointer への変換がよくわからない
-	c.genNamedStore(stmt.Ident, Pointer(resultPtr))
-	return c.genNamedLoad(stmt.Ident)
+	c.genNamedStore(v, Pointer(resultPtr))
+}
+
+func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
+	c.comment("  ; Reassign\n")
+
+	v, ok := c.findVariable(stmt.Ident)
+	if !ok {
+		fmt.Printf("unresolved variable: %s\n", stmt.Ident.String())
+		os.Exit(1)
+	}
+	resultPtr := c.genExpression(stmt.Value)
+	c.genNamedStore(v, Pointer(resultPtr))
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
@@ -49,9 +72,10 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.genLabel(c.nextLabel("entry"))
 
 	for _, param := range stmt.Parameters {
+		v := c.newVariable(param)
 		c.nextPointer()
-		c.genNamedAlloca(param)
-		c.genNamedStore(param, Pointer(c.index))
+		c.genNamedAlloca(v)
+		c.genNamedStore(v, Pointer(c.index))
 	}
 	c.genBlockStatement(stmt.Body)
 	c.genEndFunction()
@@ -96,7 +120,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	lExit := c.nextLabel("while.exit")
 
 	cond := c.genExpression(stmt.Condition)
-	result := c.genIcmp(NEQ, cond, 0)
+	result := c.genIcmpWithNum(NEQ, cond, 0)
 	c.genBrWithCond(result, lLoop, lExit)
 
 	c.genLabel(lLoop)
@@ -104,7 +128,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	c.genBlockStatement(stmt.Body)
 
 	cond = c.genExpression(stmt.Condition)
-	result = c.genIcmp(NEQ, cond, 0)
+	result = c.genIcmpWithNum(NEQ, cond, 0)
 	c.genBrWithCond(result, lLoop, lExit)
 
 	c.genLabel(lExit)

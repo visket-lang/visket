@@ -11,6 +11,26 @@ type Pointer int
 type Value int
 type Label string
 
+type Variable struct {
+	Ident *ast.Identifier
+	Num   int
+}
+
+func (v *Variable) String() string {
+	return fmt.Sprintf("%s.%d", v.Ident, v.Num)
+}
+
+func (v *Variable) Next() {
+	v.Num++
+}
+
+func (v *Variable) PeekNext() *Variable {
+	return &Variable{
+		Ident: v.Ident,
+		Num:   v.Num + 1,
+	}
+}
+
 func (c *CodeGen) resetIndex() {
 	c.index = -1
 	c.labelIndex = -1
@@ -24,6 +44,21 @@ func (c *CodeGen) nextPointer() Pointer {
 func (c *CodeGen) nextValue() Value {
 	c.index++
 	return Value(c.index)
+}
+
+func (c *CodeGen) newVariable(ident *ast.Identifier) *Variable {
+	v := &Variable{
+		Ident: ident,
+		Num:   -1,
+	}
+
+	c.variables[ident.String()] = v
+	return v
+}
+
+func (c *CodeGen) findVariable(ident *ast.Identifier) (*Variable, bool) {
+	v, ok := c.variables[ident.String()]
+	return v, ok
 }
 
 func (c *CodeGen) nextLabel(name string) Label {
@@ -66,16 +101,16 @@ func (c *CodeGen) genAlloca() Pointer {
 	return result
 }
 
-func (c *CodeGen) genNamedAlloca(ident *ast.Identifier) {
-	c.gen("  %%%s = alloca i32, align 4\n", ident.Token.Literal)
+func (c *CodeGen) genNamedAlloca(v *Variable) {
+	c.gen("  %%%s = alloca i32, align 4\n", v.String())
 }
 
 func (c *CodeGen) genStore(value Value, ptrToStore Pointer) {
 	c.gen("  store i32 %%%d, i32* %%%d\n", value, ptrToStore)
 }
 
-func (c *CodeGen) genNamedStore(ident *ast.Identifier, ptrToStore Pointer) {
-	c.gen("  store i32 %%%d, i32* %%%s\n", ptrToStore, ident.Token.Literal)
+func (c *CodeGen) genNamedStore(v *Variable, ptrToStore Pointer) {
+	c.gen("  store i32 %%%d, i32* %%%s\n", ptrToStore, v.String())
 }
 
 func (c *CodeGen) genStoreImmediate(value int, ptrToStore Pointer) {
@@ -88,9 +123,9 @@ func (c *CodeGen) genLoad(ptrToLoad Pointer) Value {
 	return result
 }
 
-func (c *CodeGen) genNamedLoad(ident *ast.Identifier) Value {
+func (c *CodeGen) genNamedLoad(v *Variable) Value {
 	result := c.nextValue()
-	c.gen("  %%%d = load i32, i32* %%%s, align 4\n", result, ident.Token.Literal)
+	c.gen("  %%%d = load i32, i32* %%%s, align 4\n", result, v.String())
 	return result
 }
 
@@ -132,6 +167,12 @@ const (
 func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
 	result := c.nextValue()
 	c.gen("  %%%d = icmp %s i32 %%%d, %%%d\n", result, cond, op1, op2)
+	return result
+}
+
+func (c *CodeGen) genIcmpWithNum(cond IcmpCond, op1 Value, op2 int) Value {
+	result := c.nextValue()
+	c.gen("  %%%d = icmp %s i32 %%%d, %d\n", result, cond, op1, op2)
 	return result
 }
 

@@ -6,6 +6,10 @@ import (
 )
 
 func (p *Parser) parseStatement() ast.Statement {
+	if p.peekToken.Type == token.ASSIGN {
+		return p.parseReassignStatement()
+	}
+
 	switch p.curToken.Type {
 	case token.VAR:
 		return p.parseVarStatement()
@@ -28,6 +32,24 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	stmt := &ast.VarStatement{Token: p.curToken}
 
 	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	stmt.Ident = p.parseIdentifier()
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
+
+	return stmt
+}
+
+func (p *Parser) parseReassignStatement() *ast.ReassignStatement {
+	stmt := &ast.ReassignStatement{Token: p.curToken}
+
+	if !p.curTokenIs(token.IDENT) {
 		return nil
 	}
 	stmt.Ident = p.parseIdentifier()

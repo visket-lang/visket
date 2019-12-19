@@ -19,7 +19,12 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genLoad(result)
 	case *ast.Identifier:
 		c.comment("  ; Ident\n")
-		return c.genNamedLoad(expr)
+		v, ok := c.findVariable(expr)
+		if !ok {
+			fmt.Printf("unresolved variable: %s\n", expr.String())
+			os.Exit(1)
+		}
+		return c.genNamedLoad(v)
 	}
 
 	fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
