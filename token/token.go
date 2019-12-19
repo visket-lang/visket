@@ -22,7 +22,8 @@ const (
 	GT  = ">"
 	GTE = ">="
 
-	COMMA = ","
+	COMMA     = ","
+	SEMICOLON = ";"
 
 	LPAREN = "("
 	RPAREN = ")"
@@ -35,6 +36,7 @@ const (
 	IF       = "if"
 	ELSE     = "else"
 	WHILE    = "while"
+	FOR      = "for"
 )
 
 var keywords = map[string]TokenType{
@@ -44,6 +46,7 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"while":  WHILE,
+	"for":    FOR,
 }
 
 type Token struct {
