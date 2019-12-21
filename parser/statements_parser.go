@@ -43,6 +43,10 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
 	return stmt
 }
 
@@ -61,6 +65,10 @@ func (p *Parser) parseReassignStatement() *ast.ReassignStatement {
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
 	return stmt
 }
 
@@ -69,6 +77,10 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
 
 	return stmt
 }
@@ -177,6 +189,10 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 
 	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
 
 	return stmt
 }
