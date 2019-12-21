@@ -22,6 +22,8 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 		c.genIfStatement(stmt)
 	case *ast.WhileStatement:
 		c.genWhileStatement(stmt)
+	case *ast.ForStatement:
+		c.genForStatement(stmt)
 	default:
 		fmt.Printf("unexpexted statement: %s\n", stmt.Inspect())
 		os.Exit(1)
@@ -126,6 +128,30 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	c.genLabel(lLoop)
 
 	c.genBlockStatement(stmt.Body)
+
+	cond = c.genExpression(stmt.Condition)
+	result = c.genIcmpWithNum(NEQ, cond, 0)
+	c.genBrWithCond(result, lLoop, lExit)
+
+	c.genLabel(lExit)
+}
+
+func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
+	c.comment("  ; While\n")
+	lLoop := c.nextLabel("while.loop")
+	lExit := c.nextLabel("while.exit")
+
+	c.genStatement(stmt.Init)
+
+	cond := c.genExpression(stmt.Condition)
+	result := c.genIcmpWithNum(NEQ, cond, 0)
+	c.genBrWithCond(result, lLoop, lExit)
+
+	c.genLabel(lLoop)
+
+	c.genBlockStatement(stmt.Body)
+
+	c.genStatement(stmt.Post)
 
 	cond = c.genExpression(stmt.Condition)
 	result = c.genIcmpWithNum(NEQ, cond, 0)
