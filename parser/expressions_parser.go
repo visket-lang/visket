@@ -10,7 +10,7 @@ import (
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	left := p.parsePrefixExpression()
 
-	for !p.peekTokenIs(token.EOF) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
 		p.nextToken()
 		left = p.parseInfixExpression(left)
 	}

@@ -21,6 +21,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseIfStatement()
 	case token.WHILE:
 		return p.parseWhileStatement()
+	case token.FOR:
+		return p.parseForStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -43,6 +45,10 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
 	return stmt
 }
 
@@ -61,6 +67,10 @@ func (p *Parser) parseReassignStatement() *ast.ReassignStatement {
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
 	return stmt
 }
 
@@ -69,6 +79,10 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
 
 	return stmt
 }
@@ -173,10 +187,42 @@ func (p *Parser) parseWhileStatement() *ast.WhileStatement {
 	return stmt
 }
 
+func (p *Parser) parseForStatement() *ast.ForStatement {
+	stmt := &ast.ForStatement{Token: p.curToken}
+	p.nextToken()
+
+	if !p.curTokenIs(token.SEMICOLON) {
+		stmt.Init = p.parseStatement()
+	}
+	p.nextToken()
+
+	if !p.curTokenIs(token.SEMICOLON) {
+		stmt.Condition = p.parseExpression(LOWEST)
+	}
+	p.nextToken()
+	p.nextToken()
+
+	if !p.curTokenIs(token.SEMICOLON) {
+		stmt.Post = p.parseStatement()
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
+
+	return stmt
+}
+
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 
 	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
 
 	return stmt
 }

@@ -24,6 +24,7 @@ func f(arg) {}
 if a { return 1 }
 else { return 0 }
 while 1 { 1 }
+for var i = 0; i < 10; i=i+1 { 1 }
 `
 
 	tests := []struct {
@@ -109,6 +110,25 @@ while 1 { 1 }
 		{token.RBRACE, "}"},
 
 		{token.WHILE, "while"},
+		{token.INT, "1"},
+		{token.LBRACE, "{"},
+		{token.INT, "1"},
+		{token.RBRACE, "}"},
+
+		{token.FOR, "for"},
+		{token.VAR, "var"},
+		{token.IDENT, "i"},
+		{token.ASSIGN, "="},
+		{token.INT, "0"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "i"},
+		{token.LT, "<"},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "i"},
+		{token.ASSIGN, "="},
+		{token.IDENT, "i"},
+		{token.PLUS, "+"},
 		{token.INT, "1"},
 		{token.LBRACE, "{"},
 		{token.INT, "1"},
