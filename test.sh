@@ -165,3 +165,24 @@ func main() {
   return fib(10)
 }
 "
+
+try 45 "
+func main() {
+  var sum = 0
+  for var i = 0; i < 10; i = i + 1 {
+    sum = sum + i
+  }
+  return sum
+}
+"
+
+
+try 45 "
+func main() {
+  var sum = 0
+  for var i = 0; i <= 9; i = i + 1 {
+    sum = sum + i
+  }
+  return sum
+}
+"

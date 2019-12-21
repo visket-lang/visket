@@ -42,6 +42,10 @@ func TestParse(t *testing.T) {
 		{"if 1 { 1 } else { 0 }", "if Int(1) {Int(1)} else {Int(0)}"},
 
 		{"while 1 { 1 }", "while Int(1) {Int(1)}"},
+
+		{"a = a + 1", "Ident(a) = Infix(Ident(a) + Int(1))"},
+
+		{"for var i = 0; i < 10; i = i + 1 {}", "for var Ident(i) = Int(0); Infix(Ident(i) < Int(10)); Ident(i) = Infix(Ident(i) + Int(1)) {}"},
 	}
 
 	for i, test := range tests {
