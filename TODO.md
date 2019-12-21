@@ -5,7 +5,7 @@
 - [x] 等値比較
 - [x] 変数
 - [ ] 定数
-- [ ] while
-- [ ] for
-- [ ] if
+- [x] while
+- [x] for
+- [x] if
 - [x] 関数
