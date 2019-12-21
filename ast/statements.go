@@ -201,3 +201,51 @@ func (ws *WhileStatement) String() string {
 }
 
 func (ws *WhileStatement) statementNode() {}
+
+type ForStatement struct {
+	Token     token.Token
+	Init      Statement
+	Condition Expression
+	Post      Statement
+	Body      *BlockStatement
+}
+
+func (fs *ForStatement) Inspect() string {
+	var buf bytes.Buffer
+	buf.WriteString("for ")
+	if fs.Init != nil {
+		buf.WriteString(fs.Init.Inspect())
+	}
+	buf.WriteString("; ")
+	if fs.Condition != nil {
+		buf.WriteString(fs.Condition.Inspect())
+	}
+	buf.WriteString("; ")
+	if fs.Post != nil {
+		buf.WriteString(fs.Post.Inspect())
+	}
+	buf.WriteString(" ")
+	buf.WriteString(fs.Body.Inspect())
+	return buf.String()
+}
+
+func (fs *ForStatement) String() string {
+	var buf bytes.Buffer
+	buf.WriteString("for ")
+	if fs.Init != nil {
+		buf.WriteString(fs.Init.String())
+	}
+	buf.WriteString("; ")
+	if fs.Condition != nil {
+		buf.WriteString(fs.Condition.String())
+	}
+	buf.WriteString("; ")
+	if fs.Post != nil {
+		buf.WriteString(fs.Post.String())
+	}
+	buf.WriteString(" ")
+	buf.WriteString(fs.Body.String())
+	return buf.String()
+}
+
+func (fs *ForStatement) statementNode() {}
