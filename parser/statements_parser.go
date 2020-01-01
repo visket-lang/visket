@@ -194,20 +194,17 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	if !p.curTokenIs(token.SEMICOLON) {
 		stmt.Init = p.parseStatement()
 	}
-	p.nextToken()
+	p.expect(token.SEMICOLON)
 
 	if !p.curTokenIs(token.SEMICOLON) {
 		stmt.Condition = p.parseExpression(LOWEST)
+		p.nextToken()
 	}
-	p.nextToken()
-	p.nextToken()
+	p.expect(token.SEMICOLON)
 
-	if !p.curTokenIs(token.SEMICOLON) {
+	if !p.curTokenIs(token.LBRACE) {
 		stmt.Post = p.parseStatement()
-	}
-
-	if !p.expectPeek(token.LBRACE) {
-		return nil
+		p.nextToken()
 	}
 
 	stmt.Body = p.parseBlockStatement()

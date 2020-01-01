@@ -62,6 +62,16 @@ func (p *Parser) peekTokenIs(tokenType token.TokenType) bool {
 	return p.peekToken.Type == tokenType
 }
 
+func (p *Parser) expect(tokenType token.TokenType) bool {
+	if p.curTokenIs(tokenType) {
+		p.nextToken()
+		return true
+	}
+
+	p.error(fmt.Sprintf("expected current token is %s, got %s instead", tokenType, p.peekToken.Type))
+	return false
+}
+
 func (p *Parser) expectPeek(tokenType token.TokenType) bool {
 	if p.peekTokenIs(tokenType) {
 		p.nextToken()

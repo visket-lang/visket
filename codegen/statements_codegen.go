@@ -137,25 +137,37 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 }
 
 func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
-	c.comment("  ; While\n")
-	lLoop := c.nextLabel("while.loop")
-	lExit := c.nextLabel("while.exit")
+	c.comment("  ; For\n")
+	lLoop := c.nextLabel("for.loop")
+	lExit := c.nextLabel("for.exit")
 
-	c.genStatement(stmt.Init)
+	if stmt.Init != nil {
+		c.genStatement(stmt.Init)
+	}
 
-	cond := c.genExpression(stmt.Condition)
-	result := c.genIcmpWithNum(NEQ, cond, 0)
-	c.genBrWithCond(result, lLoop, lExit)
+	if stmt.Condition != nil {
+		cond := c.genExpression(stmt.Condition)
+		result := c.genIcmpWithNum(NEQ, cond, 0)
+		c.genBrWithCond(result, lLoop, lExit)
+	} else {
+		c.genBr(lLoop)
+	}
 
 	c.genLabel(lLoop)
 
 	c.genBlockStatement(stmt.Body)
 
-	c.genStatement(stmt.Post)
+	if stmt.Post != nil {
+		c.genStatement(stmt.Post)
+	}
 
-	cond = c.genExpression(stmt.Condition)
-	result = c.genIcmpWithNum(NEQ, cond, 0)
-	c.genBrWithCond(result, lLoop, lExit)
+	if stmt.Condition != nil {
+		cond := c.genExpression(stmt.Condition)
+		result := c.genIcmpWithNum(NEQ, cond, 0)
+		c.genBrWithCond(result, lLoop, lExit)
+	} else {
+		c.genBr(lLoop)
+	}
 
 	c.genLabel(lExit)
 }
