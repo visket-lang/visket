@@ -9,7 +9,7 @@ import (
 
 func (c *CodeGen) gen(format string, a ...interface{}) {
 	code := fmt.Sprintf(format, a...)
-	_, err := fmt.Fprintf(c.output, format, a...)
+	_, err := fmt.Fprint(c.output, code)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,59 +38,59 @@ func (c *CodeGen) comment(format string, a ...interface{}) {
 
 func (c *CodeGen) genAlloca() Pointer {
 	result := c.nextPointer()
-	c.gen("  %%%d = alloca i32, align 4\n", result)
+	c.gen("  %s = alloca i32, align 4\n", result.Operand())
 	return result
 }
 
 func (c *CodeGen) genNamedAlloca(v *Variable) {
-	c.gen("  %%%s = alloca i32, align 4\n", v.String())
+	c.gen("  %s = alloca i32, align 4\n", v.Operand())
 }
 
-func (c *CodeGen) genStore(value Value, ptrToStore Pointer) {
-	c.gen("  store i32 %%%d, i32* %%%d\n", value, ptrToStore)
+func (c *CodeGen) genStore(object Object, ptrToStore Pointer) {
+	c.gen("  store i32 %s, i32* %s\n", object.Operand(), ptrToStore.Operand())
 }
 
 func (c *CodeGen) genNamedStore(v *Variable, ptrToStore Pointer) {
-	c.gen("  store i32 %%%d, i32* %%%s\n", ptrToStore, v.String())
+	c.gen("  store i32 %s, i32* %s\n", ptrToStore.Operand(), v.Operand())
 }
 
 func (c *CodeGen) genStoreImmediate(value int, ptrToStore Pointer) {
-	c.gen("  store i32 %d, i32* %%%d\n", value, ptrToStore)
+	c.gen("  store i32 %d, i32* %s\n", value, ptrToStore.Operand())
 }
 
-func (c *CodeGen) genLoad(ptrToLoad Pointer) Value {
+func (c *CodeGen) genLoad(ptrToLoad Pointer) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = load i32, i32* %%%d, align 4\n", result, ptrToLoad)
+	c.gen("  %s = load i32, i32* %s, align 4\n", result.Operand(), ptrToLoad.Operand())
 	return result
 }
 
-func (c *CodeGen) genNamedLoad(v *Variable) Value {
+func (c *CodeGen) genNamedLoad(v *Variable) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = load i32, i32* %%%s, align 4\n", result, v.String())
+	c.gen("  %s = load i32, i32* %s, align 4\n", result.Operand(), v.Operand())
 	return result
 }
 
-func (c *CodeGen) genAdd(op1 Value, op2 Value) Value {
+func (c *CodeGen) genAdd(op1 Object, op2 Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = add i32 %%%d, %%%d\n", result, op1, op2)
+	c.gen("  %s = add i32 %s, %s\n", result.Operand(), op1.Operand(), op2.Operand())
 	return result
 }
 
-func (c *CodeGen) genSub(op1 Value, op2 Value) Value {
+func (c *CodeGen) genSub(op1 Object, op2 Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = sub i32 %%%d, %%%d\n", result, op1, op2)
+	c.gen("  %s = sub i32 %s, %s\n", result.Operand(), op1.Operand(), op2.Operand())
 	return result
 }
 
-func (c *CodeGen) genMul(op1 Value, op2 Value) Value {
+func (c *CodeGen) genMul(op1 Object, op2 Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = mul i32 %%%d, %%%d\n", result, op1, op2)
+	c.gen("  %s = mul i32 %s, %s\n", result.Operand(), op1.Operand(), op2.Operand())
 	return result
 }
 
-func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
+func (c *CodeGen) genIDiv(op1 Object, op2 Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = idiv i32 %%%d, %%%d\n", result, op1, op2)
+	c.gen("  %s = idiv i32 %s, %s\n", result.Operand(), op1.Operand(), op2.Operand())
 	return result
 }
 
@@ -105,26 +105,26 @@ const (
 	GTE          = "sge"
 )
 
-func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
+func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = icmp %s i32 %%%d, %%%d\n", result, cond, op1, op2)
+	c.gen("  %s = icmp %s i32 %s, %s\n", result.Operand(), cond, op1.Operand(), op2.Operand())
 	return result
 }
 
-func (c *CodeGen) genIcmpWithNum(cond IcmpCond, op1 Value, op2 int) Value {
+func (c *CodeGen) genIcmpWithNum(cond IcmpCond, op1 Object, op2 int) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = icmp %s i32 %%%d, %d\n", result, cond, op1, op2)
+	c.gen("  %s = icmp %s i32 %s, %d\n", result.Operand(), cond, op1.Operand(), op2)
 	return result
 }
 
-func (c *CodeGen) genZext(typeFrom, typeTo string, value Value) Value {
+func (c *CodeGen) genZext(typeFrom, typeTo string, object Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = zext %s %%%d to %s\n", result, typeFrom, value, typeTo)
+	c.gen("  %s = zext %s %s to %s\n", result.Operand(), typeFrom, object.Operand(), typeTo)
 	return result
 }
 
-func (c *CodeGen) genRet(value Value) {
-	c.gen("  ret i32 %%%d\n", value)
+func (c *CodeGen) genRet(object Object) {
+	c.gen("  ret i32 %s\n", object.Operand())
 }
 
 func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
@@ -148,24 +148,24 @@ func (c *CodeGen) genEndFunction() {
 	c.gen("}\n\n")
 }
 
-func (c *CodeGen) genCall(function *ast.Identifier, params []Value) {
+func (c *CodeGen) genCall(function *ast.Identifier, params []Object) {
 	var p []string
 	for _, param := range params {
-		p = append(p, fmt.Sprintf("i32 %%%d", param))
+		p = append(p, fmt.Sprintf("i32 %s", param.Operand()))
 	}
 
 	c.gen("  call i32 @%s(%s)\n", function.Token.Literal, strings.Join(p, ","))
 }
 
-func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Value {
+func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Object) Object {
 	result := c.nextValue()
 
 	var p []string
 	for _, param := range params {
-		p = append(p, fmt.Sprintf("i32 %%%d", param))
+		p = append(p, fmt.Sprintf("i32 %s", param.Operand()))
 	}
 
-	c.gen("  %%%d = call i32 @%s(%s)\n", result, function.Token.Literal, strings.Join(p, ","))
+	c.gen("  %s = call i32 @%s(%s)\n", result.Operand(), function.Token.Literal, strings.Join(p, ","))
 	return result
 }
 
@@ -177,12 +177,12 @@ func (c *CodeGen) genBr(label Label) {
 	c.gen("  br label %%%s\n", label)
 }
 
-func (c *CodeGen) genBrWithCond(condition Value, ifTrue Label, itFalse Label) {
-	c.gen("  br i1 %%%d, label %%%s, label %%%s\n", condition, ifTrue, itFalse)
+func (c *CodeGen) genBrWithCond(condition Object, ifTrue Label, itFalse Label) {
+	c.gen("  br i1 %s, label %%%s, label %%%s\n", condition.Operand(), ifTrue, itFalse)
 }
 
-func (c *CodeGen) genTrunc(typeFrom, typeTo string, value Value) Value {
+func (c *CodeGen) genTrunc(typeFrom, typeTo string, object Object) Object {
 	result := c.nextValue()
-	c.gen("  %%%d = trunc %s %%%d to %s\n", result, typeFrom, value, typeTo)
+	c.gen("  %s = trunc %s %s to %s\n", result.Operand(), typeFrom, object.Operand(), typeTo)
 	return result
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func (c *CodeGen) genExpression(expr ast.Expression) Value {
+func (c *CodeGen) genExpression(expr ast.Expression) Object {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return c.genInfix(expr)
@@ -32,7 +32,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	return -1
 }
 
-func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
+func (c *CodeGen) genInfix(ie *ast.InfixExpression) Object {
 	c.comment("  ; Infix\n")
 
 	lhs := c.genExpression(ie.Left)
@@ -79,11 +79,11 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 		return c.genZext("i1", "i32", result)
 	}
 
-	return Value(c.index)
+	return Object(c.index)
 }
 
-func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
-	var params []Value
+func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Object {
+	var params []Object
 
 	for _, param := range expr.Parameters {
 		params = append(params, c.genExpression(param))

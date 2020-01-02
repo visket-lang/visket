@@ -5,17 +5,27 @@ import (
 	"github.com/arata-nvm/Solitude/ast"
 )
 
+type Value interface {
+	Operand() string
+}
+
 type Pointer int
-type Value int
+
+func (p Pointer) Operand() string {
+	return fmt.Sprintf("%%%d", p)
+}
+
+type Object int
+
+func (o Object) Operand() string {
+	return fmt.Sprintf("%%%d", o)
+}
+
 type Label string
 
 type Variable struct {
 	Ident *ast.Identifier
 	Num   int
-}
-
-func (v *Variable) String() string {
-	return fmt.Sprintf("%s.%d", v.Ident, v.Num)
 }
 
 func (v *Variable) Next() {
@@ -29,6 +39,10 @@ func (v *Variable) peekNext() *Variable {
 	}
 }
 
+func (v *Variable) Operand() string {
+	return fmt.Sprintf("%%%s.%d", v.Ident, v.Num)
+}
+
 func (c *CodeGen) resetIndex() {
 	c.index = -1
 	c.labelIndex = -1
@@ -39,9 +53,9 @@ func (c *CodeGen) nextPointer() Pointer {
 	return Pointer(c.index)
 }
 
-func (c *CodeGen) nextValue() Value {
+func (c *CodeGen) nextValue() Object {
 	c.index++
-	return Value(c.index)
+	return Object(c.index)
 }
 
 func (c *CodeGen) newVariable(ident *ast.Identifier) *Variable {
@@ -63,4 +77,3 @@ func (c *CodeGen) nextLabel(name string) Label {
 	c.labelIndex++
 	return Label(fmt.Sprintf("%s.%d", name, c.labelIndex))
 }
-
