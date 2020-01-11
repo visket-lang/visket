@@ -44,8 +44,8 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 
 	c.genNamedAlloca(v)
 	resultPtr := c.genExpression(stmt.Value)
-	// TODO Pointer への変換がよくわからない
-	c.genNamedStore(v, Pointer(resultPtr))
+	// TODO Var への変換がよくわからない
+	c.genNamedStore(v, Var(resultPtr))
 }
 
 func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
@@ -57,7 +57,7 @@ func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
 		os.Exit(1)
 	}
 	resultPtr := c.genExpression(stmt.Value)
-	c.genNamedStore(v, Pointer(resultPtr))
+	c.genNamedStore(v, resultPtr)
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
@@ -76,9 +76,9 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 
 	for _, param := range stmt.Parameters {
 		v := c.context.newVariable(param)
-		c.nextPointer()
+		vv := c.nextVar()
 		c.genNamedAlloca(v)
-		c.genNamedStore(v, Pointer(c.index))
+		c.genNamedStore(v, vv)
 	}
 	c.genBlockStatement(stmt.Body)
 

@@ -9,16 +9,10 @@ type Value interface {
 	Operand() string
 }
 
-type Pointer int
+type Var int
 
-func (p Pointer) Operand() string {
-	return fmt.Sprintf("%%%d", p)
-}
-
-type Object int
-
-func (o Object) Operand() string {
-	return fmt.Sprintf("%%%d", o)
+func (v Var) Operand() string {
+	return fmt.Sprintf("%%%d", v)
 }
 
 type Label string
@@ -80,14 +74,9 @@ func (c *CodeGen) resetIndex() {
 	c.labelIndex = -1
 }
 
-func (c *CodeGen) nextPointer() Pointer {
+func (c *CodeGen) nextVar() Var {
 	c.index++
-	return Pointer(c.index)
-}
-
-func (c *CodeGen) nextValue() Object {
-	c.index++
-	return Object(c.index)
+	return Var(c.index)
 }
 
 func (c *CodeGen) nextLabel(name string) Label {
