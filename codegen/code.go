@@ -38,12 +38,12 @@ func (c *CodeGen) comment(format string, a ...interface{}) {
 }
 
 func (c *CodeGen) genAlloca(t types.Types) Value {
-	result := c.nextVar(types.NewPointer(t))
+	result := c.nextReg(types.NewPointer(t))
 	c.gen("  %s = alloca %s, align 4\n", result.RegName(), t.Name())
 	return result
 }
 
-func (c *CodeGen) genNamedAlloca(v *Variable) {
+func (c *CodeGen) genNamedAlloca(v *Named) {
 	c.gen("  %s = alloca %s, align 4\n", v.RegName(), v.TypeName())
 	v.Type = types.NewPointer(v.Type)
 }
@@ -57,31 +57,31 @@ func (c *CodeGen) genStoreImmediate(value int, ptrToStore Value) {
 }
 
 func (c *CodeGen) genLoad(t types.Types, ptrToLoad Value) Value {
-	result := c.nextVar(t)
+	result := c.nextReg(t)
 	c.gen("  %s = load %s, %s %s, align 4\n", result.RegName(), t, types.NewPointer(t), ptrToLoad.RegName())
 	return result
 }
 
 func (c *CodeGen) genAdd(op1 Value, op2 Value) Value {
-	result := c.nextVar(types.I32)
+	result := c.nextReg(types.I32)
 	c.gen("  %s = add %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genSub(op1 Value, op2 Value) Value {
-	result := c.nextVar(types.I32)
+	result := c.nextReg(types.I32)
 	c.gen("  %s = sub %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genMul(op1 Value, op2 Value) Value {
-	result := c.nextVar(types.I32)
+	result := c.nextReg(types.I32)
 	c.gen("  %s = mul %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
-	result := c.nextVar(types.I32)
+	result := c.nextReg(types.I32)
 	c.gen("  %s = idiv %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
@@ -98,19 +98,19 @@ const (
 )
 
 func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
-	result := c.nextVar(types.I1)
+	result := c.nextReg(types.I1)
 	c.gen("  %s = icmp %s %s, %s\n", result.RegName(), cond, op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genIcmpWithNum(cond IcmpCond, op1 Value, op2 int) Value {
-	result := c.nextVar(types.I1)
+	result := c.nextReg(types.I1)
 	c.gen("  %s = icmp %s %s, %d\n", result.RegName(), cond, op1.Operand(), op2)
 	return result
 }
 
 func (c *CodeGen) genZext(typeTo types.Types, object Value) Value {
-	result := c.nextVar(typeTo)
+	result := c.nextReg(typeTo)
 	c.gen("  %s = zext %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }
@@ -140,7 +140,7 @@ func (c *CodeGen) genEndFunction() {
 	c.gen("}\n\n")
 }
 
-func (c *CodeGen) genCall(function *ast.Identifier, params []Var) {
+func (c *CodeGen) genCall(function *ast.Identifier, params []Register) {
 	var p []string
 	for _, param := range params {
 		p = append(p, param.Operand())
@@ -150,7 +150,7 @@ func (c *CodeGen) genCall(function *ast.Identifier, params []Var) {
 }
 
 func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Value {
-	result := c.nextVar(types.I32)
+	result := c.nextReg(types.I32)
 
 	var p []string
 	for _, param := range params {
@@ -174,7 +174,7 @@ func (c *CodeGen) genBrWithCond(condition Value, ifTrue Label, itFalse Label) {
 }
 
 func (c *CodeGen) genTrunc(typeTo types.Types, object Value) Value {
-	result := c.nextVar(typeTo)
+	result := c.nextReg(typeTo)
 	c.gen("  %s = trunc %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }

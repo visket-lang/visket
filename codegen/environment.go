@@ -12,69 +12,69 @@ type Value interface {
 	Operand() string
 }
 
-type Var struct {
+type Register struct {
 	Type types.Types
 	Op   int
 }
 
-func (v Var) TypeName() types.Types {
+func (v Register) TypeName() types.Types {
 	return v.Type
 }
 
-func (v Var) RegName() string {
+func (v Register) RegName() string {
 	return fmt.Sprintf("%%%d", v.Op)
 }
 
-func (v Var) Operand() string {
+func (v Register) Operand() string {
 	return fmt.Sprintf("%s %%%d", v.Type, v.Op)
 }
 
 type Label string
 
-type Variable struct {
+type Named struct {
 	Type  types.Types
 	Ident *ast.Identifier
 	Num   int
 }
 
-func (v *Variable) Next() {
+func (v *Named) Next() {
 	v.Num++
 }
 
-func (v *Variable) peekNext() *Variable {
-	return &Variable{
+func (v *Named) peekNext() *Named {
+	return &Named{
 		Type:  v.Type,
 		Ident: v.Ident,
 		Num:   v.Num + 1,
 	}
 }
 
-func (v *Variable) TypeName() types.Types {
+func (v *Named) TypeName() types.Types {
 	return v.Type
 }
 
-func (v *Variable) RegName() string {
+func (v *Named) RegName() string {
 	return fmt.Sprintf("%%%s.%d", v.Ident, v.Num)
 }
 
-func (v *Variable) Operand() string {
+func (v *Named) Operand() string {
 	return fmt.Sprintf("%s %%%s.%d", v.Type, v.Ident, v.Num)
 }
 
 type Context struct {
-	variables map[string]*Variable
+	variables map[string]*Named
 	parent    *Context
 }
 
 func newContext(parent *Context) *Context {
 	return &Context{
-		variables: make(map[string]*Variable),
+		variables: make(map[string]*Named),
 		parent:    parent,
 	}
 }
 
-func (c *Context) newVariable(types types.Types, ident *ast.Identifier) *Variable {
-	v := &Variable{
+func (c *Context) newNamed(types types.Types, ident *ast.Identifier) *Named {
+	v := &Named{
 		Type:  types,
 		Ident: ident,
 		Num:   0,
@@ -84,7 +84,7 @@ func (c *Context) newVariable(types types.Types, ident *ast.Identifier) *Variabl
 	return v
 }
 
-func (c *Context) findVariable(ident *ast.Identifier) (*Variable, bool) {
+func (c *Context) findVariable(ident *ast.Identifier) (*Named, bool) {
 	v, ok := c.variables[ident.String()]
 
 	if !ok && c.parent != nil {
@@ -99,9 +99,9 @@ func (c *CodeGen) resetIndex() {
 	c.labelIndex = -1
 }
 
-func (c *CodeGen) nextVar(types types.Types) Var {
+func (c *CodeGen) nextReg(types types.Types) Register {
 	c.index++
-	return Var{types, c.index}
+	return Register{types, c.index}
 }
 
 func (c *CodeGen) nextLabel(name string) Label {

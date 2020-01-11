@@ -32,7 +32,7 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
-	c.comment("  ; Var\n")
+	c.comment("  ; Register\n")
 
 	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
@@ -40,7 +40,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		os.Exit(1)
 	}
 
-	v := c.context.newVariable(types.I32, stmt.Ident)
+	v := c.context.newNamed(types.I32, stmt.Ident)
 	c.genNamedAlloca(v)
 	resultPtr := c.genExpression(stmt.Value)
 	c.genStore(resultPtr, v)
@@ -73,8 +73,8 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.genLabel(c.nextLabel("entry"))
 
 	for _, param := range stmt.Parameters {
-		v := c.context.newVariable(types.I32, param)
-		vv := c.nextVar(types.I32)
+		v := c.context.newNamed(types.I32, param)
+		vv := c.nextReg(types.I32)
 		c.genNamedAlloca(v)
 		c.genStore(vv, v)
 
