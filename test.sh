@@ -54,6 +54,28 @@ try 0 "func main() { return 10 > 10 }"
 try 1 "func main() { return 10 >= 10 }"
 try 0 "func main() { return 9 >= 10 }"
 
+try 10 "
+func main() {
+  var a = 10
+  return a
+}
+"
+
+try 5 "
+func main() {
+  var a = 10
+  return a - 5
+}
+"
+
+try 10 "
+func main() {
+  var a = 5
+  a = a + 5
+  return a
+}
+"
+
 try 2 "func num() { return 2 }
 func main() { return num() }"
 try 4 "func add(n) { return n + 2 }
