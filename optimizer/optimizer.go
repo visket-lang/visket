@@ -19,10 +19,43 @@ func (o *Optimizer) Optimize() {
 	o.Program.Statements = s
 }
 
+func (o *Optimizer) optBlockStatement(stmt *ast.BlockStatement) *ast.BlockStatement {
+	if stmt == nil {
+		return stmt
+	}
+
+	for i := range stmt.Statements {
+		stmt.Statements[i] = o.optStatement(stmt.Statements[i])
+	}
+	return stmt
+}
+
 func (o *Optimizer) optStatement(stmt ast.Statement) ast.Statement {
 	switch stmt := stmt.(type) {
+	case *ast.BlockStatement:
+		return o.optBlockStatement(stmt)
 	case *ast.ExpressionStatement:
 		stmt.Expression = o.optExpression(stmt.Expression)
+	case *ast.VarStatement:
+		stmt.Value = o.optExpression(stmt.Value)
+	case *ast.ReassignStatement:
+		stmt.Value = o.optExpression(stmt.Value)
+	case *ast.ReturnStatement:
+		stmt.Value = o.optExpression(stmt.Value)
+	case *ast.FunctionStatement:
+		stmt.Body = o.optBlockStatement(stmt.Body)
+	case *ast.IfStatement:
+		stmt.Condition = o.optExpression(stmt.Condition)
+		stmt.Consequence = o.optBlockStatement(stmt.Consequence)
+		stmt.Alternative = o.optBlockStatement(stmt.Alternative)
+	case *ast.WhileStatement:
+		stmt.Condition = o.optExpression(stmt.Condition)
+		stmt.Body = o.optBlockStatement(stmt.Body)
+	case *ast.ForStatement:
+		stmt.Init = o.optStatement(stmt.Init)
+		stmt.Condition = o.optExpression(stmt.Condition)
+		stmt.Post = o.optStatement(stmt.Post)
+		stmt.Body = o.optBlockStatement(stmt.Body)
 	}
 
 	return stmt
