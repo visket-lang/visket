@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func (c *CodeGen) genExpression(expr ast.Expression) Var {
+func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return c.genInfix(expr)
@@ -15,17 +15,17 @@ func (c *CodeGen) genExpression(expr ast.Expression) Var {
 		return c.genCallExpression(expr)
 	case *ast.IntegerLiteral:
 		c.comment("  ; Int\n")
-		result := c.genAlloca()
+		result := c.genAlloca(types.I32)
 		c.genStoreImmediate(expr.Value, result)
-		return c.genLoad(result)
+		return c.genLoad(types.I32, result)
 	case *ast.Identifier:
-		c.comment("  ; Ident\n")
+		c.comment("  ; RegName\n")
 		v, ok := c.context.findVariable(expr)
 		if !ok {
 			fmt.Printf("unresolved variable: %s\n", expr.String())
 			os.Exit(1)
 		}
-		return c.genNamedLoad(v)
+		return c.genLoad(types.I32, v)
 	}
 
 	fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
@@ -33,7 +33,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Var {
 	return Var{}
 }
 
-func (c *CodeGen) genInfix(ie *ast.InfixExpression) Var {
+func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	c.comment("  ; Infix\n")
 
 	lhs := c.genExpression(ie.Left)
@@ -83,8 +83,8 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Var {
 	return Var{types.I32, c.index}
 }
 
-func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Var {
-	var params []Var
+func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
+	var params []Value
 
 	for _, param := range expr.Parameters {
 		params = append(params, c.genExpression(param))

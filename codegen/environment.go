@@ -7,7 +7,8 @@ import (
 )
 
 type Value interface {
-	Ident() string
+	TypeName() types.Types
+	RegName() string
 	Operand() string
 }
 
@@ -16,7 +17,11 @@ type Var struct {
 	Op   int
 }
 
-func (v Var) Ident() string {
+func (v Var) TypeName() types.Types {
+	return v.Type
+}
+
+func (v Var) RegName() string {
 	return fmt.Sprintf("%%%d", v.Op)
 }
 
@@ -27,6 +32,7 @@ func (v Var) Operand() string {
 type Label string
 
 type Variable struct {
+	Type  types.Types
 	Ident *ast.Identifier
 	Num   int
 }
@@ -37,13 +43,22 @@ func (v *Variable) Next() {
 
 func (v *Variable) peekNext() *Variable {
 	return &Variable{
+		Type:  v.Type,
 		Ident: v.Ident,
 		Num:   v.Num + 1,
 	}
 }
 
-func (v *Variable) Operand() string {
+func (v *Variable) TypeName() types.Types {
+	return v.Type
+}
+
+func (v *Variable) RegName() string {
 	return fmt.Sprintf("%%%s.%d", v.Ident, v.Num)
+}
+
+func (v *Variable) Operand() string {
+	return fmt.Sprintf("%s %%%s.%d", v.Type, v.Ident, v.Num)
 }
 
 type Context struct {
@@ -58,10 +73,11 @@ func newContext(parent *Context) *Context {
 	}
 }
 
-func (c *Context) newVariable(ident *ast.Identifier) *Variable {
+func (c *Context) newVariable(types types.Types, ident *ast.Identifier) *Variable {
 	v := &Variable{
+		Type:  types,
 		Ident: ident,
-		Num:   -1,
+		Num:   0,
 	}
 
 	c.variables[ident.String()] = v
