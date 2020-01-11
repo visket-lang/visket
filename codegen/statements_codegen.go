@@ -33,13 +33,13 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	c.comment("  ; Var\n")
 
-	_, ok := c.findVariable(stmt.Ident)
+	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
 		fmt.Printf("already declared variable: %s\n", stmt.Ident.String())
 		os.Exit(1)
 	}
 
-	v := c.newVariable(stmt.Ident)
+	v := c.context.newVariable(stmt.Ident)
 	v.Next()
 
 	c.genNamedAlloca(v)
@@ -51,7 +51,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
 	c.comment("  ; Reassign\n")
 
-	v, ok := c.findVariable(stmt.Ident)
+	v, ok := c.context.findVariable(stmt.Ident)
 	if !ok {
 		fmt.Printf("unresolved variable: %s\n", stmt.Ident.String())
 		os.Exit(1)
@@ -74,7 +74,7 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.genLabel(c.nextLabel("entry"))
 
 	for _, param := range stmt.Parameters {
-		v := c.newVariable(param)
+		v := c.context.newVariable(param)
 		c.nextPointer()
 		c.genNamedAlloca(v)
 		c.genNamedStore(v, Pointer(c.index))

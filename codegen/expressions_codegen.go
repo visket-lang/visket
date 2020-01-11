@@ -19,7 +19,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Object {
 		return c.genLoad(result)
 	case *ast.Identifier:
 		c.comment("  ; Ident\n")
-		v, ok := c.findVariable(expr)
+		v, ok := c.context.findVariable(expr)
 		if !ok {
 			fmt.Printf("unresolved variable: %s\n", expr.String())
 			os.Exit(1)

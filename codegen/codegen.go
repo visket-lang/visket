@@ -12,15 +12,15 @@ type CodeGen struct {
 	labelIndex   int
 	isDebug      bool
 	isTerminated bool
-	variables    map[string]*Variable
+	context      *Context
 }
 
 func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 	c := &CodeGen{
-		program:   program,
-		isDebug:   isDebug,
-		output:    w,
-		variables: make(map[string]*Variable),
+		program: program,
+		isDebug: isDebug,
+		output:  w,
+		context: NewContext(),
 	}
 
 	c.resetIndex()

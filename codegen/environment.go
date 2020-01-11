@@ -43,6 +43,38 @@ func (v *Variable) Operand() string {
 	return fmt.Sprintf("%%%s.%d", v.Ident, v.Num)
 }
 
+type Context struct {
+	variables map[string]*Variable
+	parent    *Context
+}
+
+func NewContext() *Context {
+	return &Context{
+		variables: make(map[string]*Variable),
+		parent:    nil,
+	}
+}
+
+func (c *Context) newVariable(ident *ast.Identifier) *Variable {
+	v := &Variable{
+		Ident: ident,
+		Num:   -1,
+	}
+
+	c.variables[ident.String()] = v
+	return v
+}
+
+func (c *Context) findVariable(ident *ast.Identifier) (*Variable, bool) {
+	v, ok := c.variables[ident.String()]
+
+	if !ok && c.parent != nil {
+		return c.parent.findVariable(ident)
+	}
+
+	return v, ok
+}
+
 func (c *CodeGen) resetIndex() {
 	c.index = -1
 	c.labelIndex = -1
@@ -56,21 +88,6 @@ func (c *CodeGen) nextPointer() Pointer {
 func (c *CodeGen) nextValue() Object {
 	c.index++
 	return Object(c.index)
-}
-
-func (c *CodeGen) newVariable(ident *ast.Identifier) *Variable {
-	v := &Variable{
-		Ident: ident,
-		Num:   -1,
-	}
-
-	c.variables[ident.String()] = v
-	return v
-}
-
-func (c *CodeGen) findVariable(ident *ast.Identifier) (*Variable, bool) {
-	v, ok := c.variables[ident.String()]
-	return v, ok
 }
 
 func (c *CodeGen) nextLabel(name string) Label {
