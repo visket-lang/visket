@@ -3,16 +3,25 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/types"
 )
 
 type Value interface {
+	Ident() string
 	Operand() string
 }
 
-type Var int
+type Var struct {
+	Type types.Types
+	Op   int
+}
+
+func (v Var) Ident() string {
+	return fmt.Sprintf("%%%d", v.Op)
+}
 
 func (v Var) Operand() string {
-	return fmt.Sprintf("%%%d", v)
+	return fmt.Sprintf("%s %%%d", v.Type, v.Op)
 }
 
 type Label string
@@ -74,9 +83,9 @@ func (c *CodeGen) resetIndex() {
 	c.labelIndex = -1
 }
 
-func (c *CodeGen) nextVar() Var {
+func (c *CodeGen) nextVar(types types.Types) Var {
 	c.index++
-	return Var(c.index)
+	return Var{types, c.index}
 }
 
 func (c *CodeGen) nextLabel(name string) Label {

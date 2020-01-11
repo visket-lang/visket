@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/types"
 	"os"
 )
 
@@ -29,7 +30,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Var {
 
 	fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
 	os.Exit(1)
-	return -1
+	return Var{}
 }
 
 func (c *CodeGen) genInfix(ie *ast.InfixExpression) Var {
@@ -56,30 +57,30 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Var {
 	case "==":
 		c.comment("  ; Equal\n")
 		result := c.genIcmp(EQ, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case "!=":
 		c.comment("  ; Not Equal\n")
 		result := c.genIcmp(NEQ, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case "<":
 		c.comment("  ; Less Than\n")
 		result := c.genIcmp(LT, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case "<=":
 		c.comment("  ; Less Than or Equal\n")
 		result := c.genIcmp(LTE, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case ">":
 		c.comment("  ; Greater Than\n")
 		result := c.genIcmp(GT, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case ">=":
 		c.comment("  ; Greater Than or Equal\n")
 		result := c.genIcmp(GTE, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	}
 
-	return Var(c.index)
+	return Var{types.I32, c.index}
 }
 
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Var {

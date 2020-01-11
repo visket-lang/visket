@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/types"
 	"os"
 )
 
@@ -76,7 +77,7 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 
 	for _, param := range stmt.Parameters {
 		v := c.context.newVariable(param)
-		vv := c.nextVar()
+		vv := c.nextVar(types.I32)
 		c.genNamedAlloca(v)
 		c.genNamedStore(v, vv)
 	}
@@ -95,7 +96,7 @@ func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 	lThen := c.nextLabel("if.then")
 	lElse := c.nextLabel("if.else")
 	lMerge := c.nextLabel("if.merge")
-	conditionI1 := c.genTrunc("i32", "i1", condition)
+	conditionI1 := c.genTrunc(types.I1, condition)
 	if hasAlternative {
 		c.genBrWithCond(conditionI1, lThen, lElse)
 	} else {
