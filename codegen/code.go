@@ -3,72 +3,14 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/types"
 	"log"
 	"strings"
 )
 
-type Pointer int
-type Value int
-type Label string
-
-type Variable struct {
-	Ident *ast.Identifier
-	Num   int
-}
-
-func (v *Variable) String() string {
-	return fmt.Sprintf("%s.%d", v.Ident, v.Num)
-}
-
-func (v *Variable) Next() {
-	v.Num++
-}
-
-func (v *Variable) PeekNext() *Variable {
-	return &Variable{
-		Ident: v.Ident,
-		Num:   v.Num + 1,
-	}
-}
-
-func (c *CodeGen) resetIndex() {
-	c.index = -1
-	c.labelIndex = -1
-}
-
-func (c *CodeGen) nextPointer() Pointer {
-	c.index++
-	return Pointer(c.index)
-}
-
-func (c *CodeGen) nextValue() Value {
-	c.index++
-	return Value(c.index)
-}
-
-func (c *CodeGen) newVariable(ident *ast.Identifier) *Variable {
-	v := &Variable{
-		Ident: ident,
-		Num:   -1,
-	}
-
-	c.variables[ident.String()] = v
-	return v
-}
-
-func (c *CodeGen) findVariable(ident *ast.Identifier) (*Variable, bool) {
-	v, ok := c.variables[ident.String()]
-	return v, ok
-}
-
-func (c *CodeGen) nextLabel(name string) Label {
-	c.labelIndex++
-	return Label(fmt.Sprintf("%s.%d", name, c.labelIndex))
-}
-
 func (c *CodeGen) gen(format string, a ...interface{}) {
 	code := fmt.Sprintf(format, a...)
-	_, err := fmt.Fprintf(c.output, format, a...)
+	_, err := fmt.Fprint(c.output, code)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,8 +19,7 @@ func (c *CodeGen) gen(format string, a ...interface{}) {
 }
 
 func (c *CodeGen) isTerminatorInst(code string) bool {
-	rawCode := strings.TrimPrefix(code, "  ")
-	inst := strings.Split(rawCode, " ")[0]
+	inst := strings.Split(code, " ")[0]
 	switch inst {
 	case "ret", "br":
 		return true
@@ -95,61 +36,60 @@ func (c *CodeGen) comment(format string, a ...interface{}) {
 	c.gen(format, a...)
 }
 
-func (c *CodeGen) genAlloca() Pointer {
-	result := c.nextPointer()
-	c.gen("  %%%d = alloca i32, align 4\n", result)
+func (c *CodeGen) indent() {
+	c.gen("  ")
+}
+
+func (c *CodeGen) genAlloca(t types.Types) Value {
+	result := c.nextReg(types.NewPointer(t))
+	c.indent()
+	c.gen("%s = alloca %s, align 4\n", result.RegName(), t.Name())
 	return result
 }
 
-func (c *CodeGen) genNamedAlloca(v *Variable) {
-	c.gen("  %%%s = alloca i32, align 4\n", v.String())
+func (c *CodeGen) genNamedAlloca(v *Named) {
+	c.indent()
+	c.gen("%s = alloca %s, align 4\n", v.RegName(), v.TypeName())
+	v.Type = types.NewPointer(v.Type)
 }
 
-func (c *CodeGen) genStore(value Value, ptrToStore Pointer) {
-	c.gen("  store i32 %%%d, i32* %%%d\n", value, ptrToStore)
+func (c *CodeGen) genStore(src Value, dst Value) {
+	c.indent()
+	c.gen("store %s, %s\n", src.Operand(), dst.Operand())
 }
 
-func (c *CodeGen) genNamedStore(v *Variable, ptrToStore Pointer) {
-	c.gen("  store i32 %%%d, i32* %%%s\n", ptrToStore, v.String())
-}
-
-func (c *CodeGen) genStoreImmediate(value int, ptrToStore Pointer) {
-	c.gen("  store i32 %d, i32* %%%d\n", value, ptrToStore)
-}
-
-func (c *CodeGen) genLoad(ptrToLoad Pointer) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = load i32, i32* %%%d, align 4\n", result, ptrToLoad)
-	return result
-}
-
-func (c *CodeGen) genNamedLoad(v *Variable) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = load i32, i32* %%%s, align 4\n", result, v.String())
+func (c *CodeGen) genLoad(t types.Types, src Value) Value {
+	result := c.nextReg(t)
+	c.indent()
+	c.gen("%s = load %s, %s %s, align 4\n", result.RegName(), t, types.NewPointer(t), src.RegName())
 	return result
 }
 
 func (c *CodeGen) genAdd(op1 Value, op2 Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = add i32 %%%d, %%%d\n", result, op1, op2)
+	result := c.nextReg(types.I32)
+	c.indent()
+	c.gen("%s = add %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genSub(op1 Value, op2 Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = sub i32 %%%d, %%%d\n", result, op1, op2)
+	result := c.nextReg(types.I32)
+	c.indent()
+	c.gen("%s = sub %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genMul(op1 Value, op2 Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = mul i32 %%%d, %%%d\n", result, op1, op2)
+	result := c.nextReg(types.I32)
+	c.indent()
+	c.gen("%s = mul %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = idiv i32 %%%d, %%%d\n", result, op1, op2)
+	result := c.nextReg(types.I32)
+	c.indent()
+	c.gen("%s = idiv %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
@@ -165,35 +105,39 @@ const (
 )
 
 func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = icmp %s i32 %%%d, %%%d\n", result, cond, op1, op2)
+	result := c.nextReg(types.I1)
+	c.indent()
+	c.gen("%s = icmp %s %s, %s\n", result.RegName(), cond, op1.Operand(), op2.RegName())
 	return result
 }
 
-func (c *CodeGen) genIcmpWithNum(cond IcmpCond, op1 Value, op2 int) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = icmp %s i32 %%%d, %d\n", result, cond, op1, op2)
+func (c *CodeGen) genZext(typeTo types.Types, object Value) Value {
+	result := c.nextReg(typeTo)
+	c.indent()
+	c.gen("%s = zext %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }
 
-func (c *CodeGen) genZext(typeFrom, typeTo string, value Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = zext %s %%%d to %s\n", result, typeFrom, value, typeTo)
+func (c *CodeGen) genTrunc(typeTo types.Types, object Value) Value {
+	result := c.nextReg(typeTo)
+	c.indent()
+	c.gen("%s = trunc %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }
 
-func (c *CodeGen) genRet(value Value) {
-	c.gen("  ret i32 %%%d\n", value)
+func (c *CodeGen) genRet(object Value) {
+	c.indent()
+	c.gen("ret %s\n", object.Operand())
 }
 
 func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
-	c.gen("define i32 @%s(", ident.Token.Literal)
+	c.gen("define %s @%s(", types.I32, ident.String())
 }
 
 func (c *CodeGen) genFunctionParameters(params []*ast.Identifier) {
 	var p []string
-	for _, _ = range params {
-		p = append(p, "i32")
+	for range params {
+		p = append(p, types.I32.String())
 	}
 
 	c.gen(strings.Join(p, ","))
@@ -207,24 +151,26 @@ func (c *CodeGen) genEndFunction() {
 	c.gen("}\n\n")
 }
 
-func (c *CodeGen) genCall(function *ast.Identifier, params []Value) {
+func (c *CodeGen) genCall(function *ast.Identifier, params []Register) {
 	var p []string
 	for _, param := range params {
-		p = append(p, fmt.Sprintf("i32 %%%d", param))
+		p = append(p, param.Operand())
 	}
 
-	c.gen("  call i32 @%s(%s)\n", function.Token.Literal, strings.Join(p, ","))
+	c.indent()
+	c.gen("call %s @%s(%s)\n", types.I32, function.Token.Literal, strings.Join(p, ","))
 }
 
 func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Value {
-	result := c.nextValue()
+	result := c.nextReg(types.I32)
 
 	var p []string
 	for _, param := range params {
-		p = append(p, fmt.Sprintf("i32 %%%d", param))
+		p = append(p, param.Operand())
 	}
 
-	c.gen("  %%%d = call i32 @%s(%s)\n", result, function.Token.Literal, strings.Join(p, ","))
+	c.indent()
+	c.gen("%s = call %s @%s(%s)\n", result.RegName(), types.I32, function.Token.Literal, strings.Join(p, ","))
 	return result
 }
 
@@ -233,15 +179,11 @@ func (c *CodeGen) genLabel(name Label) {
 }
 
 func (c *CodeGen) genBr(label Label) {
-	c.gen("  br label %%%s\n", label)
+	c.indent()
+	c.gen("br label %%%s\n", label)
 }
 
 func (c *CodeGen) genBrWithCond(condition Value, ifTrue Label, itFalse Label) {
-	c.gen("  br i1 %%%d, label %%%s, label %%%s\n", condition, ifTrue, itFalse)
-}
-
-func (c *CodeGen) genTrunc(typeFrom, typeTo string, value Value) Value {
-	result := c.nextValue()
-	c.gen("  %%%d = trunc %s %%%d to %s\n", result, typeFrom, value, typeTo)
-	return result
+	c.indent()
+	c.gen("br %s, label %%%s, label %%%s\n", condition.Operand(), ifTrue, itFalse)
 }

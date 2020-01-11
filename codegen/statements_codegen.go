@@ -3,6 +3,8 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/constant"
+	"github.com/arata-nvm/Solitude/codegen/types"
 	"os"
 )
 
@@ -31,33 +33,30 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
-	c.comment("  ; Var\n")
+	c.comment("  ; Register\n")
 
-	_, ok := c.findVariable(stmt.Ident)
+	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
 		fmt.Printf("already declared variable: %s\n", stmt.Ident.String())
 		os.Exit(1)
 	}
 
-	v := c.newVariable(stmt.Ident)
-	v.Next()
-
-	c.genNamedAlloca(v)
-	resultPtr := c.genExpression(stmt.Value)
-	// TODO Pointer への変換がよくわからない
-	c.genNamedStore(v, Pointer(resultPtr))
+	named := c.context.newNamed(types.I32, stmt.Ident)
+	c.genNamedAlloca(named)
+	value := c.genExpression(stmt.Value)
+	c.genStore(value, named)
 }
 
 func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
 	c.comment("  ; Reassign\n")
 
-	v, ok := c.findVariable(stmt.Ident)
+	v, ok := c.context.findVariable(stmt.Ident)
 	if !ok {
 		fmt.Printf("unresolved variable: %s\n", stmt.Ident.String())
 		os.Exit(1)
 	}
 	resultPtr := c.genExpression(stmt.Value)
-	c.genNamedStore(v, Pointer(resultPtr))
+	c.genStore(resultPtr, v)
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
@@ -71,15 +70,19 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.genDefineFunction(stmt.Ident)
 	c.genFunctionParameters(stmt.Parameters)
 	c.genBeginFunction()
+	c.into()
 	c.genLabel(c.nextLabel("entry"))
 
 	for _, param := range stmt.Parameters {
-		v := c.newVariable(param)
-		c.nextPointer()
-		c.genNamedAlloca(v)
-		c.genNamedStore(v, Pointer(c.index))
+		named := c.context.newNamed(types.I32, param)
+		value := c.nextReg(types.I32)
+		c.genNamedAlloca(named)
+		c.genStore(value, named)
 	}
+
 	c.genBlockStatement(stmt.Body)
+
+	c.outOf()
 	c.genEndFunction()
 }
 
@@ -92,7 +95,7 @@ func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 	lThen := c.nextLabel("if.then")
 	lElse := c.nextLabel("if.else")
 	lMerge := c.nextLabel("if.merge")
-	conditionI1 := c.genTrunc("i32", "i1", condition)
+	conditionI1 := c.genTrunc(types.I1, condition)
 	if hasAlternative {
 		c.genBrWithCond(conditionI1, lThen, lElse)
 	} else {
@@ -100,17 +103,21 @@ func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 	}
 
 	c.genLabel(lThen)
+	c.into()
 	c.genBlockStatement(stmt.Consequence)
 	if !c.isTerminated {
 		c.genBr(lMerge)
 	}
+	c.outOf()
 
 	if hasAlternative {
+		c.into()
 		c.genLabel(lElse)
 		c.genBlockStatement(stmt.Alternative)
 		if !c.isTerminated {
 			c.genBr(lMerge)
 		}
+		c.outOf()
 	}
 
 	c.genLabel(lMerge)
@@ -122,17 +129,19 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	lExit := c.nextLabel("while.exit")
 
 	cond := c.genExpression(stmt.Condition)
-	result := c.genIcmpWithNum(NEQ, cond, 0)
+	result := c.genIcmp(NEQ, cond, constant.False)
 	c.genBrWithCond(result, lLoop, lExit)
 
 	c.genLabel(lLoop)
+	c.into()
 
 	c.genBlockStatement(stmt.Body)
 
 	cond = c.genExpression(stmt.Condition)
-	result = c.genIcmpWithNum(NEQ, cond, 0)
+	result = c.genIcmp(NEQ, cond, constant.False)
 	c.genBrWithCond(result, lLoop, lExit)
 
+	c.outOf()
 	c.genLabel(lExit)
 }
 
@@ -147,13 +156,14 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	if stmt.Condition != nil {
 		cond := c.genExpression(stmt.Condition)
-		result := c.genIcmpWithNum(NEQ, cond, 0)
+		result := c.genIcmp(NEQ, cond, constant.False)
 		c.genBrWithCond(result, lLoop, lExit)
 	} else {
 		c.genBr(lLoop)
 	}
 
 	c.genLabel(lLoop)
+	c.into()
 
 	c.genBlockStatement(stmt.Body)
 
@@ -163,12 +173,13 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	if stmt.Condition != nil {
 		cond := c.genExpression(stmt.Condition)
-		result := c.genIcmpWithNum(NEQ, cond, 0)
+		result := c.genIcmp(NEQ, cond, constant.False)
 		c.genBrWithCond(result, lLoop, lExit)
 	} else {
 		c.genBr(lLoop)
 	}
 
+	c.outOf()
 	c.genLabel(lExit)
 }
 

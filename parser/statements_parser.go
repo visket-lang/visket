@@ -26,8 +26,6 @@ func (p *Parser) parseStatement() ast.Statement {
 	default:
 		return p.parseExpressionStatement()
 	}
-
-	return nil
 }
 
 func (p *Parser) parseVarStatement() *ast.VarStatement {

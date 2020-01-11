@@ -3,6 +3,8 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/constant"
+	"github.com/arata-nvm/Solitude/codegen/types"
 	"os"
 )
 
@@ -13,23 +15,20 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	case *ast.CallExpression:
 		return c.genCallExpression(expr)
 	case *ast.IntegerLiteral:
-		c.comment("  ; Int\n")
-		result := c.genAlloca()
-		c.genStoreImmediate(expr.Value, result)
-		return c.genLoad(result)
+		return constant.NewInt(types.I32, expr.Value)
 	case *ast.Identifier:
-		c.comment("  ; Ident\n")
-		v, ok := c.findVariable(expr)
+		c.comment("  ; RegName\n")
+		v, ok := c.context.findVariable(expr)
 		if !ok {
 			fmt.Printf("unresolved variable: %s\n", expr.String())
 			os.Exit(1)
 		}
-		return c.genNamedLoad(v)
+		return c.genLoad(types.I32, v)
 	}
 
 	fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
 	os.Exit(1)
-	return -1
+	return Register{}
 }
 
 func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
@@ -56,30 +55,30 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	case "==":
 		c.comment("  ; Equal\n")
 		result := c.genIcmp(EQ, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case "!=":
 		c.comment("  ; Not Equal\n")
 		result := c.genIcmp(NEQ, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case "<":
 		c.comment("  ; Less Than\n")
 		result := c.genIcmp(LT, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case "<=":
 		c.comment("  ; Less Than or Equal\n")
 		result := c.genIcmp(LTE, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case ">":
 		c.comment("  ; Greater Than\n")
 		result := c.genIcmp(GT, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	case ">=":
 		c.comment("  ; Greater Than or Equal\n")
 		result := c.genIcmp(GTE, lhs, rhs)
-		return c.genZext("i1", "i32", result)
+		return c.genZext(types.I32, result)
 	}
 
-	return Value(c.index)
+	return Register{types.I32, c.index}
 }
 
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {

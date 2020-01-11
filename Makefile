@@ -6,7 +6,7 @@ build:
 	go build -o $(BINDIR)/$(TARGET)
 
 run: build
-	./$(BINDIR)/$(TARGET)
+	./run.sh
 
 test: build
 	./test.sh
