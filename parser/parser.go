@@ -52,6 +52,11 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
+
+	// コメントはASTに含めない
+	if p.curTokenIs(token.COMMENT) {
+		p.nextToken()
+	}
 }
 
 func (p *Parser) curTokenIs(tokenType token.TokenType) bool {
