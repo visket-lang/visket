@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/constant"
 	"github.com/arata-nvm/Solitude/codegen/types"
 	"os"
 )
@@ -14,10 +15,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	case *ast.CallExpression:
 		return c.genCallExpression(expr)
 	case *ast.IntegerLiteral:
-		c.comment("  ; Int\n")
-		result := c.genAlloca(types.I32)
-		c.genStoreImmediate(expr.Value, result)
-		return c.genLoad(types.I32, result)
+		return constant.NewInt(types.I32, expr.Value)
 	case *ast.Identifier:
 		c.comment("  ; RegName\n")
 		v, ok := c.context.findVariable(expr)
