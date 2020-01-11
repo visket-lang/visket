@@ -208,3 +208,22 @@ func main() {
   return sum
 }
 "
+
+try 10 "
+func main() {
+// return 0
+  return 10 // 0
+}
+"
+
+try 10 "
+func main() {
+  for
+    var i = 0; // i < 5;
+    i < 10; // i = i + 3
+    i = i + 1 // {
+  {
+  }
+  return i
+}
+"
