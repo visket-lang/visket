@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/codegen/constant"
 	"github.com/arata-nvm/Solitude/codegen/types"
 	"os"
 )
@@ -40,10 +41,10 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		os.Exit(1)
 	}
 
-	v := c.context.newNamed(types.I32, stmt.Ident)
-	c.genNamedAlloca(v)
-	resultPtr := c.genExpression(stmt.Value)
-	c.genStore(resultPtr, v)
+	named := c.context.newNamed(types.I32, stmt.Ident)
+	c.genNamedAlloca(named)
+	value := c.genExpression(stmt.Value)
+	c.genStore(value, named)
 }
 
 func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
@@ -73,12 +74,12 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.genLabel(c.nextLabel("entry"))
 
 	for _, param := range stmt.Parameters {
-		v := c.context.newNamed(types.I32, param)
-		vv := c.nextReg(types.I32)
-		c.genNamedAlloca(v)
-		c.genStore(vv, v)
-
+		named := c.context.newNamed(types.I32, param)
+		value := c.nextReg(types.I32)
+		c.genNamedAlloca(named)
+		c.genStore(value, named)
 	}
+
 	c.genBlockStatement(stmt.Body)
 
 	c.outOf()
@@ -128,7 +129,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	lExit := c.nextLabel("while.exit")
 
 	cond := c.genExpression(stmt.Condition)
-	result := c.genIcmpWithNum(NEQ, cond, 0)
+	result := c.genIcmp(NEQ, cond, constant.False)
 	c.genBrWithCond(result, lLoop, lExit)
 
 	c.genLabel(lLoop)
@@ -137,7 +138,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	c.genBlockStatement(stmt.Body)
 
 	cond = c.genExpression(stmt.Condition)
-	result = c.genIcmpWithNum(NEQ, cond, 0)
+	result = c.genIcmp(NEQ, cond, constant.False)
 	c.genBrWithCond(result, lLoop, lExit)
 
 	c.outOf()
@@ -155,7 +156,7 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	if stmt.Condition != nil {
 		cond := c.genExpression(stmt.Condition)
-		result := c.genIcmpWithNum(NEQ, cond, 0)
+		result := c.genIcmp(NEQ, cond, constant.False)
 		c.genBrWithCond(result, lLoop, lExit)
 	} else {
 		c.genBr(lLoop)
@@ -172,7 +173,7 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	if stmt.Condition != nil {
 		cond := c.genExpression(stmt.Condition)
-		result := c.genIcmpWithNum(NEQ, cond, 0)
+		result := c.genIcmp(NEQ, cond, constant.False)
 		c.genBrWithCond(result, lLoop, lExit)
 	} else {
 		c.genBr(lLoop)

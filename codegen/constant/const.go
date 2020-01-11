@@ -6,6 +6,11 @@ import (
 	"strconv"
 )
 
+var (
+	False = NewInt(types.I1, 0)
+	True  = NewInt(types.I1, 0)
+)
+
 type Int struct {
 	Type  types.Types
 	Value int

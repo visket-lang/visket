@@ -48,17 +48,13 @@ func (c *CodeGen) genNamedAlloca(v *Named) {
 	v.Type = types.NewPointer(v.Type)
 }
 
-func (c *CodeGen) genStore(object Value, ptrToStore Value) {
-	c.gen("  store %s, %s\n", object.Operand(), ptrToStore.Operand())
+func (c *CodeGen) genStore(src Value, dst Value) {
+	c.gen("  store %s, %s\n", src.Operand(), dst.Operand())
 }
 
-func (c *CodeGen) genStoreImmediate(value int, ptrToStore Value) {
-	c.gen("  store %s %d, %s\n", types.I32, value, ptrToStore.Operand())
-}
-
-func (c *CodeGen) genLoad(t types.Types, ptrToLoad Value) Value {
+func (c *CodeGen) genLoad(t types.Types, src Value) Value {
 	result := c.nextReg(t)
-	c.gen("  %s = load %s, %s %s, align 4\n", result.RegName(), t, types.NewPointer(t), ptrToLoad.RegName())
+	c.gen("  %s = load %s, %s %s, align 4\n", result.RegName(), t, types.NewPointer(t), src.RegName())
 	return result
 }
 
@@ -103,15 +99,15 @@ func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
 	return result
 }
 
-func (c *CodeGen) genIcmpWithNum(cond IcmpCond, op1 Value, op2 int) Value {
-	result := c.nextReg(types.I1)
-	c.gen("  %s = icmp %s %s, %d\n", result.RegName(), cond, op1.Operand(), op2)
-	return result
-}
-
 func (c *CodeGen) genZext(typeTo types.Types, object Value) Value {
 	result := c.nextReg(typeTo)
 	c.gen("  %s = zext %s to %s\n", result.RegName(), object.Operand(), typeTo)
+	return result
+}
+
+func (c *CodeGen) genTrunc(typeTo types.Types, object Value) Value {
+	result := c.nextReg(typeTo)
+	c.gen("  %s = trunc %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }
 
@@ -120,12 +116,12 @@ func (c *CodeGen) genRet(object Value) {
 }
 
 func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
-	c.gen("define %s @%s(", types.I32, ident.Token.Literal)
+	c.gen("define %s @%s(", types.I32, ident.String())
 }
 
 func (c *CodeGen) genFunctionParameters(params []*ast.Identifier) {
 	var p []string
-	for _, _ = range params {
+	for range params {
 		p = append(p, types.I32.String())
 	}
 
@@ -171,10 +167,4 @@ func (c *CodeGen) genBr(label Label) {
 
 func (c *CodeGen) genBrWithCond(condition Value, ifTrue Label, itFalse Label) {
 	c.gen("  br %s, label %%%s, label %%%s\n", condition.Operand(), ifTrue, itFalse)
-}
-
-func (c *CodeGen) genTrunc(typeTo types.Types, object Value) Value {
-	result := c.nextReg(typeTo)
-	c.gen("  %s = trunc %s to %s\n", result.RegName(), object.Operand(), typeTo)
-	return result
 }
