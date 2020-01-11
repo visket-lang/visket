@@ -48,10 +48,10 @@ type Context struct {
 	parent    *Context
 }
 
-func NewContext() *Context {
+func newContext(parent *Context) *Context {
 	return &Context{
 		variables: make(map[string]*Variable),
-		parent:    nil,
+		parent:    parent,
 	}
 }
 
@@ -93,4 +93,14 @@ func (c *CodeGen) nextValue() Object {
 func (c *CodeGen) nextLabel(name string) Label {
 	c.labelIndex++
 	return Label(fmt.Sprintf("%s.%d", name, c.labelIndex))
+}
+
+func (c *CodeGen) into() {
+	c.context = newContext(c.context)
+}
+
+func (c *CodeGen) outOf() {
+	if c.context.parent != nil {
+		c.context = c.context.parent
+	}
 }

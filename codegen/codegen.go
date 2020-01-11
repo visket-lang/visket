@@ -20,7 +20,7 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 		program: program,
 		isDebug: isDebug,
 		output:  w,
-		context: NewContext(),
+		context: newContext(nil),
 	}
 
 	c.resetIndex()

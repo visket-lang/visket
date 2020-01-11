@@ -71,6 +71,7 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	c.genDefineFunction(stmt.Ident)
 	c.genFunctionParameters(stmt.Parameters)
 	c.genBeginFunction()
+	c.into()
 	c.genLabel(c.nextLabel("entry"))
 
 	for _, param := range stmt.Parameters {
@@ -80,6 +81,8 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 		c.genNamedStore(v, Pointer(c.index))
 	}
 	c.genBlockStatement(stmt.Body)
+
+	c.outOf()
 	c.genEndFunction()
 }
 
@@ -100,17 +103,21 @@ func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 	}
 
 	c.genLabel(lThen)
+	c.into()
 	c.genBlockStatement(stmt.Consequence)
 	if !c.isTerminated {
 		c.genBr(lMerge)
 	}
+	c.outOf()
 
 	if hasAlternative {
+		c.into()
 		c.genLabel(lElse)
 		c.genBlockStatement(stmt.Alternative)
 		if !c.isTerminated {
 			c.genBr(lMerge)
 		}
+		c.outOf()
 	}
 
 	c.genLabel(lMerge)
@@ -126,6 +133,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	c.genBrWithCond(result, lLoop, lExit)
 
 	c.genLabel(lLoop)
+	c.into()
 
 	c.genBlockStatement(stmt.Body)
 
@@ -133,6 +141,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	result = c.genIcmpWithNum(NEQ, cond, 0)
 	c.genBrWithCond(result, lLoop, lExit)
 
+	c.outOf()
 	c.genLabel(lExit)
 }
 
@@ -154,6 +163,7 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 	}
 
 	c.genLabel(lLoop)
+	c.into()
 
 	c.genBlockStatement(stmt.Body)
 
@@ -169,6 +179,7 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 		c.genBr(lLoop)
 	}
 
+	c.outOf()
 	c.genLabel(lExit)
 }
 
