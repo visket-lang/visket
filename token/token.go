@@ -9,6 +9,8 @@ const (
 	IDENT = "IDENT"
 	INT   = "INT"
 
+	COMMENT = "//"
+
 	ASSIGN   = "="
 	PLUS     = "+"
 	MINUS    = "-"
