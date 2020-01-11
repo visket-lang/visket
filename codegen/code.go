@@ -19,8 +19,7 @@ func (c *CodeGen) gen(format string, a ...interface{}) {
 }
 
 func (c *CodeGen) isTerminatorInst(code string) bool {
-	rawCode := strings.TrimPrefix(code, "  ")
-	inst := strings.Split(rawCode, " ")[0]
+	inst := strings.Split(code, " ")[0]
 	switch inst {
 	case "ret", "br":
 		return true
@@ -37,48 +36,60 @@ func (c *CodeGen) comment(format string, a ...interface{}) {
 	c.gen(format, a...)
 }
 
+func (c *CodeGen) indent() {
+	c.gen("  ")
+}
+
 func (c *CodeGen) genAlloca(t types.Types) Value {
 	result := c.nextReg(types.NewPointer(t))
-	c.gen("  %s = alloca %s, align 4\n", result.RegName(), t.Name())
+	c.indent()
+	c.gen("%s = alloca %s, align 4\n", result.RegName(), t.Name())
 	return result
 }
 
 func (c *CodeGen) genNamedAlloca(v *Named) {
-	c.gen("  %s = alloca %s, align 4\n", v.RegName(), v.TypeName())
+	c.indent()
+	c.gen("%s = alloca %s, align 4\n", v.RegName(), v.TypeName())
 	v.Type = types.NewPointer(v.Type)
 }
 
 func (c *CodeGen) genStore(src Value, dst Value) {
-	c.gen("  store %s, %s\n", src.Operand(), dst.Operand())
+	c.indent()
+	c.gen("store %s, %s\n", src.Operand(), dst.Operand())
 }
 
 func (c *CodeGen) genLoad(t types.Types, src Value) Value {
 	result := c.nextReg(t)
-	c.gen("  %s = load %s, %s %s, align 4\n", result.RegName(), t, types.NewPointer(t), src.RegName())
+	c.indent()
+	c.gen("%s = load %s, %s %s, align 4\n", result.RegName(), t, types.NewPointer(t), src.RegName())
 	return result
 }
 
 func (c *CodeGen) genAdd(op1 Value, op2 Value) Value {
 	result := c.nextReg(types.I32)
-	c.gen("  %s = add %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
+	c.indent()
+	c.gen("%s = add %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genSub(op1 Value, op2 Value) Value {
 	result := c.nextReg(types.I32)
-	c.gen("  %s = sub %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
+	c.indent()
+	c.gen("%s = sub %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genMul(op1 Value, op2 Value) Value {
 	result := c.nextReg(types.I32)
-	c.gen("  %s = mul %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
+	c.indent()
+	c.gen("%s = mul %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
 	result := c.nextReg(types.I32)
-	c.gen("  %s = idiv %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
+	c.indent()
+	c.gen("%s = idiv %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
@@ -95,24 +106,28 @@ const (
 
 func (c *CodeGen) genIcmp(cond IcmpCond, op1, op2 Value) Value {
 	result := c.nextReg(types.I1)
-	c.gen("  %s = icmp %s %s, %s\n", result.RegName(), cond, op1.Operand(), op2.RegName())
+	c.indent()
+	c.gen("%s = icmp %s %s, %s\n", result.RegName(), cond, op1.Operand(), op2.RegName())
 	return result
 }
 
 func (c *CodeGen) genZext(typeTo types.Types, object Value) Value {
 	result := c.nextReg(typeTo)
-	c.gen("  %s = zext %s to %s\n", result.RegName(), object.Operand(), typeTo)
+	c.indent()
+	c.gen("%s = zext %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }
 
 func (c *CodeGen) genTrunc(typeTo types.Types, object Value) Value {
 	result := c.nextReg(typeTo)
-	c.gen("  %s = trunc %s to %s\n", result.RegName(), object.Operand(), typeTo)
+	c.indent()
+	c.gen("%s = trunc %s to %s\n", result.RegName(), object.Operand(), typeTo)
 	return result
 }
 
 func (c *CodeGen) genRet(object Value) {
-	c.gen("  ret %s\n", object.Operand())
+	c.indent()
+	c.gen("ret %s\n", object.Operand())
 }
 
 func (c *CodeGen) genDefineFunction(ident *ast.Identifier) {
@@ -142,7 +157,8 @@ func (c *CodeGen) genCall(function *ast.Identifier, params []Register) {
 		p = append(p, param.Operand())
 	}
 
-	c.gen("  call %s @%s(%s)\n", types.I32, function.Token.Literal, strings.Join(p, ","))
+	c.indent()
+	c.gen("call %s @%s(%s)\n", types.I32, function.Token.Literal, strings.Join(p, ","))
 }
 
 func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Value {
@@ -153,7 +169,8 @@ func (c *CodeGen) genCallWithReturn(function *ast.Identifier, params []Value) Va
 		p = append(p, param.Operand())
 	}
 
-	c.gen("  %s = call %s @%s(%s)\n", result.RegName(), types.I32, function.Token.Literal, strings.Join(p, ","))
+	c.indent()
+	c.gen("%s = call %s @%s(%s)\n", result.RegName(), types.I32, function.Token.Literal, strings.Join(p, ","))
 	return result
 }
 
@@ -162,9 +179,11 @@ func (c *CodeGen) genLabel(name Label) {
 }
 
 func (c *CodeGen) genBr(label Label) {
-	c.gen("  br label %%%s\n", label)
+	c.indent()
+	c.gen("br label %%%s\n", label)
 }
 
 func (c *CodeGen) genBrWithCond(condition Value, ifTrue Label, itFalse Label) {
-	c.gen("  br %s, label %%%s, label %%%s\n", condition.Operand(), ifTrue, itFalse)
+	c.indent()
+	c.gen("br %s, label %%%s, label %%%s\n", condition.Operand(), ifTrue, itFalse)
 }
