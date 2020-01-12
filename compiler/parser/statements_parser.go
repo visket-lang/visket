@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"github.com/arata-nvm/Solitude/ast"
-	"github.com/arata-nvm/Solitude/token"
+	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/token"
 )
 
 func (p *Parser) parseStatement() ast.Statement {

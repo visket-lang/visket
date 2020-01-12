@@ -2,7 +2,7 @@ package constant
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/codegen/types"
+	"github.com/arata-nvm/Solitude/compiler/codegen/types"
 	"strconv"
 )
 

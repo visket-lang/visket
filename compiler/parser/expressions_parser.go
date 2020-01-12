@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/ast"
-	"github.com/arata-nvm/Solitude/token"
+	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"strconv"
 )
 
