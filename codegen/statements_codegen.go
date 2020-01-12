@@ -5,6 +5,7 @@ import (
 	"github.com/arata-nvm/Solitude/ast"
 	"github.com/arata-nvm/Solitude/codegen/constant"
 	"github.com/arata-nvm/Solitude/codegen/types"
+	"github.com/arata-nvm/Solitude/token"
 	"os"
 )
 
@@ -48,15 +49,40 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 }
 
 func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
-	c.comment("  ; Reassign\n")
+	c.comment("  ; Assign\n")
 
 	v, ok := c.context.findVariable(stmt.Ident)
 	if !ok {
 		fmt.Printf("unresolved variable: %s\n", stmt.Ident.String())
 		os.Exit(1)
 	}
-	resultPtr := c.genExpression(stmt.Value)
-	c.genStore(resultPtr, v)
+
+	rhs := c.genExpression(stmt.Value)
+
+	switch stmt.Token.Type {
+	case token.ASSIGN:
+		c.genStore(rhs, v)
+	case token.ADD_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genAdd(vValue, rhs)
+		c.genStore(rhs, v)
+	case token.SUB_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genSub(vValue, rhs)
+		c.genStore(rhs, v)
+	case token.MUL_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genMul(vValue, rhs)
+		c.genStore(rhs, v)
+	case token.QUO_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genSDiv(vValue, rhs)
+		c.genStore(rhs, v)
+	case token.REM_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genSRem(vValue, rhs)
+		c.genStore(rhs, v)
+	}
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {

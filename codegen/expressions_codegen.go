@@ -50,8 +50,11 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 		c.comment("  ; Mul\n")
 		return c.genMul(lhs, rhs)
 	case "/":
-		c.comment("  ; Div\n")
-		return c.genIDiv(lhs, rhs)
+		c.comment("  ; Quo\n")
+		return c.genSDiv(lhs, rhs)
+	case "%":
+		c.comment("  ; Rem\n")
+		return c.genSRem(lhs, rhs)
 	case "==":
 		c.comment("  ; Equal\n")
 		result := c.genIcmp(EQ, lhs, rhs)

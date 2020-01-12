@@ -82,6 +82,46 @@ func main() {
 }
 "
 
+try 7 "
+func main() {
+  var a = 5
+  a += 2
+  return a
+}
+"
+
+try 3 "
+func main() {
+  var a = 5
+  a -= 2
+  return a
+}
+"
+
+try 10 "
+func main() {
+  var a = 5
+  a *= 2
+  return a
+}
+"
+
+try 2 "
+func main() {
+  var a = 5
+  a /= 2
+  return a
+}
+"
+
+try 1 "
+func main() {
+  var a = 5
+  a %= 2
+  return a
+}
+"
+
 try 2 "func num() { return 2 }
 func main() { return num() }"
 try 4 "func add(n) { return n + 2 }

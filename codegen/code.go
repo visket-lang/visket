@@ -93,6 +93,13 @@ func (c *CodeGen) genSDiv(op1 Value, op2 Value) Value {
 	return result
 }
 
+func (c *CodeGen) genSRem(op1 Value, op2 Value) Value {
+	result := c.nextReg(types.I32)
+	c.indent()
+	c.gen("%s = srem %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
+	return result
+}
+
 type IcmpCond string
 
 const (
