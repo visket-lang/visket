@@ -7,43 +7,105 @@ import (
 	"github.com/arata-nvm/Solitude/lexer"
 	"github.com/arata-nvm/Solitude/optimizer"
 	"github.com/arata-nvm/Solitude/parser"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
 )
 
 func main() {
 	var (
-		isDebug = flag.Bool("v", false, "Use verbose output")
-		output  = flag.String("o", "", "Specify file to output")
+		output = flag.String("o", "", "Specify file to output")
 	)
 	flag.Parse()
 
-	input := scanInput()
-	l := lexer.New(input)
+	filepath := flag.Arg(0)
+	if filepath == "" {
+		fmt.Println("Usage: solitude <file>")
+		os.Exit(1)
+	}
+
+	content, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if *output == "" {
+		*output = getFileNameWithoutExt(filepath)
+	}
+
+	genIrCode(string(content), *output)
+	compile(*output)
+}
+
+func genIrCode(code, filename string) {
+	l := lexer.New(code)
 
 	p := parser.New(l)
 	program := p.ParseProgram()
 	printErrors(p)
-	if *isDebug {
-		fmt.Printf("%s\n", program.Inspect())
-	}
 
 	o := optimizer.New(program)
 	o.Optimize()
 
-	w := getWriter(*output)
-	c := codegen.New(program, *isDebug, w)
-	c.GenerateCode()
-}
-
-func scanInput() string {
-	b, err := ioutil.ReadAll(os.Stdin)
+	w, err := os.Create(filename + ".ll")
 	if err != nil {
 		log.Fatal(err)
 	}
-	return string(b)
+
+	c := codegen.New(program, false, w)
+	c.GenerateCode()
+}
+
+func compile(filename string) {
+	llPath := filename + ".ll"
+	optLlPath := filename + ".opt.ll"
+	asmPath := filename + ".s"
+
+	cmd := exec.Command("opt", "-S", "-O3", llPath, "-o", optLlPath)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd = exec.Command("llc", optLlPath, "-o", asmPath)
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd = exec.Command("cc", asmPath, "-o", filename, "-no-pie")
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.Remove(llPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.Remove(optLlPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.Remove(asmPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run(filename string) {
+	cmd := exec.Command("./" + filename)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func printErrors(p *parser.Parser) {
@@ -55,14 +117,6 @@ func printErrors(p *parser.Parser) {
 	}
 }
 
-func getWriter(output string) io.Writer {
-	if output == "" {
-		return os.Stdout
-	} else {
-		file, err := os.Create(output)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return file
-	}
+func getFileNameWithoutExt(path string) string {
+	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }

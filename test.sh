@@ -7,8 +7,9 @@ try() {
   expected="$1"
   input="$2"
 
-  echo "$input" | $TARGET $OPT -o tmp.ll
-  lli tmp.ll
+  echo "$input" > tmp.sl
+  $TARGET $OPT -o tmp.out tmp.sl
+  ./tmp.out
   actual=$?
 
   if [ "$actual" == "$expected" ]; then
