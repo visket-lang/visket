@@ -37,6 +37,12 @@ try 200 "func main() { return 10 * 10 * 2 }"
 try 40 "func main() { return (10 + 10) * 2 }"
 try 120 "func main() { return 10 * (10 + 2) }"
 
+try 10 "func main() { return (10 + 10) / 2 }"
+try 5 "func main() { return 60 / (10 + 2) }"
+
+try 1 "func main() { return 9 % 2 }"
+try 3 "func main() { return 1 + 5 % 3 }"
+
 try 10 "func main() { return 120 + -110 }"
 try 0 "func main() { return -(-10 - (-10)) }"
 

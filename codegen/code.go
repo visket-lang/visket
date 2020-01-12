@@ -86,10 +86,10 @@ func (c *CodeGen) genMul(op1 Value, op2 Value) Value {
 	return result
 }
 
-func (c *CodeGen) genIDiv(op1 Value, op2 Value) Value {
+func (c *CodeGen) genSDiv(op1 Value, op2 Value) Value {
 	result := c.nextReg(types.I32)
 	c.indent()
-	c.gen("%s = idiv %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
+	c.gen("%s = sdiv %s, %s\n", result.RegName(), op1.Operand(), op2.RegName())
 	return result
 }
 
