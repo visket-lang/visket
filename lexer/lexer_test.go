@@ -11,11 +11,18 @@ func TestNextToken(t *testing.T) {
 8 - 4
 42 * 89
 32 / 4
+54 % 3
 ((10 + 10) * 2)
 57 == 72
 43 != 83
 32 < 33 <= 33
 59 > 58 >= 58
+
+a += 1
+b -= 2
+c *= 3
+d /= 4
+e %= 5
 
 var a = 1
 return a
@@ -33,28 +40,32 @@ for var i = 0; i < 10; i=i+1 { 1 }
 		expectedLiteral string
 	}{
 		{token.INT, "10"},
-		{token.PLUS, "+"},
+		{token.ADD, "+"},
 		{token.INT, "2"},
 
 		{token.INT, "8"},
-		{token.MINUS, "-"},
+		{token.SUB, "-"},
 		{token.INT, "4"},
 
 		{token.INT, "42"},
-		{token.ASTERISK, "*"},
+		{token.MUL, "*"},
 		{token.INT, "89"},
 
 		{token.INT, "32"},
-		{token.SLASH, "/"},
+		{token.QUO, "/"},
 		{token.INT, "4"},
+
+		{token.INT, "54"},
+		{token.REM, "%"},
+		{token.INT, "3"},
 
 		{token.LPAREN, "("},
 		{token.LPAREN, "("},
 		{token.INT, "10"},
-		{token.PLUS, "+"},
+		{token.ADD, "+"},
 		{token.INT, "10"},
 		{token.RPAREN, ")"},
-		{token.ASTERISK, "*"},
+		{token.MUL, "*"},
 		{token.INT, "2"},
 		{token.RPAREN, ")"},
 
@@ -77,6 +88,26 @@ for var i = 0; i < 10; i=i+1 { 1 }
 		{token.INT, "58"},
 		{token.GTE, ">="},
 		{token.INT, "58"},
+
+		{token.IDENT, "a"},
+		{token.ADD_ASSIGN, "+="},
+		{token.INT, "1"},
+
+		{token.IDENT, "b"},
+		{token.SUB_ASSIGN, "-="},
+		{token.INT, "2"},
+
+		{token.IDENT, "c"},
+		{token.MUL_ASSIGN, "*="},
+		{token.INT, "3"},
+
+		{token.IDENT, "d"},
+		{token.QUO_ASSIGN, "/="},
+		{token.INT, "4"},
+
+		{token.IDENT, "e"},
+		{token.REM_ASSIGN, "%="},
+		{token.INT, "5"},
 
 		{token.VAR, "var"},
 		{token.IDENT, "a"},
@@ -129,7 +160,7 @@ for var i = 0; i < 10; i=i+1 { 1 }
 		{token.IDENT, "i"},
 		{token.ASSIGN, "="},
 		{token.IDENT, "i"},
-		{token.PLUS, "+"},
+		{token.ADD, "+"},
 		{token.INT, "1"},
 		{token.LBRACE, "{"},
 		{token.INT, "1"},

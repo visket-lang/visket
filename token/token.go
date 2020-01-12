@@ -5,17 +5,22 @@ type TokenType string
 const (
 	ILLEGAL TokenType = "ILLEGAL"
 	EOF               = "EOF"
+	COMMENT           = "//"
 
 	IDENT = "IDENT"
 	INT   = "INT"
 
-	COMMENT = "//"
+	ADD = "+"
+	SUB = "-"
+	MUL = "*"
+	QUO = "/"
+	REM = "%"
 
-	ASSIGN   = "="
-	PLUS     = "+"
-	MINUS    = "-"
-	ASTERISK = "*"
-	SLASH    = "/"
+	ADD_ASSIGN = "+="
+	SUB_ASSIGN = "-="
+	MUL_ASSIGN = "*="
+	QUO_ASSIGN = "/="
+	REM_ASSIGN = "%="
 
 	EQ  = "=="
 	NEQ = "!="
@@ -23,6 +28,8 @@ const (
 	LTE = "<="
 	GT  = ">"
 	GTE = ">="
+
+	ASSIGN = "="
 
 	COMMA     = ","
 	SEMICOLON = ";"
