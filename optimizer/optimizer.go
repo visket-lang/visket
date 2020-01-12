@@ -38,7 +38,7 @@ func (o *Optimizer) optStatement(stmt ast.Statement) ast.Statement {
 		stmt.Expression = o.optExpression(stmt.Expression)
 	case *ast.VarStatement:
 		stmt.Value = o.optExpression(stmt.Value)
-	case *ast.ReassignStatement:
+	case *ast.AssignStatement:
 		stmt.Value = o.optExpression(stmt.Value)
 	case *ast.ReturnStatement:
 		stmt.Value = o.optExpression(stmt.Value)

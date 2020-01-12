@@ -12,8 +12,8 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	switch stmt := stmt.(type) {
 	case *ast.VarStatement:
 		c.genVarStatement(stmt)
-	case *ast.ReassignStatement:
-		c.genReassignStatement(stmt)
+	case *ast.AssignStatement:
+		c.genAssignStatement(stmt)
 	case *ast.ReturnStatement:
 		c.genReturnStatement(stmt)
 	case *ast.FunctionStatement:
@@ -47,7 +47,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	c.genStore(value, named)
 }
 
-func (c *CodeGen) genReassignStatement(stmt *ast.ReassignStatement) {
+func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
 	c.comment("  ; Reassign\n")
 
 	v, ok := c.context.findVariable(stmt.Ident)

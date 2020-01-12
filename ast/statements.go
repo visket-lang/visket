@@ -110,21 +110,21 @@ func (vs *VarStatement) String() string {
 
 func (vs *VarStatement) statementNode() {}
 
-type ReassignStatement struct {
+type AssignStatement struct {
 	Token token.Token
 	Ident *Identifier
 	Value Expression
 }
 
-func (rs *ReassignStatement) Inspect() string {
-	return fmt.Sprintf("%s = %s", rs.Ident.Inspect(), rs.Value.Inspect())
+func (rs *AssignStatement) Inspect() string {
+	return fmt.Sprintf("%s %s %s", rs.Ident.Inspect(), rs.Token.Literal, rs.Value.Inspect())
 }
 
-func (rs *ReassignStatement) String() string {
-	return fmt.Sprintf("%s = %s", rs.Ident.String(), rs.Value.String())
+func (rs *AssignStatement) String() string {
+	return fmt.Sprintf("%s %s %s", rs.Ident.String(), rs.Token.Literal, rs.Value.String())
 }
 
-func (rs *ReassignStatement) statementNode() {}
+func (rs *AssignStatement) statementNode() {}
 
 type ReturnStatement struct {
 	Token token.Token
