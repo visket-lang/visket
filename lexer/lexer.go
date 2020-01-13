@@ -30,17 +30,45 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		tok = token.New(token.EOF, "")
 	case '+':
-		tok = token.New(token.PLUS, "+")
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.ADD_ASSIGN, "+=")
+		} else {
+			tok = token.New(token.ADD, "+")
+		}
 	case '-':
-		tok = token.New(token.MINUS, "-")
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.SUB_ASSIGN, "-=")
+		} else {
+			tok = token.New(token.SUB, "-")
+		}
 	case '*':
-		tok = token.New(token.ASTERISK, "*")
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.MUL_ASSIGN, "*=")
+		} else {
+			tok = token.New(token.MUL, "*")
+		}
 	case '/':
 		if l.peekChar() == '/' {
 			comment := l.readLine()
 			tok = token.New(token.COMMENT, comment)
+			break
+		}
+
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.QUO_ASSIGN, "/=")
 		} else {
-			tok = token.New(token.SLASH, "/")
+			tok = token.New(token.QUO, "/")
+		}
+	case '%':
+		if l.peekChar() == '=' {
+			l.readChar()
+			tok = token.New(token.REM_ASSIGN, "%=")
+		} else {
+			tok = token.New(token.REM, "%")
 		}
 	case ',':
 		tok = token.New(token.COMMA, ",")
@@ -67,17 +95,35 @@ func (l *Lexer) NextToken() token.Token {
 			tok = token.New(token.NEQ, "!=")
 		}
 	case '<':
-		if l.peekChar() == '=' {
+		switch l.peekChar() {
+		case '=':
 			l.readChar()
 			tok = token.New(token.LTE, "<=")
-		} else {
+		case '<':
+			l.readChar()
+			if l.peekChar() == '=' {
+				l.readChar()
+				tok = token.New(token.SHL_ASSIGN, "<<=")
+			} else {
+				tok = token.New(token.SHL, "<<")
+			}
+		default:
 			tok = token.New(token.LT, "<")
 		}
 	case '>':
-		if l.peekChar() == '=' {
+		switch l.peekChar() {
+		case '=':
 			l.readChar()
 			tok = token.New(token.GTE, ">=")
-		} else {
+		case '>':
+			l.readChar()
+			if l.peekChar() == '=' {
+				l.readChar()
+				tok = token.New(token.SHR_ASSIGN, ">>=")
+			} else {
+				tok = token.New(token.SHR, ">>")
+			}
+		default:
 			tok = token.New(token.GT, ">")
 		}
 	default:

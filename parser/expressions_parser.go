@@ -20,7 +20,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
 	switch p.curToken.Type {
-	case token.MINUS:
+	case token.SUB:
 		return p.parseMinusPrefix()
 	case token.INT:
 		return p.parseIntegerLiteral()
