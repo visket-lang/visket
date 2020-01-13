@@ -18,6 +18,8 @@ func TestParse(t *testing.T) {
 		{"4 * 4", "Infix(Int(4) * Int(4))"},
 		{"4 / 4", "Infix(Int(4) / Int(4))"},
 		{"4 % 4", "Infix(Int(4) % Int(4))"},
+		{"4 << 4", "Infix(Int(4) << Int(4))"},
+		{"4 >> 4", "Infix(Int(4) >> Int(4))"},
 		{"4 == 4", "Infix(Int(4) == Int(4))"},
 		{"4 != 4", "Infix(Int(4) != Int(4))"},
 		{"4 < 4", "Infix(Int(4) < Int(4))"},
@@ -33,6 +35,8 @@ func TestParse(t *testing.T) {
 		{"c *= 3", "Ident(c) *= Int(3)"},
 		{"d /= 4", "Ident(d) /= Int(4)"},
 		{"e %= 5", "Ident(e) %= Int(5)"},
+		{"f <<= 6", "Ident(f) <<= Int(6)"},
+		{"g >>= 7", "Ident(g) >>= Int(7)"},
 
 		{"a += 1 + 2", "Ident(a) += Infix(Int(1) + Int(2))"},
 

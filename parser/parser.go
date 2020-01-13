@@ -11,6 +11,7 @@ const (
 	_ int = iota
 	LOWEST
 	RELATIONAL
+	SHIFT
 	SUM
 	PRODUCT
 	PREFIX
@@ -24,6 +25,8 @@ var precedences = map[token.TokenType]int{
 	token.LTE:    RELATIONAL,
 	token.GT:     RELATIONAL,
 	token.GTE:    RELATIONAL,
+	token.SHL:    SHIFT,
+	token.SHR:    SHIFT,
 	token.ADD:    SUM,
 	token.SUB:    SUM,
 	token.MUL:    PRODUCT,

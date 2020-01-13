@@ -9,7 +9,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.peekToken.Type {
 	case
 		token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN,
-		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN:
+		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN,
+		token.SHL_ASSIGN, token.SHR_ASSIGN:
 		return p.parseAssignStatement()
 	}
 
