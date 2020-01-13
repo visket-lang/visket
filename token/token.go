@@ -16,11 +16,17 @@ const (
 	QUO = "/"
 	REM = "%"
 
+	SHL = "<<"
+	SHR = ">>"
+
 	ADD_ASSIGN = "+="
 	SUB_ASSIGN = "-="
 	MUL_ASSIGN = "*="
 	QUO_ASSIGN = "/="
 	REM_ASSIGN = "%="
+
+	SHL_ASSIGN = "<<="
+	SHR_ASSIGN = ">>="
 
 	EQ  = "=="
 	NEQ = "!="

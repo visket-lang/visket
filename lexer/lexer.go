@@ -95,17 +95,35 @@ func (l *Lexer) NextToken() token.Token {
 			tok = token.New(token.NEQ, "!=")
 		}
 	case '<':
-		if l.peekChar() == '=' {
+		switch l.peekChar() {
+		case '=':
 			l.readChar()
 			tok = token.New(token.LTE, "<=")
-		} else {
+		case '<':
+			l.readChar()
+			if l.peekChar() == '=' {
+				l.readChar()
+				tok = token.New(token.SHL_ASSIGN, "<<=")
+			} else {
+				tok = token.New(token.SHL, "<<")
+			}
+		default:
 			tok = token.New(token.LT, "<")
 		}
 	case '>':
-		if l.peekChar() == '=' {
+		switch l.peekChar() {
+		case '=':
 			l.readChar()
 			tok = token.New(token.GTE, ">=")
-		} else {
+		case '>':
+			l.readChar()
+			if l.peekChar() == '=' {
+				l.readChar()
+				tok = token.New(token.SHR_ASSIGN, ">>=")
+			} else {
+				tok = token.New(token.SHR, ">>")
+			}
+		default:
 			tok = token.New(token.GT, ">")
 		}
 	default:

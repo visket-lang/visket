@@ -12,6 +12,8 @@ func TestNextToken(t *testing.T) {
 42 * 89
 32 / 4
 54 % 3
+2 << 3
+16 >> 3
 ((10 + 10) * 2)
 57 == 72
 43 != 83
@@ -23,6 +25,8 @@ b -= 2
 c *= 3
 d /= 4
 e %= 5
+a <<= 2
+b >>= 3
 
 var a = 1
 return a
@@ -57,6 +61,14 @@ for var i = 0; i < 10; i=i+1 { 1 }
 
 		{token.INT, "54"},
 		{token.REM, "%"},
+		{token.INT, "3"},
+
+		{token.INT, "2"},
+		{token.SHL, "<<"},
+		{token.INT, "3"},
+
+		{token.INT, "16"},
+		{token.SHR, ">>"},
 		{token.INT, "3"},
 
 		{token.LPAREN, "("},
@@ -108,6 +120,14 @@ for var i = 0; i < 10; i=i+1 { 1 }
 		{token.IDENT, "e"},
 		{token.REM_ASSIGN, "%="},
 		{token.INT, "5"},
+
+		{token.IDENT, "a"},
+		{token.SHL_ASSIGN, "<<="},
+		{token.INT, "2"},
+
+		{token.IDENT, "b"},
+		{token.SHR_ASSIGN, ">>="},
+		{token.INT, "3"},
 
 		{token.VAR, "var"},
 		{token.IDENT, "a"},
