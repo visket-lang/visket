@@ -60,8 +60,9 @@ func TestParse(t *testing.T) {
 	for i, test := range tests {
 		l := lexer.New(test.input)
 		p := New(l)
-		actual := p.ParseProgram().Inspect()
+		program := p.ParseProgram()
 		checkParserErrors(t, p)
+		actual := program.Inspect()
 
 		if actual != test.expected {
 			t.Fatalf("tests[%d] - expected=%q, got=%q", i, test.expected, actual)
