@@ -82,6 +82,14 @@ func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
 		vValue := c.genLoad(types.I32, v)
 		rhs = c.genSRem(vValue, rhs)
 		c.genStore(rhs, v)
+	case token.SHL_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genShl(vValue, rhs)
+		c.genStore(rhs, v)
+	case token.SHR_ASSIGN:
+		vValue := c.genLoad(types.I32, v)
+		rhs = c.genAShr(vValue, rhs)
+		c.genStore(rhs, v)
 	}
 }
 

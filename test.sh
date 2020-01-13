@@ -47,6 +47,9 @@ try 5 "func main() { return 60 / (10 + 2) }"
 try 1 "func main() { return 9 % 2 }"
 try 3 "func main() { return 1 + 5 % 3 }"
 
+try 16 "func main() { return 2 << 3 }"
+try 2 "func main() { return 16 >> 3 }"
+
 try 10 "func main() { return 120 + -110 }"
 try 0 "func main() { return -(-10 - (-10)) }"
 
@@ -122,6 +125,22 @@ try 1 "
 func main() {
   var a = 5
   a %= 2
+  return a
+}
+"
+
+try 12 "
+func main() {
+  var a = 3
+  a <<= 2
+  return a
+}
+"
+
+try 5 "
+func main() {
+  var a = 20
+  a >>= 2
   return a
 }
 "
