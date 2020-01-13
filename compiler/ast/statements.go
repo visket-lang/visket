@@ -3,7 +3,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"github.com/arata-nvm/Solitude/token"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"strings"
 )
 

@@ -1,7 +1,7 @@
 package codegen
 
 import (
-	"github.com/arata-nvm/Solitude/ast"
+	"github.com/arata-nvm/Solitude/compiler/ast"
 	"io"
 )
 

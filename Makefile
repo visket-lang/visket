@@ -3,15 +3,15 @@ TARGET = solitude
 BINDIR = bin
 
 build:
-	go build -o $(BINDIR)/$(TARGET)
+	@cd cmd/solitude && go build -o ../../$(BINDIR)/$(TARGET)
 
 run: build
-	./run.sh
+	@./${BINDIR}/${TARGET}
 
 test: build
-	./test.sh
+	@./test.sh
 
 clean:
-	rm -rf $(BINDIR) tmp.ll
+	rm -rf $(BINDIR) tmp tmp.sl
 
 .PHONY: build run test clean

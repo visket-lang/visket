@@ -1,7 +1,9 @@
 package lexer
 
 import (
-	"github.com/arata-nvm/Solitude/token"
+	"fmt"
+	"github.com/arata-nvm/Solitude/compiler/token"
+	"os"
 )
 
 type Lexer struct {
@@ -135,7 +137,8 @@ func (l *Lexer) NextToken() token.Token {
 			numLit := l.readNumber()
 			return token.New(token.INT, numLit)
 		}
-		return token.New(token.ILLEGAL, string(l.ch))
+		fmt.Fprintf(os.Stderr, "Illegal charactor: %c", l.ch)
+		os.Exit(1)
 	}
 
 	l.readChar()

@@ -7,18 +7,19 @@ try() {
   expected="$1"
   input="$2"
 
-  echo "$input" | $TARGET $OPT -o tmp.ll
+  echo "$input" > tmp.sl
+  cat tmp.sl
+  $TARGET $OPT -o tmp tmp.sl > /dev/null
   if [ "$?" != "0" ]; then
-    echo "build failed"
     exit 1
   fi
-  lli tmp.ll
+  ./tmp
   actual=$?
 
   if [ "$actual" == "$expected" ]; then
-    echo "$input => $actual"
+    echo "=> $actual"
   else
-    echo "$input => $expected expected, but got $actual"
+    echo "=> $expected expected, but got $actual"
     exit 1
   fi
 }
@@ -67,27 +68,24 @@ try 0 "func main() { return 10 > 10 }"
 try 1 "func main() { return 10 >= 10 }"
 try 0 "func main() { return 9 >= 10 }"
 
-try 10 "
-func main() {
+try 10 \
+"func main() {
   var a = 10
   return a
-}
-"
+}"
 
-try 5 "
-func main() {
+try 5 \
+"func main() {
   var a = 10
   return a - 5
-}
-"
+}"
 
-try 10 "
-func main() {
+try 10 \
+"func main() {
   var a = 5
   a = a + 5
   return a
-}
-"
+}"
 
 try 7 "
 func main() {
@@ -153,30 +151,28 @@ func main() { return add(2) }"
 try 6 "func add(a, b) { return a + b }
 func main() { return add(2, 4) }"
 
-try 2 "
-func main() {
+try 2 \
+"func main() {
   if 1 {
     return 2
   } else {
     return 1
   }
   return 0
-}
-"
+}"
 
-try 1 "
-func main() {
+try 1 \
+"func main() {
   if 0 {
     return 2
   } else {
     return 1
   }
   return 0
-}
-"
+}"
 
-try 2 "
-func main() {
+try 2 \
+"func main() {
   if 1 {
     if 0 {
       return 3
@@ -187,30 +183,18 @@ func main() {
     return 1
   }
   return 0
-}
-"
+}"
 
-try 0 "
-func main() {
+try 0 \
+"func main() {
   if 1 {
 
   }
   return 0
-}
-"
+}"
 
-# should be an error
-#try 0 "
-#func main() {
-#  if 1 {
-#    return 0
-#  }
-#
-#}
-#"
-
-try 1 "
-func main() {
+try 1 \
+"func main() {
   if 1 {
     return 1
   } else {
@@ -218,11 +202,10 @@ func main() {
   }
 
   return 2
-}
-"
+}"
 
-try 0 "
-func main() {
+try 0 \
+"func main() {
   if 1 {
 
   } else {
@@ -230,22 +213,20 @@ func main() {
   }
 
   return 0
-}
-"
+}"
 
-try 1 "
-func main(n) {
+try 1 \
+"func main(n) {
   if n == 1 {
     return n
   } else {
 
   }
   return n
-}
-"
+}"
 
-try 55 "
-func fib(n) {
+try 55 \
+"func fib(n) {
   if n <= 1 {
     return n
   }
@@ -254,39 +235,35 @@ func fib(n) {
 
 func main() {
   return fib(10)
-}
-"
+}"
 
-try 45 "
-func main() {
+try 45 \
+"func main() {
   var sum = 0
   for var i = 0; i < 10; i = i + 1 {
     sum = sum + i
   }
   return sum
-}
-"
+}"
 
 
-try 45 "
-func main() {
+try 45 \
+"func main() {
   var sum = 0
   for var i = 0; i <= 9; i = i + 1 {
     sum = sum + i
   }
   return sum
-}
-"
+}"
 
-try 10 "
-func main() {
+try 10 \
+"func main() {
 // return 0
   return 10 // 0
-}
-"
+}"
 
-try 10 "
-func main() {
+try 10 \
+"func main() {
   for
     var i = 0; // i < 5;
     i < 10; // i = i + 3
@@ -294,5 +271,6 @@ func main() {
   {
   }
   return i
-}
-"
+}"
+
+echo "all tests passed"

@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"github.com/arata-nvm/Solitude/token"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"testing"
 )
 

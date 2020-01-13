@@ -1,6 +1,6 @@
 package optimizer
 
-import "github.com/arata-nvm/Solitude/ast"
+import "github.com/arata-nvm/Solitude/compiler/ast"
 
 type Optimizer struct {
 	Program *ast.Program
