@@ -2,10 +2,10 @@ package codegen
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/ast"
-	"github.com/arata-nvm/Solitude/codegen/constant"
-	"github.com/arata-nvm/Solitude/codegen/types"
-	"github.com/arata-nvm/Solitude/token"
+	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/codegen/constant"
+	"github.com/arata-nvm/Solitude/compiler/codegen/types"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"os"
 )
 
