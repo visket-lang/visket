@@ -69,6 +69,7 @@ func Build(filename, outputPath string, isDebug, optimize bool) error {
 	}
 
 	cmd := exec.Command("clang", clangArgs...)
+	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
 		return err
