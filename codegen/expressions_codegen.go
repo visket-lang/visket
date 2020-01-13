@@ -26,7 +26,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genLoad(types.I32, v)
 	}
 
-	fmt.Printf("unexpexted expression: %s\n", expr.Inspect())
+	fmt.Fprintf(os.Stderr, "unexpexted expression: %s\n", expr.Inspect())
 	os.Exit(1)
 	return Register{}
 }
@@ -81,7 +81,9 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 		return c.genZext(types.I32, result)
 	}
 
-	return Register{types.I32, c.index}
+	fmt.Fprintf(os.Stdout, "unexpected operator: %s\n", ie.Operator)
+	os.Exit(1)
+	return Register{}
 }
 
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {

@@ -8,6 +8,10 @@ try() {
   input="$2"
 
   echo "$input" | $TARGET $OPT -o tmp.ll
+  if [ "$?" != "0" ]; then
+    echo "build failed"
+    exit 1
+  fi
   lli tmp.ll
   actual=$?
 
