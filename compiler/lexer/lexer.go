@@ -3,7 +3,7 @@ package lexer
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/token"
-	"os"
+	"io/ioutil"
 )
 
 type Lexer struct {
@@ -15,14 +15,31 @@ type Lexer struct {
 	ch           byte
 }
 
-func New(input string) *Lexer {
+func NewFromString(input string) *Lexer {
 	l := &Lexer{
-		input: input,
+		filename: "__input__",
+		input:    input,
+		line:     1,
 	}
 
 	l.readChar()
-
 	return l
+}
+
+func NewFromFile(filename string) (*Lexer, error) {
+	code, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	l := &Lexer{
+		filename: filename,
+		input:    string(code),
+		line:     1,
+	}
+
+	l.readChar()
+	return l, nil
 }
 
 func (l *Lexer) newToken(tokenType token.TokenType, literal string) token.Token {

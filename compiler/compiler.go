@@ -7,7 +7,6 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/lexer"
 	"github.com/arata-nvm/Solitude/compiler/optimizer"
 	"github.com/arata-nvm/Solitude/compiler/parser"
-	"io/ioutil"
 	"log"
 )
 
@@ -23,12 +22,11 @@ func New(isDebug bool) *Compiler {
 }
 
 func (c *Compiler) Compile(filename string) (errors []string) {
-	code, err := ioutil.ReadFile(filename)
+	l, err := lexer.NewFromFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	l := lexer.New(string(code))
 	p := parser.New(l)
 	c.program = p.ParseProgram()
 	errors = p.Errors

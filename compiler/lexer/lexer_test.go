@@ -191,7 +191,7 @@ for var i = 0; i < 10; i=i+1 { 1 }
 		{token.EOF, ""},
 	}
 
-	lexer := New(input)
+	lexer := NewFromString(input)
 
 	for i, test := range tests {
 		token := lexer.NextToken()
