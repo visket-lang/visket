@@ -5,7 +5,7 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/constant"
 	"github.com/arata-nvm/Solitude/compiler/codegen/types"
-	"os"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 )
 
 func (c *CodeGen) genExpression(expr ast.Expression) Value {
@@ -20,15 +20,13 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		c.comment("  ; RegName\n")
 		v, ok := c.context.findVariable(expr)
 		if !ok {
-			fmt.Printf("unresolved variable: %s\n", expr.String())
-			os.Exit(1)
+			errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
 		}
 		return c.genLoad(types.I32, v)
 	}
 
-	fmt.Fprintf(os.Stderr, "unexpexted expression: %s\n", expr.Inspect())
-	os.Exit(1)
-	return Register{}
+	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
+	return nil
 }
 
 func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
@@ -87,8 +85,7 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 		return c.genZext(types.I32, result)
 	}
 
-	fmt.Fprintf(os.Stdout, "unexpected operator: %s\n", ie.Operator)
-	os.Exit(1)
+	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s\n", ie.Operator))
 	return Register{}
 }
 

@@ -2,25 +2,56 @@ package lexer
 
 import (
 	"fmt"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
-	"os"
+	"io/ioutil"
 )
 
 type Lexer struct {
+	filename     string
 	input        string
 	position     int
 	readPosition int
+	line         int
 	ch           byte
 }
 
-func New(input string) *Lexer {
+func NewFromString(input string) *Lexer {
 	l := &Lexer{
-		input: input,
+		filename: "__input__",
+		input:    input,
+		line:     1,
 	}
 
 	l.readChar()
-
 	return l
+}
+
+func NewFromFile(filename string) (*Lexer, error) {
+	code, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	l := &Lexer{
+		filename: filename,
+		input:    string(code),
+		line:     1,
+	}
+
+	l.readChar()
+	return l, nil
+}
+
+func (l *Lexer) newToken(tokenType token.TokenType, literal string) token.Token {
+	return token.New(tokenType, literal, l.getCurrentPos())
+}
+
+func (l *Lexer) getCurrentPos() *token.Position {
+	return &token.Position{
+		Filename: l.filename,
+		Line:     l.line,
+	}
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -30,115 +61,114 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case 0:
-		tok = token.New(token.EOF, "")
+		tok = l.newToken(token.EOF, "")
 	case '+':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.ADD_ASSIGN, "+=")
+			tok = l.newToken(token.ADD_ASSIGN, "+=")
 		} else {
-			tok = token.New(token.ADD, "+")
+			tok = l.newToken(token.ADD, "+")
 		}
 	case '-':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.SUB_ASSIGN, "-=")
+			tok = l.newToken(token.SUB_ASSIGN, "-=")
 		} else {
-			tok = token.New(token.SUB, "-")
+			tok = l.newToken(token.SUB, "-")
 		}
 	case '*':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.MUL_ASSIGN, "*=")
+			tok = l.newToken(token.MUL_ASSIGN, "*=")
 		} else {
-			tok = token.New(token.MUL, "*")
+			tok = l.newToken(token.MUL, "*")
 		}
 	case '/':
 		if l.peekChar() == '/' {
 			comment := l.readLine()
-			tok = token.New(token.COMMENT, comment)
+			tok = l.newToken(token.COMMENT, comment)
 			break
 		}
 
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.QUO_ASSIGN, "/=")
+			tok = l.newToken(token.QUO_ASSIGN, "/=")
 		} else {
-			tok = token.New(token.QUO, "/")
+			tok = l.newToken(token.QUO, "/")
 		}
 	case '%':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.REM_ASSIGN, "%=")
+			tok = l.newToken(token.REM_ASSIGN, "%=")
 		} else {
-			tok = token.New(token.REM, "%")
+			tok = l.newToken(token.REM, "%")
 		}
 	case ',':
-		tok = token.New(token.COMMA, ",")
+		tok = l.newToken(token.COMMA, ",")
 	case ';':
-		tok = token.New(token.SEMICOLON, ";")
+		tok = l.newToken(token.SEMICOLON, ";")
 	case '(':
-		tok = token.New(token.LPAREN, "(")
+		tok = l.newToken(token.LPAREN, "(")
 	case ')':
-		tok = token.New(token.RPAREN, ")")
+		tok = l.newToken(token.RPAREN, ")")
 	case '{':
-		tok = token.New(token.LBRACE, "{")
+		tok = l.newToken(token.LBRACE, "{")
 	case '}':
-		tok = token.New(token.RBRACE, "}")
+		tok = l.newToken(token.RBRACE, "}")
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.EQ, "==")
+			tok = l.newToken(token.EQ, "==")
 		} else {
-			tok = token.New(token.ASSIGN, "=")
+			tok = l.newToken(token.ASSIGN, "=")
 		}
 	case '!':
 		if l.peekChar() == '=' {
 			l.readChar()
-			tok = token.New(token.NEQ, "!=")
+			tok = l.newToken(token.NEQ, "!=")
 		}
 	case '<':
 		switch l.peekChar() {
 		case '=':
 			l.readChar()
-			tok = token.New(token.LTE, "<=")
+			tok = l.newToken(token.LTE, "<=")
 		case '<':
 			l.readChar()
 			if l.peekChar() == '=' {
 				l.readChar()
-				tok = token.New(token.SHL_ASSIGN, "<<=")
+				tok = l.newToken(token.SHL_ASSIGN, "<<=")
 			} else {
-				tok = token.New(token.SHL, "<<")
+				tok = l.newToken(token.SHL, "<<")
 			}
 		default:
-			tok = token.New(token.LT, "<")
+			tok = l.newToken(token.LT, "<")
 		}
 	case '>':
 		switch l.peekChar() {
 		case '=':
 			l.readChar()
-			tok = token.New(token.GTE, ">=")
+			tok = l.newToken(token.GTE, ">=")
 		case '>':
 			l.readChar()
 			if l.peekChar() == '=' {
 				l.readChar()
-				tok = token.New(token.SHR_ASSIGN, ">>=")
+				tok = l.newToken(token.SHR_ASSIGN, ">>=")
 			} else {
-				tok = token.New(token.SHR, ">>")
+				tok = l.newToken(token.SHR, ">>")
 			}
 		default:
-			tok = token.New(token.GT, ">")
+			tok = l.newToken(token.GT, ">")
 		}
 	default:
 		if isLetter(l.ch) {
 			ident := l.readIdentifier()
 			t := token.LookUpIdent(ident)
-			return token.New(t, ident)
+			return l.newToken(t, ident)
 		} else if isDigit(l.ch) {
 			numLit := l.readNumber()
-			return token.New(token.INT, numLit)
+			return l.newToken(token.INT, numLit)
 		}
-		fmt.Fprintf(os.Stderr, "Illegal charactor: %c", l.ch)
-		os.Exit(1)
+		errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.ch))
 	}
 
 	l.readChar()
@@ -151,6 +181,10 @@ func (l *Lexer) readChar() {
 		l.ch = 0
 	} else {
 		l.ch = l.input[l.readPosition]
+	}
+
+	if l.ch == '\n' || l.ch == '\r' {
+		l.line++
 	}
 
 	l.position = l.readPosition

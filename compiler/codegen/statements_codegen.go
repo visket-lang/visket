@@ -5,8 +5,8 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/constant"
 	"github.com/arata-nvm/Solitude/compiler/codegen/types"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
-	"os"
 )
 
 func (c *CodeGen) genStatement(stmt ast.Statement) {
@@ -28,8 +28,7 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	case *ast.ForStatement:
 		c.genForStatement(stmt)
 	default:
-		fmt.Printf("unexpexted statement: %s\n", stmt.Inspect())
-		os.Exit(1)
+		errors.ErrorExit(fmt.Sprintf("unexpexted statement: %s\n", stmt.Inspect()))
 	}
 }
 
@@ -38,8 +37,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 
 	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
-		fmt.Printf("already declared variable: %s\n", stmt.Ident.String())
-		os.Exit(1)
+		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.String()))
 	}
 
 	named := c.context.newNamed(types.I32, stmt.Ident)
@@ -53,8 +51,7 @@ func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
 
 	v, ok := c.context.findVariable(stmt.Ident)
 	if !ok {
-		fmt.Printf("unresolved variable: %s\n", stmt.Ident.String())
-		os.Exit(1)
+		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", stmt.Ident.String()))
 	}
 
 	rhs := c.genExpression(stmt.Value)

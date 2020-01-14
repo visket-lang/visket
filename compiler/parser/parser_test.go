@@ -62,7 +62,7 @@ func TestParse(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		l := lexer.New(test.input)
+		l := lexer.NewFromString(test.input)
 		p := New(l)
 		program := p.ParseProgram()
 		checkParserErrors(t, p)

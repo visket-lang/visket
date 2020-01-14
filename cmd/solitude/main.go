@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+const VERSION = "0.0.1"
+
 func main() {
 	var (
 		isDebug  = flag.Bool("v", false, "Emit debug information")
@@ -19,6 +21,7 @@ func main() {
 
 	filename := flag.Arg(0)
 	if filename == "" {
+		fmt.Printf("solitude %s\n", VERSION)
 		fmt.Println("Usage: solitude [options] <filename>")
 		os.Exit(1)
 	}

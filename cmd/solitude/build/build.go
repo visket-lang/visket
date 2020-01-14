@@ -12,8 +12,7 @@ import (
 func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
 	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New(isDebug)
-	errors := c.Compile(filename)
-	printErrors(errors)
+	c.Compile(filename).ShowExit()
 	if optimize {
 		fmt.Println("Optimizing")
 		c.Optimize()
@@ -36,8 +35,7 @@ func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
 func Build(filename, outputPath string, isDebug, optimize bool) error {
 	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New(isDebug)
-	errors := c.Compile(filename)
-	printErrors(errors)
+	c.Compile(filename).ShowExit()
 	if optimize {
 		fmt.Println("Optimizing")
 		c.Optimize()
@@ -79,15 +77,6 @@ func Build(filename, outputPath string, isDebug, optimize bool) error {
 
 	fmt.Println("Finished")
 	return nil
-}
-
-func printErrors(errors []string) {
-	if len(errors) != 0 {
-		for _, e := range errors {
-			_, _ = fmt.Fprintln(os.Stderr, e)
-		}
-		os.Exit(1)
-	}
 }
 
 func getFileNameWithoutExt(path string) string {

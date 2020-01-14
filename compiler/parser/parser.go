@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/lexer"
 	"github.com/arata-nvm/Solitude/compiler/token"
 )
@@ -40,7 +41,7 @@ type Parser struct {
 	curToken  token.Token
 	peekToken token.Token
 
-	Errors []string
+	Errors errors.ErrorList
 }
 
 func New(l *lexer.Lexer) *Parser {
@@ -77,7 +78,7 @@ func (p *Parser) expect(tokenType token.TokenType) bool {
 		return true
 	}
 
-	p.error(fmt.Sprintf("expected current token is %s, got %s instead", tokenType, p.peekToken.Type))
+	p.error(fmt.Sprintf("%s | expected current token is %s, got %s instead", p.curToken.Pos, tokenType, p.peekToken.Type))
 	return false
 }
 
@@ -87,7 +88,7 @@ func (p *Parser) expectPeek(tokenType token.TokenType) bool {
 		return true
 	}
 
-	p.error(fmt.Sprintf("expected next token to be %s, got %s instead", tokenType, p.peekToken.Type))
+	p.error(fmt.Sprintf("%s | expected next token to be %s, got %s instead", p.curToken.Pos, tokenType, p.peekToken.Type))
 	return false
 }
 
