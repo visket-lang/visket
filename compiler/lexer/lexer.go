@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
 	"io/ioutil"
 )
@@ -167,8 +168,7 @@ func (l *Lexer) NextToken() token.Token {
 			numLit := l.readNumber()
 			return l.newToken(token.INT, numLit)
 		}
-		fmt.Fprintf(os.Stderr, "Illegal charactor: %c", l.ch)
-		os.Exit(1)
+		errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.ch))
 	}
 
 	l.readChar()

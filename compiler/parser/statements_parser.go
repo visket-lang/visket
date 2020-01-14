@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/token"
 )
@@ -114,7 +115,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	lastBodyStatement := stmt.Body.Statements[len(stmt.Body.Statements)-1]
 	_, ok := lastBodyStatement.(*ast.ReturnStatement)
 	if !ok {
-		p.error("missing return at end of function")
+		p.error(fmt.Sprintf("%s | missing return at end of function", p.curToken.Pos))
 		return nil
 	}
 

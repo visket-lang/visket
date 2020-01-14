@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/lexer"
 	"github.com/arata-nvm/Solitude/compiler/optimizer"
 	"github.com/arata-nvm/Solitude/compiler/parser"
@@ -21,7 +22,7 @@ func New(isDebug bool) *Compiler {
 	}
 }
 
-func (c *Compiler) Compile(filename string) (errors []string) {
+func (c *Compiler) Compile(filename string) errors.ErrorList {
 	l, err := lexer.NewFromFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -29,8 +30,7 @@ func (c *Compiler) Compile(filename string) (errors []string) {
 
 	p := parser.New(l)
 	c.program = p.ParseProgram()
-	errors = p.Errors
-	return
+	return p.Errors
 }
 
 func (c *Compiler) Optimize() {
