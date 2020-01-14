@@ -67,12 +67,14 @@ var keywords = map[string]TokenType{
 type Token struct {
 	Type    TokenType
 	Literal string
+	Pos     *Position
 }
 
-func New(tokenType TokenType, literal string) Token {
+func New(tokenType TokenType, literal string, pos *Position) Token {
 	tok := Token{
 		Type:    tokenType,
 		Literal: literal,
+		Pos:     pos,
 	}
 
 	return tok
