@@ -159,6 +159,13 @@ func (l *Lexer) NextToken() token.Token {
 		default:
 			tok = l.newToken(token.GT, ">")
 		}
+	case '.':
+		if l.peekChar() == '.' {
+			l.readChar()
+			tok = l.newToken(token.RANGE, "..")
+		} else {
+			errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.ch))
+		}
 	default:
 		if isLetter(l.ch) {
 			ident := l.readIdentifier()

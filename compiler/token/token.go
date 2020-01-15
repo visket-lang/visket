@@ -19,6 +19,8 @@ const (
 	SHL = "<<"
 	SHR = ">>"
 
+	RANGE = ".."
+
 	ADD_ASSIGN = "+="
 	SUB_ASSIGN = "-="
 	MUL_ASSIGN = "*="
@@ -52,6 +54,7 @@ const (
 	ELSE     = "else"
 	WHILE    = "while"
 	FOR      = "for"
+	IN       = "in"
 )
 
 var keywords = map[string]TokenType{
@@ -62,6 +65,7 @@ var keywords = map[string]TokenType{
 	"else":   ELSE,
 	"while":  WHILE,
 	"for":    FOR,
+	"in":     IN,
 }
 
 type Token struct {

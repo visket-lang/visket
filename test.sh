@@ -266,4 +266,13 @@ try 10 \
   return i
 }"
 
+try 55 \
+"func main() {
+  var sum = 0
+  for i in 0..10 {
+    sum += i
+  }
+  return sum
+}"
+
 echo "all tests passed"
