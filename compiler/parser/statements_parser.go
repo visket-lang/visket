@@ -191,6 +191,10 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	stmt := &ast.ForStatement{Token: p.curToken}
 	p.nextToken()
 
+	if p.peekTokenIs(token.IN) {
+		return p.parseForRangeStatement(stmt.Token)
+	}
+
 	if !p.curTokenIs(token.SEMICOLON) {
 		stmt.Init = p.parseStatement()
 	}
@@ -207,6 +211,60 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 		p.nextToken()
 	}
 
+	stmt.Body = p.parseBlockStatement()
+
+	return stmt
+}
+
+func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
+	stmt := &ast.ForStatement{Token: tok}
+
+	ident := p.parseIdentifier()
+
+	if !p.expectPeek(token.IN) {
+		return nil
+	}
+	p.nextToken()
+
+	start := p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RANGE) {
+		return nil
+	}
+	p.nextToken()
+
+	end := p.parseExpression(LOWEST)
+
+	// TODO すでに変数が宣言されている時の処理
+	stmt.Init = &ast.VarStatement{
+		Token: token.Token{Type: token.VAR, Literal: "var"},
+		Ident: ident,
+		Value: start,
+	}
+
+	stmt.Condition = &ast.InfixExpression{
+		Token:    token.Token{Type: token.LTE, Literal: "<="},
+		Left:     ident,
+		Operator: "<=",
+		Right:    end,
+	}
+
+	stmt.Post = &ast.AssignStatement{
+		Token: token.Token{
+			Type:    token.ADD_ASSIGN,
+			Literal: "+=",
+		},
+		Ident: ident,
+		Value: &ast.IntegerLiteral{
+			Token: token.Token{
+				Type:    token.INT,
+				Literal: "1",
+			},
+			Value: 1,
+		},
+	}
+
+	p.nextToken()
 	stmt.Body = p.parseBlockStatement()
 
 	return stmt

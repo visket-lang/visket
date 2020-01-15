@@ -58,6 +58,7 @@ func TestParse(t *testing.T) {
 
 		{"a = a + 1", "Ident(a) = Infix(Ident(a) + Int(1))"},
 
+		{"for i in 0..10 {1}", "for var Ident(i) = Int(0); Infix(Ident(i) <= Int(10)); Ident(i) += Int(1) {Int(1)}"},
 		{"for var i = 0; i < 10; i = i + 1 {1}", "for var Ident(i) = Int(0); Infix(Ident(i) < Int(10)); Ident(i) = Infix(Ident(i) + Int(1)) {Int(1)}"},
 	}
 
