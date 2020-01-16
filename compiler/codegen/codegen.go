@@ -1,7 +1,13 @@
 package codegen
 
 import (
+	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
+	"github.com/llir/llvm/ir/types"
 	"io"
 )
 
@@ -13,6 +19,9 @@ type CodeGen struct {
 	isDebug      bool
 	isTerminated bool
 	context      *Context
+
+	module       *ir.Module
+	contextBlock *ir.Block
 }
 
 func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
@@ -21,6 +30,7 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 		isDebug: isDebug,
 		output:  w,
 		context: newContext(nil),
+		module:  ir.NewModule(),
 	}
 
 	c.resetIndex()
@@ -30,27 +40,55 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 func (c *CodeGen) GenerateCode() {
 	c.genPrintFunction()
 	c.genInputFunction()
-	for _, s := range c.program.Statements {
-		c.genStatement(s)
+
+	//for _, s := range c.program.Statements {
+	//	c.genStatement(s)
+	//}
+
+	irCode := c.module.String()
+	_, err := fmt.Fprint(c.output, irCode)
+	if err != nil {
+		errors.ErrorExit("failed to write ir code")
 	}
 }
 
 func (c *CodeGen) genPrintFunction() {
-	c.gen("@.str.print = private unnamed_addr constant [4 x i8] c \"%%d\\0A\\00\", align 1\n")
-	c.gen("declare i32 @printf(i8*, ...)\n")
-	c.gen("define i32 @print(i32) nounwind {\n")
-	c.gen("  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.print, i64 0, i64 0), i32 %%0)\n")
-	c.gen("  ret i32 0\n")
-	c.gen("}\n\n")
+	format := c.module.NewGlobalDef(".str.print", constant.NewCharArrayFromString("%d\x0A\x00"))
+	format.Linkage = enum.LinkagePrivate
+	format.UnnamedAddr = enum.UnnamedAddrUnnamedAddr
+
+	printf := c.module.NewFunc("printf", types.I32, ir.NewParam("", types.I8Ptr))
+	printf.Sig.Variadic = true
+
+	printParam := ir.NewParam("", types.I32)
+	print := c.module.NewFunc("print", types.I32, printParam)
+	entryBlock := print.NewBlock("entry")
+
+	zero := constant.NewInt(types.I64, 0)
+	formatArg := constant.NewGetElementPtr(format.Typ.ElemType, format, zero, zero)
+	entryBlock.NewCall(printf, formatArg, printParam)
+
+	entryBlock.NewRet(constant.NewInt(types.I32, 0))
 }
 
 func (c *CodeGen) genInputFunction() {
-	c.gen("@.str = private unnamed_addr constant [3 x i8] c\"%%d\\00\", align 1")
-	c.gen("declare i32 @scanf(i8*, ...)\n")
-	c.gen("define i32 @input() nounwind {\n")
-	c.gen("  %%1 = alloca i32, align 4\n")
-	c.gen("  %%2 = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str, i64 0, i64 0), i32* %%1)\n")
-	c.gen("  %%3 = load i32, i32* %%1, align 4\n")
-	c.gen("  ret i32 %%3\n")
-	c.gen("}\n\n")
+	format := c.module.NewGlobalDef(".str.scanf", constant.NewCharArrayFromString("%d\x00"))
+	format.Linkage = enum.LinkagePrivate
+	format.UnnamedAddr = enum.UnnamedAddrUnnamedAddr
+
+	scanf := c.module.NewFunc("scanf", types.I32, ir.NewParam("", types.I8Ptr))
+	scanf.Sig.Variadic = true
+
+	input := c.module.NewFunc("input", types.I32)
+	entryBlock := input.NewBlock("entry")
+
+	scanfRet := entryBlock.NewAlloca(types.I32)
+
+	zero := constant.NewInt(types.I64, 0)
+	scanfArg := constant.NewGetElementPtr(format.Typ.ElemType, format, zero, zero)
+	entryBlock.NewCall(scanf, scanfArg, scanfRet)
+
+	result := entryBlock.NewLoad(types.I32, scanfRet)
+
+	entryBlock.NewRet(result)
 }
