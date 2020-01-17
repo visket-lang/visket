@@ -3,10 +3,12 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/codegen/constant"
-	"github.com/arata-nvm/Solitude/compiler/codegen/types"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
+	"github.com/llir/llvm/ir/types"
 )
 
 func (c *CodeGen) genStatement(stmt ast.Statement) {
@@ -33,22 +35,19 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
-	c.comment("  ; Register\n")
-
 	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
 		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.String()))
 	}
 
-	named := c.context.newNamed(types.I32, stmt.Ident)
-	c.genNamedAlloca(named)
 	value := c.genExpression(stmt.Value)
-	c.genStore(value, named)
+	named := c.contextBlock.NewAlloca(value.Type())
+	named.SetName(stmt.Ident.String())
+	c.context.addVariable(stmt.Ident, named)
+	c.contextBlock.NewStore(value, named)
 }
 
 func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
-	c.comment("  ; Assign\n")
-
 	v, ok := c.context.findVariable(stmt.Ident)
 	if !ok {
 		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", stmt.Ident.String()))
@@ -58,128 +57,131 @@ func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
 
 	switch stmt.Token.Type {
 	case token.ASSIGN:
-		c.genStore(rhs, v)
+		c.contextBlock.NewStore(rhs, v)
 	case token.ADD_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genAdd(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewAdd(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	case token.SUB_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genSub(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewSub(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	case token.MUL_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genMul(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewMul(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	case token.QUO_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genSDiv(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewSDiv(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	case token.REM_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genSRem(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewSRem(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	case token.SHL_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genShl(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewShl(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	case token.SHR_ASSIGN:
-		vValue := c.genLoad(types.I32, v)
-		rhs = c.genAShr(vValue, rhs)
-		c.genStore(rhs, v)
+		vValue := c.contextBlock.NewLoad(types.I32, v)
+		rhs = c.contextBlock.NewAShr(vValue, rhs)
+		c.contextBlock.NewStore(rhs, v)
 	}
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
-	c.comment("  ; Ret\n")
 	result := c.genExpression(stmt.Value)
-	c.genRet(result)
+	c.contextBlock.NewRet(result)
 }
 
 func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
-	c.resetIndex()
-	c.genDefineFunction(stmt.Ident)
-	c.genFunctionParameters(stmt.Parameters)
-	c.genBeginFunction()
-	c.into()
-	c.genLabel(c.nextLabel("entry"))
+	var params []*ir.Param
 
-	for _, param := range stmt.Parameters {
-		named := c.context.newNamed(types.I32, param)
-		value := c.nextReg(types.I32)
-		c.genNamedAlloca(named)
-		c.genStore(value, named)
+	for _, p := range stmt.Parameters {
+		param := ir.NewParam(p.String(), types.I32)
+		params = append(params, param)
+		c.context.addVariable(p, param)
 	}
+	c.contextFunction = c.module.NewFunc(stmt.Ident.String(), types.I32, params...)
+	c.context.addFunction(stmt.Ident, c.contextFunction)
+
+	c.into()
+	c.contextBlock = c.contextFunction.NewBlock("entry")
 
 	c.genBlockStatement(stmt.Body)
 
+	c.contextBlock = nil
 	c.outOf()
-	c.genEndFunction()
+
+	c.contextFunction = nil
+}
+
+func addLineNum(blockName string, tok token.Token) string {
+	return fmt.Sprintf("%s.%d", blockName, tok.Pos.Line)
 }
 
 func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
-	c.comment("  ; If\n")
-
 	hasAlternative := stmt.Alternative != nil
 
 	condition := c.genExpression(stmt.Condition)
-	lThen := c.nextLabel("if.then")
-	lElse := c.nextLabel("if.else")
-	lMerge := c.nextLabel("if.merge")
-	conditionI1 := c.genTrunc(types.I1, condition)
+	blockThen := c.contextFunction.NewBlock(addLineNum("if.then", stmt.Token))
+	var blockElse *ir.Block
+	blockMerge := c.contextFunction.NewBlock(addLineNum("if.merge", stmt.Token))
+	c.contextCondAfter = append(c.contextCondAfter, blockMerge)
+
 	if hasAlternative {
-		c.genBrWithCond(conditionI1, lThen, lElse)
+		blockElse = c.contextFunction.NewBlock(addLineNum("if.else", stmt.Token))
+		c.contextBlock.NewCondBr(condition, blockThen, blockElse)
 	} else {
-		c.genBrWithCond(conditionI1, lThen, lMerge)
+		c.contextBlock.NewCondBr(condition, blockThen, blockMerge)
 	}
 
-	c.genLabel(lThen)
 	c.into()
+	c.contextBlock = blockThen
+	c.contextBlock.NewBr(blockMerge)
 	c.genBlockStatement(stmt.Consequence)
-	if !c.isTerminated {
-		c.genBr(lMerge)
-	}
 	c.outOf()
 
 	if hasAlternative {
 		c.into()
-		c.genLabel(lElse)
+		c.contextBlock = blockElse
+		c.contextBlock.NewBr(blockMerge)
 		c.genBlockStatement(stmt.Alternative)
-		if !c.isTerminated {
-			c.genBr(lMerge)
-		}
 		c.outOf()
 	}
 
-	c.genLabel(lMerge)
+	c.contextBlock = blockMerge
+	c.contextCondAfter = c.contextCondAfter[:len(c.contextCondAfter)-1]
+
+	if len(c.contextCondAfter) > 0 {
+		c.contextBlock.NewBr(c.contextCondAfter[len(c.contextCondAfter)-1])
+	}
 }
 
 func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
-	c.comment("  ; While\n")
-	lLoop := c.nextLabel("while.loop")
-	lExit := c.nextLabel("while.exit")
+	blockLoop := c.contextFunction.NewBlock(addLineNum("while.loop", stmt.Token))
+	blockExit := c.contextFunction.NewBlock(addLineNum("while.exit", stmt.Token))
 
 	cond := c.genExpression(stmt.Condition)
-	result := c.genIcmp(NEQ, cond, constant.False)
-	c.genBrWithCond(result, lLoop, lExit)
+	result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
+	c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 
-	c.genLabel(lLoop)
 	c.into()
+	c.contextBlock = blockLoop
 
 	c.genBlockStatement(stmt.Body)
 
 	cond = c.genExpression(stmt.Condition)
-	result = c.genIcmp(NEQ, cond, constant.False)
-	c.genBrWithCond(result, lLoop, lExit)
-
+	result = c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
+	c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 	c.outOf()
-	c.genLabel(lExit)
+
+	c.contextBlock = blockExit
 }
 
 func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
-	c.comment("  ; For\n")
-	lLoop := c.nextLabel("for.loop")
-	lExit := c.nextLabel("for.exit")
+	blockLoop := c.contextFunction.NewBlock(addLineNum("for.loop", stmt.Token))
+	blockExit := c.contextFunction.NewBlock(addLineNum("for.exit", stmt.Token))
 
 	if stmt.Init != nil {
 		c.genStatement(stmt.Init)
@@ -187,14 +189,14 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	if stmt.Condition != nil {
 		cond := c.genExpression(stmt.Condition)
-		result := c.genIcmp(NEQ, cond, constant.False)
-		c.genBrWithCond(result, lLoop, lExit)
+		result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
+		c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 	} else {
-		c.genBr(lLoop)
+		c.contextBlock.NewBr(blockLoop)
 	}
 
-	c.genLabel(lLoop)
 	c.into()
+	c.contextBlock = blockLoop
 
 	c.genBlockStatement(stmt.Body)
 
@@ -204,14 +206,15 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	if stmt.Condition != nil {
 		cond := c.genExpression(stmt.Condition)
-		result := c.genIcmp(NEQ, cond, constant.False)
-		c.genBrWithCond(result, lLoop, lExit)
+		result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
+		c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 	} else {
-		c.genBr(lLoop)
+		c.contextBlock.NewBr(blockLoop)
 	}
 
 	c.outOf()
-	c.genLabel(lExit)
+
+	c.contextBlock = blockExit
 }
 
 func (c *CodeGen) genBlockStatement(stmt *ast.BlockStatement) {
