@@ -54,19 +54,19 @@ try 2 "func main() { return 16 >> 3 }"
 try 10 "func main() { return 120 + -110 }"
 try 0 "func main() { return -(-10 - (-10)) }"
 
-try 1 "func main() { return 10 == 10 }"
-try 0 "func main() { return 10 == 9 }"
-try 1 "func main() { return 10 != 9 }"
-try 0 "func main() { return 10 != 10 }"
+try 1 "func main() { if 10 == 10 { return 1 } return 0}"
+try 0 "func main() { if 10 == 9 { return 1 } return 0}"
+try 1 "func main() { if 10 != 9 { return 1 } return 0}"
+try 0 "func main() { if 10 != 10 { return 1 } return 0}"
 
-try 1 "func main() { return 9 < 10 }"
-try 0 "func main() { return 10 < 10 }"
-try 1 "func main() { return 10 <= 10 }"
-try 0 "func main() { return 10 <= 9 }"
-try 1 "func main() { return 10 > 9 }"
-try 0 "func main() { return 10 > 10 }"
-try 1 "func main() { return 10 >= 10 }"
-try 0 "func main() { return 9 >= 10 }"
+try 1 "func main() { if 9 < 10 { return 1 } return 0}"
+try 0 "func main() { if 10 < 10 { return 1 } return 0}"
+try 1 "func main() { if 10 <= 10 { return 1 } return 0}"
+try 0 "func main() { if 10 <= 9 { return 1 } return 0}"
+try 1 "func main() { if 10 > 9 { return 1 } return 0}"
+try 0 "func main() { if 10 > 10 { return 1 } return 0}"
+try 1 "func main() { if 10 >= 10 { return 1 } return 0}"
+try 0 "func main() { if 9 >= 10 { return 1 } return 0}"
 
 try 10 \
 "func main() {
@@ -146,7 +146,7 @@ func main() { return add(2, 4) }"
 
 try 2 \
 "func main() {
-  if 1 {
+  if true {
     return 2
   } else {
     return 1
@@ -156,7 +156,7 @@ try 2 \
 
 try 1 \
 "func main() {
-  if 0 {
+  if false {
     return 2
   } else {
     return 1
@@ -166,8 +166,8 @@ try 1 \
 
 try 2 \
 "func main() {
-  if 1 {
-    if 0 {
+  if true {
+    if false {
       return 3
     } else {
       return 2
@@ -180,7 +180,7 @@ try 2 \
 
 try 0 \
 "func main() {
-  if 1 {
+  if true {
 
   }
   return 0
@@ -188,7 +188,7 @@ try 0 \
 
 try 1 \
 "func main() {
-  if 1 {
+  if true {
     return 1
   } else {
 
@@ -199,7 +199,7 @@ try 1 \
 
 try 0 \
 "func main() {
-  if 1 {
+  if true {
 
   } else {
     return 1
