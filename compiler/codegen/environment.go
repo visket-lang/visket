@@ -2,7 +2,6 @@ package codegen
 
 import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/value"
 )
