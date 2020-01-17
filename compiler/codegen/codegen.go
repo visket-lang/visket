@@ -39,6 +39,8 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 
 func (c *CodeGen) GenerateCode() {
 	defer c.onPanicked()
+
+	c.genBool()
 	c.genPrintFunction()
 	c.genInputFunction()
 
@@ -59,6 +61,11 @@ func (c *CodeGen) onPanicked() {
 		errors.Error("failed compiling")
 		errors.ErrorExit(fmt.Sprintf("%s", err))
 	}
+}
+
+func (c *CodeGen) genBool() {
+	c.context.addVariableByName("false", constant.False)
+	c.context.addVariableByName("true", constant.True)
 }
 
 func (c *CodeGen) genPrintFunction() {
