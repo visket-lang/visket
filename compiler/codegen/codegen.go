@@ -20,8 +20,10 @@ type CodeGen struct {
 	isTerminated bool
 	context      *Context
 
-	module       *ir.Module
-	contextBlock *ir.Block
+	module           *ir.Module
+	contextFunction  *ir.Func
+	contextBlock     *ir.Block
+	contextCondAfter []*ir.Block
 }
 
 func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
@@ -32,8 +34,6 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 		context: newContext(nil),
 		module:  ir.NewModule(),
 	}
-
-	c.resetIndex()
 	return c
 }
 
@@ -41,14 +41,17 @@ func (c *CodeGen) GenerateCode() {
 	c.genPrintFunction()
 	c.genInputFunction()
 
-	//for _, s := range c.program.Statements {
-	//	c.genStatement(s)
-	//}
+	for _, s := range c.program.Statements {
+		c.genStatement(s)
+	}
 
 	irCode := c.module.String()
 	_, err := fmt.Fprint(c.output, irCode)
 	if err != nil {
-		errors.ErrorExit("failed to write ir code")
+		errors.ErrorExit("failed writing ir code")
+	}
+}
+
 	}
 }
 
@@ -69,6 +72,8 @@ func (c *CodeGen) genPrintFunction() {
 	entryBlock.NewCall(printf, formatArg, printParam)
 
 	entryBlock.NewRet(constant.NewInt(types.I32, 0))
+
+	c.context.addFunctionByName(print.Name(), print)
 }
 
 func (c *CodeGen) genInputFunction() {
@@ -91,4 +96,7 @@ func (c *CodeGen) genInputFunction() {
 	result := entryBlock.NewLoad(types.I32, scanfRet)
 
 	entryBlock.NewRet(result)
+
+	c.context.addFunctionByName(input.Name(), input)
+
 }

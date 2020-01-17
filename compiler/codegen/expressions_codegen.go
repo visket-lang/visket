@@ -3,98 +3,87 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/codegen/constant"
-	"github.com/arata-nvm/Solitude/compiler/codegen/types"
+	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
+	"github.com/llir/llvm/ir/types"
+	"github.com/llir/llvm/ir/value"
 )
 
-func (c *CodeGen) genExpression(expr ast.Expression) Value {
+func (c *CodeGen) genExpression(expr ast.Expression) value.Value {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return c.genInfix(expr)
 	case *ast.CallExpression:
 		return c.genCallExpression(expr)
 	case *ast.IntegerLiteral:
-		return constant.NewInt(types.I32, expr.Value)
+		return constant.NewInt(types.I32, int64(expr.Value))
 	case *ast.Identifier:
-		c.comment("  ; RegName\n")
 		v, ok := c.context.findVariable(expr)
 		if !ok {
 			errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
 		}
-		return c.genLoad(types.I32, v)
+		_, ok = v.Type().(*types.PointerType)
+		if ok {
+			return c.contextBlock.NewLoad(internal.PtrElmType(v), v)
+		} else {
+			return v
+		}
 	}
 
 	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
 	return nil
 }
 
-func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
-	c.comment("  ; Infix\n")
-
+func (c *CodeGen) genInfix(ie *ast.InfixExpression) value.Value {
 	lhs := c.genExpression(ie.Left)
 	rhs := c.genExpression(ie.Right)
 
-	c.comment("  ; Op\n")
-
 	switch ie.Operator {
 	case "+":
-		c.comment("  ; Add\n")
-		return c.genAdd(lhs, rhs)
+		return c.contextBlock.NewAdd(lhs, rhs)
 	case "-":
-		c.comment("  ; Sub\n")
-		return c.genSub(lhs, rhs)
+		return c.contextBlock.NewSub(lhs, rhs)
 	case "*":
-		c.comment("  ; Mul\n")
-		return c.genMul(lhs, rhs)
+		return c.contextBlock.NewMul(lhs, rhs)
 	case "/":
-		c.comment("  ; Quo\n")
-		return c.genSDiv(lhs, rhs)
+		return c.contextBlock.NewSDiv(lhs, rhs)
 	case "%":
-		c.comment("  ; Rem\n")
-		return c.genSRem(lhs, rhs)
+		return c.contextBlock.NewSRem(lhs, rhs)
 	case "<<":
-		c.comment("  ; Shl\n")
-		return c.genShl(lhs, rhs)
+		return c.contextBlock.NewShl(lhs, rhs)
 	case ">>":
-		c.comment("  ; Shr\n")
-		return c.genAShr(lhs, rhs)
+		return c.contextBlock.NewAShr(lhs, rhs)
 	case "==":
-		c.comment("  ; Equal\n")
-		result := c.genIcmp(EQ, lhs, rhs)
-		return c.genZext(types.I32, result)
+		return c.contextBlock.NewICmp(enum.IPredEQ, lhs, rhs)
 	case "!=":
-		c.comment("  ; Not Equal\n")
-		result := c.genIcmp(NEQ, lhs, rhs)
-		return c.genZext(types.I32, result)
+		return c.contextBlock.NewICmp(enum.IPredNE, lhs, rhs)
 	case "<":
-		c.comment("  ; Less Than\n")
-		result := c.genIcmp(LT, lhs, rhs)
-		return c.genZext(types.I32, result)
+		return c.contextBlock.NewICmp(enum.IPredULT, lhs, rhs)
 	case "<=":
-		c.comment("  ; Less Than or Equal\n")
-		result := c.genIcmp(LTE, lhs, rhs)
-		return c.genZext(types.I32, result)
+		return c.contextBlock.NewICmp(enum.IPredULE, lhs, rhs)
 	case ">":
-		c.comment("  ; Greater Than\n")
-		result := c.genIcmp(GT, lhs, rhs)
-		return c.genZext(types.I32, result)
+		return c.contextBlock.NewICmp(enum.IPredUGT, lhs, rhs)
 	case ">=":
-		c.comment("  ; Greater Than or Equal\n")
-		result := c.genIcmp(GTE, lhs, rhs)
-		return c.genZext(types.I32, result)
+		return c.contextBlock.NewICmp(enum.IPredUGE, lhs, rhs)
 	}
 
 	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s\n", ie.Operator))
-	return Register{}
+	return nil
 }
 
-func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
-	var params []Value
+func (c *CodeGen) genCallExpression(expr *ast.CallExpression) value.Value {
+	var params []value.Value
 
 	for _, param := range expr.Parameters {
 		params = append(params, c.genExpression(param))
 	}
 
-	return c.genCallWithReturn(expr.Function, params)
+	f, ok := c.context.findFunction(expr.Function)
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("%s | undefined function %s", expr.Token.Pos, expr.Function.String()))
+	}
+
+	return c.contextBlock.NewCall(f, params...)
 }
