@@ -37,6 +37,8 @@ else { return 0 }
 while 1 { 1 }
 for var i = 0; i < 10; i=i+1 { 1 }
 // while 1 { 1 }
+[1, 2, 3]
+array[1]
 `
 
 	tests := []struct {
@@ -187,6 +189,19 @@ for var i = 0; i < 10; i=i+1 { 1 }
 		{token.RBRACE, "}"},
 
 		{token.COMMENT, "// while 1 { 1 }"},
+
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.COMMA, ","},
+		{token.INT, "3"},
+		{token.RBRACKET, "]"},
+
+		{token.IDENT, "array"},
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.RBRACKET, "]"},
 
 		{token.EOF, ""},
 	}
