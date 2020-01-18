@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/arata-nvm/Solitude/compiler/types"
 	"strings"
 )
 
@@ -56,6 +57,7 @@ type FunctionStatement struct {
 	Ident      *Identifier
 	Parameters []*Identifier
 	Body       *BlockStatement
+	Type       types.FuncType
 }
 
 func (fs *FunctionStatement) Inspect() string {
@@ -98,6 +100,7 @@ type VarStatement struct {
 	Token token.Token
 	Ident *Identifier
 	Value Expression
+	Type  types.ParserType
 }
 
 func (vs *VarStatement) Inspect() string {

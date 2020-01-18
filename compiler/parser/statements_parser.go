@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/arata-nvm/Solitude/compiler/types"
 )
 
 func (p *Parser) parseStatement() ast.Statement {
@@ -41,10 +42,18 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	}
 	stmt.Ident = p.parseIdentifier()
 
-	if !p.expectPeek(token.ASSIGN) {
-		return nil
+	if p.peekTokenIs(token.COLON) {
+		p.nextToken()
+		p.nextToken()
+		pt := p.parseType()
+		stmt.Type = pt
 	}
 
+	if !p.peekTokenIs(token.ASSIGN) {
+		return stmt
+	}
+
+	p.nextToken()
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
 
@@ -78,6 +87,11 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
 	p.nextToken()
+
+	if p.curTokenIs(token.SEMICOLON) {
+		return stmt
+	}
+
 	stmt.Value = p.parseExpression(LOWEST)
 
 	if p.peekTokenIs(token.SEMICOLON) {
@@ -97,7 +111,18 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		return nil
 	}
 
-	stmt.Parameters = p.parseFunctionParameters()
+	params, paramTypes := p.parseFunctionParameters()
+	stmt.Parameters = params
+
+	var retType types.ParserType = types.VOID
+
+	if p.peekTokenIs(token.COLON) {
+		p.nextToken()
+		p.nextToken()
+		retType = p.parseType()
+	}
+
+	stmt.Type = types.NewFuncType(retType, paramTypes)
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
@@ -107,7 +132,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 
 	// 以下コード生成を簡単にするため
 
-	if len(stmt.Body.Statements) == 0 {
+	if stmt.Type.RetType == types.VOID {
 		return stmt
 	}
 
@@ -122,29 +147,38 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	return stmt
 }
 
-func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+func (p *Parser) parseFunctionParameters() ([]*ast.Identifier, []types.ParserType) {
 	var params []*ast.Identifier
+	var paramTypes []types.ParserType
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
-		return params
+		return params, paramTypes
 	}
 
 	p.nextToken()
 
 	params = append(params, p.parseIdentifier())
+	if !p.expectPeek(token.COLON) {
+		return nil, nil
+	}
+	p.nextToken()
+	paramTypes = append(paramTypes, p.parseType())
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
 		params = append(params, p.parseIdentifier())
+		p.expectPeek(token.COLON)
+		p.nextToken()
+		paramTypes = append(paramTypes, p.parseType())
 	}
 
 	if !p.expectPeek(token.RPAREN) {
-		return nil
+		return nil, nil
 	}
 
-	return params
+	return params, paramTypes
 }
 
 func (p *Parser) parseIfStatement() *ast.IfStatement {
@@ -295,4 +329,12 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	}
 
 	return block
+}
+
+func (p *Parser) parseType() types.ParserType {
+	if typ := types.ParseType(p.curToken.Literal); typ != nil {
+		return typ
+	}
+	p.error(fmt.Sprintf("%s | unknown type %s", p.curToken.Pos, p.curToken.Literal))
+	return nil
 }
