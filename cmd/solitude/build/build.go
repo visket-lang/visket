@@ -3,6 +3,8 @@ package build
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler"
+	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -10,13 +12,18 @@ import (
 )
 
 func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
+	defer onPanicked()
 	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New(isDebug)
 	c.Compile(filename).ShowExit()
+	if isDebug {
+		ast.Show(c.Program)
+	}
 	if optimize {
 		fmt.Println("Optimizing")
 		c.Optimize()
 	}
+	fmt.Println("Building")
 	compiled := c.GenIR()
 
 	if outputPath == "" {
@@ -33,13 +40,18 @@ func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
 }
 
 func Build(filename, outputPath string, isDebug, optimize bool) error {
+	defer onPanicked()
 	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New(isDebug)
 	c.Compile(filename).ShowExit()
+	if isDebug {
+		ast.Show(c.Program)
+	}
 	if optimize {
 		fmt.Println("Optimizing")
 		c.Optimize()
 	}
+	fmt.Println("Building")
 	compiled := c.GenIR()
 
 	tmpDir, err := ioutil.TempDir("", "solitude")
@@ -81,4 +93,11 @@ func Build(filename, outputPath string, isDebug, optimize bool) error {
 
 func getFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+}
+
+func onPanicked() {
+	if err := recover(); err != nil {
+		errors.Error("failed compiling")
+		errors.ErrorExit(fmt.Sprintf("%+v", err))
+	}
 }
