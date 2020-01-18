@@ -10,6 +10,7 @@ import (
 )
 
 func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
+	defer onPanicked()
 	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New(isDebug)
 	c.Compile(filename).ShowExit()
@@ -33,6 +34,7 @@ func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
 }
 
 func Build(filename, outputPath string, isDebug, optimize bool) error {
+	defer onPanicked()
 	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New(isDebug)
 	c.Compile(filename).ShowExit()
@@ -81,4 +83,11 @@ func Build(filename, outputPath string, isDebug, optimize bool) error {
 
 func getFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+}
+
+func onPanicked() {
+	if err := recover(); err != nil {
+		errors.Error("failed compiling")
+		errors.ErrorExit(fmt.Sprintf("%+v", err))
+	}
 }
