@@ -40,6 +40,7 @@ const (
 	ASSIGN = "="
 
 	COMMA     = ","
+	COLON     = ":"
 	SEMICOLON = ";"
 
 	LPAREN = "("

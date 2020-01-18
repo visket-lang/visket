@@ -24,128 +24,128 @@ try() {
   fi
 }
 
-try 0 "func main() { return 0 }"
-try 42 "func main() { return 42 }"
+try 0 "func main(): int { return 0 }"
+try 42 "func main(): int { return 42 }"
 
-try 4 "func main() { return 2+2 }"
-try 52 "func main() { return 83-31 }"
+try 4 "func main(): int { return 2+2 }"
+try 52 "func main(): int { return 83-31 }"
 
-try 10 "func main() { return 10   -   0 }"
-try 10 "func main() { return 10 + 10 + 10 - 20 }"
-try 0 "func main() { return 10 - 10 + 10 - 10 }"
-try 20 "func main() { return 20 - 0 + 0 - 0 }"
+try 10 "func main(): int { return 10   -   0 }"
+try 10 "func main(): int { return 10 + 10 + 10 - 20 }"
+try 0 "func main(): int { return 10 - 10 + 10 - 10 }"
+try 20 "func main(): int { return 20 - 0 + 0 - 0 }"
 
-try 30 "func main() { return 10 + 10 * 2 }"
-try 102 "func main() { return 10 * 10 + 2 }"
-try 200 "func main() { return 10 * 10 * 2 }"
+try 30 "func main(): int { return 10 + 10 * 2 }"
+try 102 "func main(): int { return 10 * 10 + 2 }"
+try 200 "func main(): int { return 10 * 10 * 2 }"
 
-try 40 "func main() { return (10 + 10) * 2 }"
-try 120 "func main() { return 10 * (10 + 2) }"
+try 40 "func main(): int { return (10 + 10) * 2 }"
+try 120 "func main(): int { return 10 * (10 + 2) }"
 
-try 10 "func main() { return (10 + 10) / 2 }"
-try 5 "func main() { return 60 / (10 + 2) }"
+try 10 "func main(): int { return (10 + 10) / 2 }"
+try 5 "func main(): int { return 60 / (10 + 2) }"
 
-try 1 "func main() { return 9 % 2 }"
-try 3 "func main() { return 1 + 5 % 3 }"
+try 1 "func main(): int { return 9 % 2 }"
+try 3 "func main(): int { return 1 + 5 % 3 }"
 
-try 16 "func main() { return 2 << 3 }"
-try 2 "func main() { return 16 >> 3 }"
+try 16 "func main(): int { return 2 << 3 }"
+try 2 "func main(): int { return 16 >> 3 }"
 
-try 10 "func main() { return 120 + -110 }"
-try 0 "func main() { return -(-10 - (-10)) }"
+try 10 "func main(): int { return 120 + -110 }"
+try 0 "func main(): int { return -(-10 - (-10)) }"
 
-try 1 "func main() { if 10 == 10 { return 1 } return 0}"
-try 0 "func main() { if 10 == 9 { return 1 } return 0}"
-try 1 "func main() { if 10 != 9 { return 1 } return 0}"
-try 0 "func main() { if 10 != 10 { return 1 } return 0}"
+try 1 "func main(): int { if 10 == 10 { return 1 } return 0}"
+try 0 "func main(): int { if 10 == 9 { return 1 } return 0}"
+try 1 "func main(): int { if 10 != 9 { return 1 } return 0}"
+try 0 "func main(): int { if 10 != 10 { return 1 } return 0}"
 
-try 1 "func main() { if 9 < 10 { return 1 } return 0}"
-try 0 "func main() { if 10 < 10 { return 1 } return 0}"
-try 1 "func main() { if 10 <= 10 { return 1 } return 0}"
-try 0 "func main() { if 10 <= 9 { return 1 } return 0}"
-try 1 "func main() { if 10 > 9 { return 1 } return 0}"
-try 0 "func main() { if 10 > 10 { return 1 } return 0}"
-try 1 "func main() { if 10 >= 10 { return 1 } return 0}"
-try 0 "func main() { if 9 >= 10 { return 1 } return 0}"
+try 1 "func main(): int { if 9 < 10 { return 1 } return 0}"
+try 0 "func main(): int { if 10 < 10 { return 1 } return 0}"
+try 1 "func main(): int { if 10 <= 10 { return 1 } return 0}"
+try 0 "func main(): int { if 10 <= 9 { return 1 } return 0}"
+try 1 "func main(): int { if 10 > 9 { return 1 } return 0}"
+try 0 "func main(): int { if 10 > 10 { return 1 } return 0}"
+try 1 "func main(): int { if 10 >= 10 { return 1 } return 0}"
+try 0 "func main(): int { if 9 >= 10 { return 1 } return 0}"
 
 try 10 \
-"func main() {
+"func main(): int {
   var a = 10
   return a
 }"
 
 try 5 \
-"func main() {
+"func main(): int {
   var a = 10
   return a - 5
 }"
 
 try 10 \
-"func main() {
+"func main(): int {
   var a = 5
   a = a + 5
   return a
 }"
 
 try 7 \
-"func main() {
+"func main(): int {
   var a = 5
   a += 2
   return a
 }"
 
 try 3 \
-"func main() {
+"func main(): int {
   var a = 5
   a -= 2
   return a
 }"
 
 try 10 \
-"func main() {
+"func main(): int {
   var a = 5
   a *= 2
   return a
 }"
 
 try 2 \
-"func main() {
+"func main(): int {
   var a = 5
   a /= 2
   return a
 }"
 
 try 1 \
-"func main() {
+"func main(): int {
   var a = 5
   a %= 2
   return a
 }"
 
 try 12 \
-"func main() {
+"func main(): int {
   var a = 3
   a <<= 2
   return a
 }"
 
 try 5 \
-"func main() {
+"func main(): int {
   var a = 20
   a >>= 2
   return a
 }"
 
-try 2 "func num() { return 2 }
-func main() { return num() }"
-try 4 "func add(n) { return n + 2 }
-func main() { return add(2) }"
+try 2 "func num(): int { return 2 }
+func main(): int { return num() }"
+try 4 "func add(n: int): int { return n + 2 }
+func main(): int { return add(2) }"
 
-try 6 "func add(a, b) { return a + b }
-func main() { return add(2, 4) }"
+try 6 "func add(a: int, b: int): int { return a + b }
+func main(): int { return add(2, 4) }"
 
 try 2 \
-"func main() {
+"func main(): int {
   if true {
     return 2
   } else {
@@ -155,7 +155,7 @@ try 2 \
 }"
 
 try 1 \
-"func main() {
+"func main(): int {
   if false {
     return 2
   } else {
@@ -165,7 +165,7 @@ try 1 \
 }"
 
 try 2 \
-"func main() {
+"func main(): int {
   if true {
     if false {
       return 3
@@ -179,7 +179,7 @@ try 2 \
 }"
 
 try 0 \
-"func main() {
+"func main(): int {
   if true {
 
   }
@@ -187,7 +187,7 @@ try 0 \
 }"
 
 try 1 \
-"func main() {
+"func main(): int {
   if true {
     return 1
   } else {
@@ -198,7 +198,7 @@ try 1 \
 }"
 
 try 0 \
-"func main() {
+"func main(): int {
   if true {
 
   } else {
@@ -209,7 +209,7 @@ try 0 \
 }"
 
 try 1 \
-"func main(n) {
+"func main(n: int): int {
   if n == 1 {
     return n
   } else {
@@ -219,19 +219,19 @@ try 1 \
 }"
 
 try 55 \
-"func fib(n) {
+"func fib(n: int): int {
   if n <= 1 {
     return n
   }
   return fib(n - 1) + fib(n - 2)
 }
 
-func main() {
+func main(): int {
   return fib(10)
 }"
 
 try 45 \
-"func main() {
+"func main(): int {
   var sum = 0
   for var i = 0; i < 10; i = i + 1 {
     sum = sum + i
@@ -241,7 +241,7 @@ try 45 \
 
 
 try 45 \
-"func main() {
+"func main(): int {
   var sum = 0
   for var i = 0; i <= 9; i = i + 1 {
     sum = sum + i
@@ -250,13 +250,13 @@ try 45 \
 }"
 
 try 10 \
-"func main() {
+"func main(): int {
 // return 0
   return 10 // 0
 }"
 
 try 10 \
-"func main() {
+"func main(): int {
   for
     var i = 0; // i < 5;
     i < 10; // i = i + 3
@@ -267,7 +267,7 @@ try 10 \
 }"
 
 try 55 \
-"func main() {
+"func main(): int {
   var sum = 0
   for i in 0..10 {
     sum += i
