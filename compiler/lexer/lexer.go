@@ -210,7 +210,7 @@ func (l *Lexer) peekChar() byte {
 
 func (l *Lexer) readIdentifier() string {
 	readPos := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.ch) || isDigit(l.ch) {
 		l.readChar()
 	}
 
