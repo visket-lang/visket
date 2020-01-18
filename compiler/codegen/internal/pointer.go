@@ -6,5 +6,8 @@ import (
 )
 
 func PtrElmType(v value.Value) types.Type {
-	return v.Type().(*types.PointerType).ElemType
+	if ptr, ok := v.Type().(*types.PointerType); ok {
+		return ptr.ElemType
+	}
+	return v.Type()
 }

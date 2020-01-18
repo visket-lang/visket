@@ -74,15 +74,26 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) value.Value {
 }
 
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) value.Value {
-	var params []value.Value
-
-	for _, param := range expr.Parameters {
-		params = append(params, c.genExpression(param))
-	}
-
 	f, ok := c.context.findFunction(expr.Function)
 	if !ok {
 		errors.ErrorExit(fmt.Sprintf("%s | undefined function %s", expr.Token.Pos, expr.Function.String()))
+	}
+
+	if len(expr.Parameters) < len(f.Params) {
+		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to %s", expr.Token.Pos, expr.Function.String()))
+	} else if len(expr.Parameters) > len(f.Params) {
+		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to %s", expr.Token.Pos, expr.Function.String()))
+	}
+
+	var params []value.Value
+
+	for i, param := range expr.Parameters {
+		v := c.genExpression(param)
+		params = append(params, v)
+		if v.Type() != f.Sig.Params[i] {
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatched %s and %s", expr.Token.Pos, v.Type(), f.Sig.Params[i].String()))
+
+		}
 	}
 
 	return c.contextBlock.NewCall(f, params...)

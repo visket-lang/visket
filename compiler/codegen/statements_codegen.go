@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir"
@@ -40,11 +41,33 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.String()))
 	}
 
-	value := c.genExpression(stmt.Value)
-	named := c.contextBlock.NewAlloca(value.Type())
-	named.SetName(stmt.Ident.String())
-	c.context.addVariable(stmt.Ident, named)
-	c.contextBlock.NewStore(value, named)
+	// TODO 書き直す
+	if stmt.Type != nil && stmt.Value == nil {
+		typ := stmt.Type.ToType()
+		named := c.contextBlock.NewAlloca(typ)
+		named.SetName(stmt.Ident.String())
+		c.context.addVariable(stmt.Ident, named)
+	}
+
+	if stmt.Type == nil && stmt.Value != nil {
+		value := c.genExpression(stmt.Value)
+		named := c.contextBlock.NewAlloca(value.Type())
+		named.SetName(stmt.Ident.String())
+		c.context.addVariable(stmt.Ident, named)
+		c.contextBlock.NewStore(value, named)
+	}
+
+	if stmt.Type != nil && stmt.Value != nil {
+		typ := stmt.Type.ToType()
+		value := c.genExpression(stmt.Value)
+		if typ != value.Type() {
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, typ, value.Type()))
+		}
+		named := c.contextBlock.NewAlloca(value.Type())
+		named.SetName(stmt.Ident.String())
+		c.context.addVariable(stmt.Ident, named)
+		c.contextBlock.NewStore(value, named)
+	}
 }
 
 func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
@@ -55,60 +78,97 @@ func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
 
 	rhs := c.genExpression(stmt.Value)
 
+	vTyp := internal.PtrElmType(v)
+	if vTyp != rhs.Type() {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, vTyp, rhs.Type()))
+	}
+
 	switch stmt.Token.Type {
 	case token.ASSIGN:
 		c.contextBlock.NewStore(rhs, v)
 	case token.ADD_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewAdd(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	case token.SUB_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewSub(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	case token.MUL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewMul(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	case token.QUO_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewSDiv(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	case token.REM_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewSRem(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	case token.SHL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewShl(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	case token.SHR_ASSIGN:
-		vValue := c.contextBlock.NewLoad(types.I32, v)
+		vValue := c.contextBlock.NewLoad(vTyp, v)
 		rhs = c.contextBlock.NewAShr(vValue, rhs)
 		c.contextBlock.NewStore(rhs, v)
 	}
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
+	retType := c.contextFunction.Sig.RetType
+
+	if stmt.Value == nil {
+		if retType != types.Void {
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, retType, types.Void))
+		}
+		c.contextBlock.NewRet(nil)
+		return
+	}
+
 	result := c.genExpression(stmt.Value)
+
+	if retType != result.Type() {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, retType, result.Type()))
+	}
+
 	c.contextBlock.NewRet(result)
 }
 
 func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	var params []*ir.Param
 
-	for _, p := range stmt.Parameters {
-		param := ir.NewParam(p.String(), types.I32)
+	for i, _ := range stmt.Parameters {
+		typ := stmt.Type.Params[i].ToType()
+		param := ir.NewParam("", typ)
 		params = append(params, param)
-		c.context.addVariable(p, param)
 	}
-	c.contextFunction = c.module.NewFunc(stmt.Ident.String(), types.I32, params...)
+
+	returnTyp := stmt.Type.RetType.ToType()
+
+	c.contextFunction = c.module.NewFunc(stmt.Ident.String(), returnTyp, params...)
 	c.context.addFunction(stmt.Ident, c.contextFunction)
 
 	c.into()
 	c.contextBlock = c.contextFunction.NewBlock("entry")
 
+	// 引数の再代入のために必要
+	for i, p := range stmt.Parameters {
+		typ := stmt.Type.Params[i].ToType()
+		param := ir.NewParam("", typ)
+		param.LocalID = int64(i)
+		pp := c.contextBlock.NewAlloca(typ)
+		c.contextBlock.NewStore(param, pp)
+		c.context.addVariable(p, pp)
+	}
+
 	c.genBlockStatement(stmt.Body)
+
+	if returnTyp == types.Void {
+		c.contextBlock.NewRet(nil)
+	}
 
 	c.contextBlock = nil
 	c.outOf()
