@@ -12,7 +12,7 @@ import (
 )
 
 type Compiler struct {
-	program *ast.Program
+	Program *ast.Program
 	isDebug bool
 }
 
@@ -29,18 +29,18 @@ func (c *Compiler) Compile(filename string) errors.ErrorList {
 	}
 
 	p := parser.New(l)
-	c.program = p.ParseProgram()
+	c.Program = p.ParseProgram()
 	return p.Errors
 }
 
 func (c *Compiler) Optimize() {
-	o := optimizer.New(c.program)
+	o := optimizer.New(c.Program)
 	o.Optimize()
 }
 
 func (c *Compiler) GenIR() string {
 	var b bytes.Buffer
-	cg := codegen.New(c.program, c.isDebug, &b)
+	cg := codegen.New(c.Program, c.isDebug, &b)
 	cg.GenerateCode()
 	return b.String()
 }
