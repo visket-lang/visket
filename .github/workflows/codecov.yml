@@ -31,5 +31,4 @@ jobs:
         file: ./cover.out
         flags: unittests
         name: codecov-umbrella
-        yml: ./codecov.yml
         fail_ci_if_error: true
