@@ -9,6 +9,7 @@ import (
 var (
 	VOID = VoidType{}
 	INT  = IntType{}
+	BOOL = BoolType{}
 )
 
 type ParserType interface {
@@ -34,6 +35,16 @@ func (i IntType) ToType() types.Type {
 
 func (i IntType) String() string {
 	return "int"
+}
+
+type BoolType struct{}
+
+func (b BoolType) ToType() types.Type {
+	return types.I1
+}
+
+func (b BoolType) String() string {
+	return "bool"
 }
 
 type FuncType struct {
@@ -71,6 +82,7 @@ func (f FuncType) String() string {
 var typeNameToType = map[string]ParserType{
 	"void": VOID,
 	"int":  INT,
+	"bool": BOOL,
 }
 
 func ParseType(name string) ParserType {
