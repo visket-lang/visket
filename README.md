@@ -1,5 +1,5 @@
 ![](https://img.shields.io/github/workflow/status/arata-nvm/Solitude/Go?style=for-the-badge)
-
+![](https://img.shields.io/codecov/c/github/arata-nvm/Solitude?style=for-the-badge)
 # Solitude
 
 A compiled programming language
