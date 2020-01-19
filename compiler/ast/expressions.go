@@ -104,3 +104,19 @@ func (ce *CallExpression) String() string {
 }
 
 func (ce *CallExpression) expressionNode() {}
+
+type IndexExpression struct {
+	Token token.Token
+	Left  Expression
+	Index Expression
+}
+
+func (ie *IndexExpression) Inspect() string {
+	return fmt.Sprintf("%s[%s]", ie.Left.Inspect(), ie.Index.Inspect())
+}
+
+func (ie *IndexExpression) String() string {
+	return fmt.Sprintf("%s[%s]", ie.Left.String(), ie.Index.String())
+}
+
+func (ie *IndexExpression) expressionNode() {}

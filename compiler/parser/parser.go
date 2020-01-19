@@ -17,23 +17,25 @@ const (
 	PRODUCT
 	PREFIX
 	CALL
+	INDEX
 )
 
 var precedences = map[token.TokenType]int{
-	token.EQ:     RELATIONAL,
-	token.NEQ:    RELATIONAL,
-	token.LT:     RELATIONAL,
-	token.LTE:    RELATIONAL,
-	token.GT:     RELATIONAL,
-	token.GTE:    RELATIONAL,
-	token.SHL:    SHIFT,
-	token.SHR:    SHIFT,
-	token.ADD:    SUM,
-	token.SUB:    SUM,
-	token.MUL:    PRODUCT,
-	token.QUO:    PRODUCT,
-	token.REM:    PRODUCT,
-	token.LPAREN: CALL,
+	token.EQ:       RELATIONAL,
+	token.NEQ:      RELATIONAL,
+	token.LT:       RELATIONAL,
+	token.LTE:      RELATIONAL,
+	token.GT:       RELATIONAL,
+	token.GTE:      RELATIONAL,
+	token.SHL:      SHIFT,
+	token.SHR:      SHIFT,
+	token.ADD:      SUM,
+	token.SUB:      SUM,
+	token.MUL:      PRODUCT,
+	token.QUO:      PRODUCT,
+	token.REM:      PRODUCT,
+	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 type Parser struct {

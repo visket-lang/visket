@@ -81,6 +81,8 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	switch op {
 	case "(":
 		return p.parseCallExpression(left)
+	case "[":
+		return p.parseIndexExpression(left)
 	}
 
 	expr := &ast.InfixExpression{
@@ -132,4 +134,20 @@ func (p *Parser) parseCallParameters() []ast.Expression {
 	}
 
 	return params
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{
+		Token: p.curToken,
+		Left:  left,
+		Index: nil,
+	}
+	p.nextToken()
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
 }
