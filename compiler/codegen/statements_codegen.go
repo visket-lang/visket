@@ -140,7 +140,7 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	var params []*ir.Param
 
-	for i, _ := range stmt.Parameters {
+	for i := range stmt.Parameters {
 		typ := stmt.Type.Params[i].ToType()
 		param := ir.NewParam("", typ)
 		params = append(params, param)
