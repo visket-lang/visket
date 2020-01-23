@@ -84,7 +84,7 @@ func (ce *CallExpression) Inspect() string {
 	}
 
 	buf.WriteString(fmt.Sprintf("Call(%s(", ce.Function.Inspect()))
-	buf.WriteString(fmt.Sprintf("%s", strings.Join(p, ",")))
+	buf.WriteString(strings.Join(p, ","))
 	buf.WriteString("))")
 	return buf.String()
 }
@@ -98,7 +98,7 @@ func (ce *CallExpression) String() string {
 	}
 
 	buf.WriteString(fmt.Sprintf("Call(%s(", ce.Function.String()))
-	buf.WriteString(fmt.Sprintf("%s", strings.Join(p, ",")))
+	buf.WriteString(strings.Join(p, ","))
 	buf.WriteString("))")
 	return buf.String()
 }
