@@ -12,13 +12,10 @@ import (
 )
 
 type CodeGen struct {
-	program      *ast.Program
-	output       io.Writer
-	index        int
-	labelIndex   int
-	isDebug      bool
-	isTerminated bool
-	context      *Context
+	program *ast.Program
+	output  io.Writer
+	isDebug bool
+	context *Context
 
 	module           *ir.Module
 	contextFunction  *ir.Func
