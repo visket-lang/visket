@@ -21,17 +21,9 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	case *ast.AssignExpression:
 		return c.genAssignExpression(expr)
 	case *ast.IntegerLiteral:
-		return Value{
-			Value:      constant.NewInt(types.I32, int64(expr.Value)),
-			IsVariable: false,
-		}
+		return c.genIntegerLiteral(expr)
 	case *ast.Identifier:
-		v, ok := c.context.findVariable(expr)
-		if !ok {
-			errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
-		}
-
-		return v
+		return c.genIdentifier(expr)
 	}
 
 	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
@@ -111,18 +103,18 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		IsVariable: false,
 	}
 }
-func (c *CodeGen) genAssignExpression(stmt *ast.AssignExpression) Value {
-	lhs := c.genExpression(stmt.Left).Value
-	rhs := c.genExpression(stmt.Value).Load(c.contextBlock)
+func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
+	lhs := c.genExpression(expr.Left).Value
+	rhs := c.genExpression(expr.Value).Load(c.contextBlock)
 
 	lhsTyp := internal.PtrElmType(lhs)
 	rhsTyp := rhs.Type()
 
 	if !lhsTyp.Equal(rhsTyp) {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, lhsTyp, rhsTyp))
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, lhsTyp, rhsTyp))
 	}
 
-	switch stmt.Token.Type {
+	switch expr.Token.Type {
 	case token.ASSIGN:
 		c.contextBlock.NewStore(rhs, lhs)
 	case token.ADD_ASSIGN:
