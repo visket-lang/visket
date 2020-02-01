@@ -114,7 +114,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	params, paramTypes := p.parseFunctionParameters()
 	stmt.Parameters = params
 
-	var retType types.ParserType = types.VOID
+	var retType types.SlType = types.VOID
 
 	if p.peekTokenIs(token.COLON) {
 		p.nextToken()
@@ -122,7 +122,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		retType = p.parseType()
 	}
 
-	stmt.Type = types.NewFuncType(retType, paramTypes)
+	stmt.Type = types.NewSlFunction(retType, paramTypes)
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
@@ -147,9 +147,9 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	return stmt
 }
 
-func (p *Parser) parseFunctionParameters() ([]*ast.Identifier, []types.ParserType) {
+func (p *Parser) parseFunctionParameters() ([]*ast.Identifier, []types.SlType) {
 	var params []*ast.Identifier
-	var paramTypes []types.ParserType
+	var paramTypes []types.SlType
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
@@ -331,8 +331,17 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
-func (p *Parser) parseType() types.ParserType {
-	if typ := types.ParseType(p.curToken.Literal); typ != nil {
+func (p *Parser) parseType() types.SlType {
+	// 配列
+	if p.curTokenIs(token.LBRACKET) {
+		p.nextToken()
+		length := p.parseIntegerLiteral()
+		p.expectPeek(token.RBRACKET)
+		p.nextToken()
+		return types.NewSlArray(length.Value, p.parseType())
+	}
+
+	if typ, ok := types.LookupType(p.curToken.Literal); ok {
 		return typ
 	}
 	p.error(fmt.Sprintf("%s | unknown type %s", p.curToken.Pos, p.curToken.Literal))

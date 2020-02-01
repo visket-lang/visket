@@ -43,7 +43,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 
 	// TODO 書き直す
 	if stmt.Type != nil && stmt.Value == nil {
-		typ := stmt.Type.ToType()
+		typ := stmt.Type.LlvmType()
 		named := c.contextBlock.NewAlloca(typ)
 		named.SetName(stmt.Ident.String())
 		c.context.addVariable(stmt.Ident, named)
@@ -58,7 +58,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	}
 
 	if stmt.Type != nil && stmt.Value != nil {
-		typ := stmt.Type.ToType()
+		typ := stmt.Type.LlvmType()
 		value := c.genExpression(stmt.Value)
 		if typ != value.Type() {
 			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, typ, value.Type()))
@@ -141,12 +141,12 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	var params []*ir.Param
 
 	for i, _ := range stmt.Parameters {
-		typ := stmt.Type.Params[i].ToType()
+		typ := stmt.Type.Params[i].LlvmType()
 		param := ir.NewParam("", typ)
 		params = append(params, param)
 	}
 
-	returnTyp := stmt.Type.RetType.ToType()
+	returnTyp := stmt.Type.RetType.LlvmType()
 
 	c.contextFunction = c.module.NewFunc(stmt.Ident.String(), returnTyp, params...)
 	c.context.addFunction(stmt.Ident, c.contextFunction)
@@ -156,7 +156,7 @@ func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 
 	// 引数の再代入のために必要
 	for i, p := range stmt.Parameters {
-		typ := stmt.Type.Params[i].ToType()
+		typ := stmt.Type.Params[i].LlvmType()
 		param := ir.NewParam("", typ)
 		param.LocalID = int64(i)
 		pp := c.contextBlock.NewAlloca(typ)

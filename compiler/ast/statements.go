@@ -57,7 +57,7 @@ type FunctionStatement struct {
 	Ident      *Identifier
 	Parameters []*Identifier
 	Body       *BlockStatement
-	Type       types.FuncType
+	Type       *types.SlFunction
 }
 
 func (fs *FunctionStatement) Inspect() string {
@@ -100,7 +100,7 @@ type VarStatement struct {
 	Token token.Token
 	Ident *Identifier
 	Value Expression
-	Type  types.ParserType
+	Type  types.SlType
 }
 
 func (vs *VarStatement) Inspect() string {
