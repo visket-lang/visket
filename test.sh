@@ -275,4 +275,20 @@ try 55 \
   return sum
 }"
 
+try 0 \
+"func main(): int {
+  var a: [3]int
+  return a[0]
+}"
+
+try 3 \
+"func main(): int {
+  var a: [3]int
+  var b = 2
+  a[0] = 1
+  a[b - 1] = 2
+  a[b * 1] = b + 1
+  return a[b]
+}"
+
 echo "all tests passed"

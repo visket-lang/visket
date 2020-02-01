@@ -18,6 +18,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genInfix(expr)
 	case *ast.CallExpression:
 		return c.genCallExpression(expr)
+	case *ast.IndexExpression:
+		return c.genIndexExpression(expr)
 	case *ast.AssignExpression:
 		return c.genAssignExpression(expr)
 	case *ast.IntegerLiteral:
@@ -151,4 +153,38 @@ func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
 		Value:      rhs,
 		IsVariable: true,
 	}
+}
+
+func (c *CodeGen) genIndexExpression(expr *ast.IndexExpression) Value {
+	left := c.genExpression(expr.Left).Value
+	leftTyp := internal.PtrElmType(left)
+
+	if _, ok := leftTyp.(*types.ArrayType); !ok {
+		errors.ErrorExit(fmt.Sprintf("%s | cannot index %s", expr.Token.Pos, leftTyp))
+
+	}
+
+	index := c.genExpression(expr.Index).Load(c.contextBlock)
+	val := c.contextBlock.NewGetElementPtr(leftTyp, left, constant.NewInt(types.I64, 0), index)
+	val.InBounds = true
+	return Value{
+		Value:      val,
+		IsVariable: true,
+	}
+}
+
+func (c *CodeGen) genIntegerLiteral(expr *ast.IntegerLiteral) Value {
+	return Value{
+		Value:      constant.NewInt(types.I32, int64(expr.Value)),
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
+	v, ok := c.context.findVariable(expr)
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
+	}
+
+	return v
 }
