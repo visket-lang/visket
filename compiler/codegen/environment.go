@@ -2,33 +2,46 @@ package codegen
 
 import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/value"
 )
 
 type Context struct {
-	variables map[string]value.Value
+	variables map[string]Value
 	functions map[string]*ir.Func
 	parent    *Context
 }
 
+type Value struct {
+	Value      value.Value
+	IsVariable bool
+}
+
+func (v Value) Load(block *ir.Block) value.Value {
+	if v.IsVariable {
+		return block.NewLoad(internal.PtrElmType(v.Value), v.Value)
+	}
+	return v.Value
+}
+
 func newContext(parent *Context) *Context {
 	return &Context{
-		variables: make(map[string]value.Value),
+		variables: make(map[string]Value),
 		functions: make(map[string]*ir.Func),
 		parent:    parent,
 	}
 }
 
-func (c *Context) addVariable(ident *ast.Identifier, v value.Value) {
+func (c *Context) addVariable(ident *ast.Identifier, v Value) {
 	c.variables[ident.String()] = v
 }
 
-func (c *Context) addVariableByName(name string, v value.Value) {
+func (c *Context) addVariableByName(name string, v Value) {
 	c.variables[name] = v
 }
 
-func (c *Context) findVariable(ident *ast.Identifier) (value.Value, bool) {
+func (c *Context) findVariable(ident *ast.Identifier) (Value, bool) {
 	v, ok := c.variables[ident.String()]
 
 	if !ok && c.parent != nil {

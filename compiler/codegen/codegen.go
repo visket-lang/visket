@@ -54,8 +54,14 @@ func (c *CodeGen) GenerateCode() {
 }
 
 func (c *CodeGen) genBool() {
-	c.context.addVariableByName("false", constant.False)
-	c.context.addVariableByName("true", constant.True)
+	c.context.addVariableByName("false", Value{
+		Value:      constant.False,
+		IsVariable: false,
+	})
+	c.context.addVariableByName("true", Value{
+		Value:      constant.True,
+		IsVariable: false,
+	})
 }
 
 func (c *CodeGen) genPrintFunction() {
