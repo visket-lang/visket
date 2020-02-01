@@ -10,12 +10,25 @@ import (
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	left := p.parsePrefixExpression()
 
-	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
+	// TODO rewrite
+	for !p.peekTokenIs(token.SEMICOLON) && (isAssign(p.peekToken) || precedence < p.peekPrecedence()) {
 		p.nextToken()
 		left = p.parseInfixExpression(left)
 	}
 
 	return left
+}
+
+func isAssign(tok token.Token) bool {
+	switch tok.Type {
+	case
+		token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN,
+		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN,
+		token.SHL_ASSIGN, token.SHR_ASSIGN:
+		return true
+	}
+
+	return false
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
@@ -83,6 +96,11 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 		return p.parseCallExpression(left)
 	case "[":
 		return p.parseIndexExpression(left)
+	case
+		token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN,
+		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN,
+		token.SHL_ASSIGN, token.SHR_ASSIGN:
+		return p.parseAssignExpression(left)
 	}
 
 	expr := &ast.InfixExpression{
@@ -150,4 +168,20 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	}
 
 	return exp
+}
+
+func (p *Parser) parseAssignExpression(left ast.Expression) *ast.AssignExpression {
+	stmt := &ast.AssignExpression{
+		Token: p.curToken,
+		Left:  left,
+	}
+
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
@@ -17,6 +18,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) value.Value {
 		return c.genInfix(expr)
 	case *ast.CallExpression:
 		return c.genCallExpression(expr)
+	case *ast.AssignExpression:
+		return c.genAssignExpression(expr)
 	case *ast.IntegerLiteral:
 		return constant.NewInt(types.I32, int64(expr.Value))
 	case *ast.Identifier:
@@ -97,4 +100,61 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) value.Value {
 	}
 
 	return c.contextBlock.NewCall(f, params...)
+}
+
+func (c *CodeGen) genAssignExpression(stmt *ast.AssignExpression) value.Value {
+	// TODO rewrite
+	ident, ok := stmt.Left.(*ast.Identifier)
+	if !ok {
+		errors.ErrorExit("not implemented")
+	}
+
+	lhs, ok := c.context.findVariable(ident)
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", ident))
+	}
+
+	rhs := c.genExpression(stmt.Value)
+
+	lhsTyp := internal.PtrElmType(lhs)
+	rhsTyp := rhs.Type()
+
+	if !lhsTyp.Equal(rhsTyp) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, lhsTyp, rhsTyp))
+	}
+
+	switch stmt.Token.Type {
+	case token.ASSIGN:
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.ADD_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewAdd(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.SUB_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewSub(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.MUL_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewMul(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.QUO_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewSDiv(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.REM_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewSRem(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.SHL_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewShl(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.SHR_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewAShr(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	}
+
+	return rhs
 }

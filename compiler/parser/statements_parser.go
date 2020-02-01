@@ -8,14 +8,6 @@ import (
 )
 
 func (p *Parser) parseStatement() ast.Statement {
-	switch p.peekToken.Type {
-	case
-		token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN,
-		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN,
-		token.SHL_ASSIGN, token.SHR_ASSIGN:
-		return p.parseAssignStatement()
-	}
-
 	switch p.curToken.Type {
 	case token.VAR:
 		return p.parseVarStatement()
@@ -52,25 +44,6 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	if !p.peekTokenIs(token.ASSIGN) {
 		return stmt
 	}
-
-	p.nextToken()
-	p.nextToken()
-	stmt.Value = p.parseExpression(LOWEST)
-
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
-	}
-
-	return stmt
-}
-
-func (p *Parser) parseAssignStatement() *ast.AssignStatement {
-	stmt := &ast.AssignStatement{Token: p.peekToken}
-
-	if !p.curTokenIs(token.IDENT) {
-		return nil
-	}
-	stmt.Ident = p.parseIdentifier()
 
 	p.nextToken()
 	p.nextToken()
@@ -283,18 +256,21 @@ func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
 		Right:    end,
 	}
 
-	stmt.Post = &ast.AssignStatement{
-		Token: token.Token{
-			Type:    token.ADD_ASSIGN,
-			Literal: "+=",
-		},
-		Ident: ident,
-		Value: &ast.IntegerLiteral{
+	stmt.Post = &ast.ExpressionStatement{
+		Token: token.Token{},
+		Expression: &ast.AssignExpression{
 			Token: token.Token{
-				Type:    token.INT,
-				Literal: "1",
+				Type:    token.ADD_ASSIGN,
+				Literal: "+=",
 			},
-			Value: 1,
+			Left: ident,
+			Value: &ast.IntegerLiteral{
+				Token: token.Token{
+					Type:    token.INT,
+					Literal: "1",
+				},
+				Value: 1,
+			},
 		},
 	}
 

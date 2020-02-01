@@ -3,7 +3,6 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir"
@@ -16,8 +15,6 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	switch stmt := stmt.(type) {
 	case *ast.VarStatement:
 		c.genVarStatement(stmt)
-	case *ast.AssignStatement:
-		c.genAssignStatement(stmt)
 	case *ast.ReturnStatement:
 		c.genReturnStatement(stmt)
 	case *ast.FunctionStatement:
@@ -67,53 +64,6 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		named.SetName(stmt.Ident.String())
 		c.context.addVariable(stmt.Ident, named)
 		c.contextBlock.NewStore(value, named)
-	}
-}
-
-func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
-	v, ok := c.context.findVariable(stmt.Ident)
-	if !ok {
-		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", stmt.Ident.String()))
-	}
-
-	rhs := c.genExpression(stmt.Value)
-
-	vTyp := internal.PtrElmType(v)
-	if vTyp != rhs.Type() {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, vTyp, rhs.Type()))
-	}
-
-	switch stmt.Token.Type {
-	case token.ASSIGN:
-		c.contextBlock.NewStore(rhs, v)
-	case token.ADD_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewAdd(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.SUB_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewSub(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.MUL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewMul(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.QUO_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewSDiv(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.REM_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewSRem(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.SHL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewShl(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.SHR_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewAShr(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
 	}
 }
 
