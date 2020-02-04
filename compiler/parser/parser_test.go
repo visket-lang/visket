@@ -38,6 +38,7 @@ func TestParseStatement(t *testing.T) {
 	}{
 		{"0", "Int(0)"},
 		{"42", "Int(42)"},
+		{"32.0", "Float(32.000000)"},
 
 		{"4 + 4", "Infix(Int(4) + Int(4))"},
 		{"4 - 4", "Infix(Int(4) - Int(4))"},

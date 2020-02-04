@@ -37,6 +37,8 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		return p.parseMinusPrefix()
 	case token.INT:
 		return p.parseIntegerLiteral()
+	case token.FLOAT:
+		return p.parseFloatLiteral()
 	case token.LPAREN:
 		return p.parseGroupedExpression()
 	case token.IDENT:
@@ -66,6 +68,19 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 	n, err := strconv.Atoi(p.curToken.Literal)
 	if err != nil {
 		p.error(fmt.Sprintf("%s | Could not parse %s as integer", p.curToken.Pos, p.curToken.Literal))
+		return nil
+	}
+
+	lit.Value = n
+	return lit
+}
+
+func (p *Parser) parseFloatLiteral() *ast.FloatLiteral {
+	lit := &ast.FloatLiteral{Token: p.curToken}
+
+	n, err := strconv.ParseFloat(p.curToken.Literal, 32)
+	if err != nil {
+		p.error(fmt.Sprintf("%s | Could not parse %s as float", p.curToken.Pos, p.curToken.Literal))
 		return nil
 	}
 

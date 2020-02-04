@@ -36,6 +36,21 @@ func (il *IntegerLiteral) String() string {
 
 func (il *IntegerLiteral) expressionNode() {}
 
+type FloatLiteral struct {
+	Token token.Token
+	Value float64
+}
+
+func (fl *FloatLiteral) Inspect() string {
+	return fmt.Sprintf("Float(%f)", fl.Value)
+}
+
+func (fl *FloatLiteral) String() string {
+	return fl.Token.Literal
+}
+
+func (fl *FloatLiteral) expressionNode() {}
+
 type PrefixExpression struct {
 	Token    token.Token
 	Operator string
