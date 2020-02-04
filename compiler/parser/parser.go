@@ -61,8 +61,11 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for !p.curTokenIs(token.EOF) {
 		stmt := p.parseTopLevelStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
+		switch stmt := stmt.(type) {
+		case *ast.FunctionStatement:
+			program.Functions = append(program.Functions, stmt)
+		default:
+			errors.ErrorExit(fmt.Sprintf("unexpected statement: %s", stmt.Inspect()))
 		}
 		p.nextToken()
 	}

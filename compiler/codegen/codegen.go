@@ -39,8 +39,8 @@ func (c *CodeGen) GenerateCode() {
 	c.genPrintFunction()
 	c.genInputFunction()
 
-	for _, s := range c.program.Statements {
-		c.genStatement(s)
+	for _, s := range c.program.Functions {
+		c.genFunctionStatement(s)
 	}
 
 	irCode := c.module.String()

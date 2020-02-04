@@ -11,12 +11,9 @@ func New(program *ast.Program) *Optimizer {
 }
 
 func (o *Optimizer) Optimize() {
-	var s []ast.Statement
-	for _, stmt := range o.Program.Statements {
-		s = append(s, o.optStatement(stmt))
+	for _, stmt := range o.Program.Functions {
+		o.optFunctionStatement(stmt)
 	}
-
-	o.Program.Statements = s
 }
 
 func (o *Optimizer) optBlockStatement(stmt *ast.BlockStatement) *ast.BlockStatement {
@@ -30,10 +27,14 @@ func (o *Optimizer) optBlockStatement(stmt *ast.BlockStatement) *ast.BlockStatem
 	return stmt
 }
 
+func (o *Optimizer) optFunctionStatement(stmt *ast.FunctionStatement) {
+	stmt.Body = o.optBlockStatement(stmt.Body)
+}
+
 func (o *Optimizer) optStatement(stmt ast.Statement) ast.Statement {
 	switch stmt := stmt.(type) {
 	case *ast.BlockStatement:
-		return o.optBlockStatement(stmt)
+		stmt = o.optBlockStatement(stmt)
 	case *ast.ExpressionStatement:
 		stmt.Expression = o.optExpression(stmt.Expression)
 	case *ast.VarStatement:
