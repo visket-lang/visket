@@ -12,7 +12,7 @@ func Show(node Node) string {
 		for _, stmt := range node.Functions {
 			b.WriteString(Show(stmt))
 		}
-		return b.String()
+		fmt.Println(b.String())
 	case *Identifier:
 		return node.Token.Literal
 	case *IntegerLiteral:
@@ -95,8 +95,6 @@ func Show(node Node) string {
 	case *ForStatement:
 		var b bytes.Buffer
 		b.WriteString("(for ")
-		b.WriteString(Show(node.Init))
-		b.WriteString("; ")
 		b.WriteString(Show(node.Init))
 		b.WriteString("; ")
 		b.WriteString(Show(node.Condition))
