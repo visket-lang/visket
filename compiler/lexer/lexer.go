@@ -170,7 +170,7 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			tok = l.newToken(token.RANGE, "..")
 		} else {
-			errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.ch))
+			errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.peekChar()))
 		}
 	default:
 		if isLetter(l.ch) {

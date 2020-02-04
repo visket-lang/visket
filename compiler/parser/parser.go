@@ -65,7 +65,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 		case *ast.FunctionStatement:
 			program.Functions = append(program.Functions, stmt)
 		default:
-			errors.ErrorExit(fmt.Sprintf("unexpected statement: %s", stmt.Inspect()))
+			p.error(fmt.Sprintf("unexpected statement: %s", stmt.Inspect()))
 		}
 		p.nextToken()
 	}
