@@ -3,21 +3,19 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
+	"github.com/llir/llvm/ir/value"
 )
 
 func (c *CodeGen) genStatement(stmt ast.Statement) {
 	switch stmt := stmt.(type) {
 	case *ast.VarStatement:
 		c.genVarStatement(stmt)
-	case *ast.AssignStatement:
-		c.genAssignStatement(stmt)
 	case *ast.ReturnStatement:
 		c.genReturnStatement(stmt)
 	case *ast.FunctionStatement:
@@ -41,80 +39,31 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.String()))
 	}
 
-	// TODO 書き直す
-	if stmt.Type != nil && stmt.Value == nil {
-		typ := stmt.Type.ToType()
-		named := c.contextBlock.NewAlloca(typ)
-		named.SetName(stmt.Ident.String())
-		c.context.addVariable(stmt.Ident, named)
+	var val value.Value
+	if stmt.Value != nil {
+		val = c.genExpression(stmt.Value).Load(c.contextBlock)
+	} else {
+		val = constant.NewZeroInitializer(stmt.Type.LlvmType())
 	}
 
-	if stmt.Type == nil && stmt.Value != nil {
-		value := c.genExpression(stmt.Value)
-		named := c.contextBlock.NewAlloca(value.Type())
-		named.SetName(stmt.Ident.String())
-		c.context.addVariable(stmt.Ident, named)
-		c.contextBlock.NewStore(value, named)
+	var typ types.Type
+	if stmt.Type != nil {
+		typ = stmt.Type.LlvmType()
+	} else {
+		typ = val.Type()
 	}
 
-	if stmt.Type != nil && stmt.Value != nil {
-		typ := stmt.Type.ToType()
-		value := c.genExpression(stmt.Value)
-		if typ != value.Type() {
-			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, typ, value.Type()))
-		}
-		named := c.contextBlock.NewAlloca(value.Type())
-		named.SetName(stmt.Ident.String())
-		c.context.addVariable(stmt.Ident, named)
-		c.contextBlock.NewStore(value, named)
-	}
-}
-
-func (c *CodeGen) genAssignStatement(stmt *ast.AssignStatement) {
-	v, ok := c.context.findVariable(stmt.Ident)
-	if !ok {
-		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", stmt.Ident.String()))
+	if !typ.Equal(val.Type()) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, typ, val.Type()))
 	}
 
-	rhs := c.genExpression(stmt.Value)
-
-	vTyp := internal.PtrElmType(v)
-	if vTyp != rhs.Type() {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, vTyp, rhs.Type()))
-	}
-
-	switch stmt.Token.Type {
-	case token.ASSIGN:
-		c.contextBlock.NewStore(rhs, v)
-	case token.ADD_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewAdd(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.SUB_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewSub(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.MUL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewMul(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.QUO_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewSDiv(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.REM_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewSRem(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.SHL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewShl(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	case token.SHR_ASSIGN:
-		vValue := c.contextBlock.NewLoad(vTyp, v)
-		rhs = c.contextBlock.NewAShr(vValue, rhs)
-		c.contextBlock.NewStore(rhs, v)
-	}
+	named := c.contextBlock.NewAlloca(val.Type())
+	named.SetName(stmt.Ident.String())
+	c.context.addVariable(stmt.Ident, Value{
+		Value:      named,
+		IsVariable: true,
+	})
+	c.contextBlock.NewStore(val, named)
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
@@ -128,7 +77,7 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 		return
 	}
 
-	result := c.genExpression(stmt.Value)
+	result := c.genExpression(stmt.Value).Load(c.contextBlock)
 
 	if retType != result.Type() {
 		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, retType, result.Type()))
@@ -140,29 +89,23 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 func (c *CodeGen) genFunctionStatement(stmt *ast.FunctionStatement) {
 	var params []*ir.Param
 
-	for i := range stmt.Parameters {
-		typ := stmt.Type.Params[i].ToType()
-		param := ir.NewParam("", typ)
+	for i, p := range stmt.Parameters {
+		typ := stmt.Type.Params[i].LlvmType()
+		param := ir.NewParam(p.String(), typ)
+		c.context.addVariable(p, Value{
+			Value:      param,
+			IsVariable: false,
+		})
 		params = append(params, param)
 	}
 
-	returnTyp := stmt.Type.RetType.ToType()
+	returnTyp := stmt.Type.RetType.LlvmType()
 
 	c.contextFunction = c.module.NewFunc(stmt.Ident.String(), returnTyp, params...)
 	c.context.addFunction(stmt.Ident, c.contextFunction)
 
 	c.into()
 	c.contextBlock = c.contextFunction.NewBlock("entry")
-
-	// 引数の再代入のために必要
-	for i, p := range stmt.Parameters {
-		typ := stmt.Type.Params[i].ToType()
-		param := ir.NewParam("", typ)
-		param.LocalID = int64(i)
-		pp := c.contextBlock.NewAlloca(typ)
-		c.contextBlock.NewStore(param, pp)
-		c.context.addVariable(p, pp)
-	}
 
 	c.genBlockStatement(stmt.Body)
 
@@ -183,7 +126,7 @@ func addLineNum(blockName string, tok token.Token) string {
 func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 	hasAlternative := stmt.Alternative != nil
 
-	condition := c.genExpression(stmt.Condition)
+	condition := c.genExpression(stmt.Condition).Load(c.contextBlock)
 	blockThen := c.contextFunction.NewBlock(addLineNum("if.then", stmt.Token))
 	var blockElse *ir.Block
 	blockMerge := c.contextFunction.NewBlock(addLineNum("if.merge", stmt.Token))
@@ -222,7 +165,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 	blockLoop := c.contextFunction.NewBlock(addLineNum("while.loop", stmt.Token))
 	blockExit := c.contextFunction.NewBlock(addLineNum("while.exit", stmt.Token))
 
-	cond := c.genExpression(stmt.Condition)
+	cond := c.genExpression(stmt.Condition).Load(c.contextBlock)
 	result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
 	c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 
@@ -231,7 +174,7 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 
 	c.genBlockStatement(stmt.Body)
 
-	cond = c.genExpression(stmt.Condition)
+	cond = c.genExpression(stmt.Condition).Load(c.contextBlock)
 	result = c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
 	c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 	c.outOf()
@@ -248,7 +191,7 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 	}
 
 	if stmt.Condition != nil {
-		cond := c.genExpression(stmt.Condition)
+		cond := c.genExpression(stmt.Condition).Load(c.contextBlock)
 		result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
 		c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 	} else {
@@ -265,7 +208,7 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 	}
 
 	if stmt.Condition != nil {
-		cond := c.genExpression(stmt.Condition)
+		cond := c.genExpression(stmt.Condition).Load(c.contextBlock)
 		result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
 		c.contextBlock.NewCondBr(result, blockLoop, blockExit)
 	} else {

@@ -3,72 +3,57 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/llir/llvm/ir/types"
+	llvmTypes "github.com/llir/llvm/ir/types"
 )
 
-var (
-	VOID = VoidType{}
-	INT  = IntType{}
-	BOOL = BoolType{}
-)
-
-type ParserType interface {
-	ToType() types.Type
+type SlType interface {
+	isSlType()
+	LlvmType() llvmTypes.Type
 	String() string
 }
 
-type VoidType struct{}
-
-func (v VoidType) ToType() types.Type {
-	return types.Void
+type SlPointer struct {
+	baseType SlType
 }
 
-func (v VoidType) String() string {
-	return "void"
+func NewSlPointer(baseType SlType) *SlPointer {
+	return &SlPointer{
+		baseType: baseType,
+	}
 }
 
-type IntType struct{}
-
-func (i IntType) ToType() types.Type {
-	return types.I32
+func (p *SlPointer) LlvmType() llvmTypes.Type {
+	return llvmTypes.NewPointer(p.baseType.LlvmType())
 }
 
-func (i IntType) String() string {
-	return "int"
+func (p *SlPointer) String() string {
+	return fmt.Sprintf("*%s", p.baseType)
 }
 
-type BoolType struct{}
+func (p *SlPointer) isSlType() {}
 
-func (b BoolType) ToType() types.Type {
-	return types.I1
+type SlFunction struct {
+	RetType SlType
+	Params  []SlType
 }
 
-func (b BoolType) String() string {
-	return "bool"
-}
-
-type FuncType struct {
-	RetType ParserType
-	Params  []ParserType
-}
-
-func NewFuncType(retType ParserType, params []ParserType) FuncType {
-	return FuncType{
+func NewSlFunction(retType SlType, params []SlType) *SlFunction {
+	return &SlFunction{
 		RetType: retType,
 		Params:  params,
 	}
 }
 
-func (f FuncType) ToType() types.Type {
-	var params []types.Type
+func (f *SlFunction) LlvmType() llvmTypes.Type {
+	var params []llvmTypes.Type
 	for _, p := range f.Params {
-		params = append(params, p.ToType())
+		params = append(params, p.LlvmType())
 	}
 
-	return types.NewFunc(f.RetType.ToType(), params...)
+	return llvmTypes.NewFunc(f.RetType.LlvmType(), params...)
 }
 
-func (f FuncType) String() string {
+func (f *SlFunction) String() string {
 	var params bytes.Buffer
 	for i, p := range f.Params {
 		if i != 0 {
@@ -79,16 +64,77 @@ func (f FuncType) String() string {
 	return fmt.Sprintf("%s -> %s", params.String(), f.RetType)
 }
 
-var typeNameToType = map[string]ParserType{
-	"void": VOID,
-	"int":  INT,
-	"bool": BOOL,
+func (f *SlFunction) isSlType() {}
+
+type SlVoid struct {
 }
 
-func ParseType(name string) ParserType {
-	if typ, ok := typeNameToType[name]; ok {
-		return typ
+func NewSlVoid() *SlVoid {
+	return &SlVoid{}
+}
+
+func (v *SlVoid) LlvmType() llvmTypes.Type {
+	return llvmTypes.Void
+}
+
+func (v *SlVoid) String() string {
+	return "void"
+}
+
+func (v *SlVoid) isSlType() {}
+
+type SlInt struct {
+}
+
+func NewSlInt() *SlInt {
+	return &SlInt{}
+}
+
+func (i *SlInt) LlvmType() llvmTypes.Type {
+	return llvmTypes.I32
+}
+
+func (i *SlInt) String() string {
+	return "int"
+}
+
+func (i *SlInt) isSlType() {}
+
+type SlBool struct {
+}
+
+func NewSlBool() *SlBool {
+	return &SlBool{}
+}
+
+func (b *SlBool) LlvmType() llvmTypes.Type {
+	return llvmTypes.I1
+}
+
+func (b *SlBool) String() string {
+	return "bool"
+}
+
+func (b *SlBool) isSlType() {}
+
+type SlArray struct {
+	Len    uint64
+	ElmTyp SlType
+}
+
+func NewSlArray(len int, elmTyp SlType) *SlArray {
+	return &SlArray{
+		Len:    uint64(len),
+		ElmTyp: elmTyp,
 	}
-
-	return nil
 }
+
+func (a *SlArray) LlvmType() llvmTypes.Type {
+	return llvmTypes.NewArray(a.Len, a.ElmTyp.LlvmType())
+}
+
+func (a *SlArray) String() string {
+	return fmt.Sprintf("[]%s", a.ElmTyp)
+}
+
+func (a *SlArray) isSlType() {}

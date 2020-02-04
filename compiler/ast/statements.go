@@ -57,7 +57,7 @@ type FunctionStatement struct {
 	Ident      *Identifier
 	Parameters []*Identifier
 	Body       *BlockStatement
-	Type       types.FuncType
+	Type       *types.SlFunction
 }
 
 func (fs *FunctionStatement) Inspect() string {
@@ -100,7 +100,7 @@ type VarStatement struct {
 	Token token.Token
 	Ident *Identifier
 	Value Expression
-	Type  types.ParserType
+	Type  types.SlType
 }
 
 func (vs *VarStatement) Inspect() string {
@@ -112,22 +112,6 @@ func (vs *VarStatement) String() string {
 }
 
 func (vs *VarStatement) statementNode() {}
-
-type AssignStatement struct {
-	Token token.Token
-	Ident *Identifier
-	Value Expression
-}
-
-func (rs *AssignStatement) Inspect() string {
-	return fmt.Sprintf("%s %s %s", rs.Ident.Inspect(), rs.Token.Literal, rs.Value.Inspect())
-}
-
-func (rs *AssignStatement) String() string {
-	return fmt.Sprintf("%s %s %s", rs.Ident.String(), rs.Token.Literal, rs.Value.String())
-}
-
-func (rs *AssignStatement) statementNode() {}
 
 type ReturnStatement struct {
 	Token token.Token

@@ -69,6 +69,22 @@ func (ie *InfixExpression) String() string {
 
 func (ie *InfixExpression) expressionNode() {}
 
+type AssignExpression struct {
+	Token token.Token
+	Left  Expression
+	Value Expression
+}
+
+func (rs *AssignExpression) Inspect() string {
+	return fmt.Sprintf("%s %s %s", rs.Left.Inspect(), rs.Token.Literal, rs.Value.Inspect())
+}
+
+func (rs *AssignExpression) String() string {
+	return fmt.Sprintf("%s %s %s", rs.Left.String(), rs.Token.Literal, rs.Value.String())
+}
+
+func (rs *AssignExpression) expressionNode() {}
+
 type CallExpression struct {
 	Token      token.Token
 	Function   *Identifier
@@ -104,3 +120,19 @@ func (ce *CallExpression) String() string {
 }
 
 func (ce *CallExpression) expressionNode() {}
+
+type IndexExpression struct {
+	Token token.Token
+	Left  Expression
+	Index Expression
+}
+
+func (ie *IndexExpression) Inspect() string {
+	return fmt.Sprintf("%s[%s]", ie.Left.Inspect(), ie.Index.Inspect())
+}
+
+func (ie *IndexExpression) String() string {
+	return fmt.Sprintf("%s[%s]", ie.Left.String(), ie.Index.String())
+}
+
+func (ie *IndexExpression) expressionNode() {}

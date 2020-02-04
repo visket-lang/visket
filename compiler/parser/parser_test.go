@@ -60,6 +60,9 @@ func TestParse(t *testing.T) {
 
 		{"for i in 0..10 {1}", "for var Ident(i) = Int(0); Infix(Ident(i) <= Int(10)); Ident(i) += Int(1) {Int(1)}"},
 		{"for var i = 0; i < 10; i = i + 1 {1}", "for var Ident(i) = Int(0); Infix(Ident(i) < Int(10)); Ident(i) = Infix(Ident(i) + Int(1)) {Int(1)}"},
+
+		{"array[1]", "Ident(array)[Int(1)]"},
+		{"array[a * 10 + 1]", "Ident(array)[Infix(Infix(Ident(a) * Int(10)) + Int(1))]"},
 	}
 
 	for i, test := range tests {

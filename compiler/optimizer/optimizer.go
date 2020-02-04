@@ -38,8 +38,6 @@ func (o *Optimizer) optStatement(stmt ast.Statement) ast.Statement {
 		stmt.Expression = o.optExpression(stmt.Expression)
 	case *ast.VarStatement:
 		stmt.Value = o.optExpression(stmt.Value)
-	case *ast.AssignStatement:
-		stmt.Value = o.optExpression(stmt.Value)
 	case *ast.ReturnStatement:
 		stmt.Value = o.optExpression(stmt.Value)
 	case *ast.FunctionStatement:
@@ -65,6 +63,8 @@ func (o *Optimizer) optExpression(expr ast.Expression) ast.Expression {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return o.optInfixExpression(expr)
+	case *ast.AssignExpression:
+		expr.Value = o.optExpression(expr.Value)
 	}
 
 	return expr

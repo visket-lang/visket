@@ -8,14 +8,6 @@ import (
 )
 
 func (p *Parser) parseStatement() ast.Statement {
-	switch p.peekToken.Type {
-	case
-		token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN,
-		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN,
-		token.SHL_ASSIGN, token.SHR_ASSIGN:
-		return p.parseAssignStatement()
-	}
-
 	switch p.curToken.Type {
 	case token.VAR:
 		return p.parseVarStatement()
@@ -64,25 +56,6 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	return stmt
 }
 
-func (p *Parser) parseAssignStatement() *ast.AssignStatement {
-	stmt := &ast.AssignStatement{Token: p.peekToken}
-
-	if !p.curTokenIs(token.IDENT) {
-		return nil
-	}
-	stmt.Ident = p.parseIdentifier()
-
-	p.nextToken()
-	p.nextToken()
-	stmt.Value = p.parseExpression(LOWEST)
-
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
-	}
-
-	return stmt
-}
-
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
@@ -114,7 +87,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	params, paramTypes := p.parseFunctionParameters()
 	stmt.Parameters = params
 
-	var retType types.ParserType = types.VOID
+	var retType types.SlType = types.VOID
 
 	if p.peekTokenIs(token.COLON) {
 		p.nextToken()
@@ -122,7 +95,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		retType = p.parseType()
 	}
 
-	stmt.Type = types.NewFuncType(retType, paramTypes)
+	stmt.Type = types.NewSlFunction(retType, paramTypes)
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
@@ -147,9 +120,9 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	return stmt
 }
 
-func (p *Parser) parseFunctionParameters() ([]*ast.Identifier, []types.ParserType) {
+func (p *Parser) parseFunctionParameters() ([]*ast.Identifier, []types.SlType) {
 	var params []*ast.Identifier
-	var paramTypes []types.ParserType
+	var paramTypes []types.SlType
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
@@ -283,18 +256,21 @@ func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
 		Right:    end,
 	}
 
-	stmt.Post = &ast.AssignStatement{
-		Token: token.Token{
-			Type:    token.ADD_ASSIGN,
-			Literal: "+=",
-		},
-		Ident: ident,
-		Value: &ast.IntegerLiteral{
+	stmt.Post = &ast.ExpressionStatement{
+		Token: token.Token{},
+		Expression: &ast.AssignExpression{
 			Token: token.Token{
-				Type:    token.INT,
-				Literal: "1",
+				Type:    token.ADD_ASSIGN,
+				Literal: "+=",
 			},
-			Value: 1,
+			Left: ident,
+			Value: &ast.IntegerLiteral{
+				Token: token.Token{
+					Type:    token.INT,
+					Literal: "1",
+				},
+				Value: 1,
+			},
 		},
 	}
 
@@ -331,8 +307,17 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
-func (p *Parser) parseType() types.ParserType {
-	if typ := types.ParseType(p.curToken.Literal); typ != nil {
+func (p *Parser) parseType() types.SlType {
+	// 配列
+	if p.curTokenIs(token.LBRACKET) {
+		p.nextToken()
+		length := p.parseIntegerLiteral()
+		p.expectPeek(token.RBRACKET)
+		p.nextToken()
+		return types.NewSlArray(length.Value, p.parseType())
+	}
+
+	if typ, ok := types.LookupType(p.curToken.Literal); ok {
 		return typ
 	}
 	p.error(fmt.Sprintf("%s | unknown type %s", p.curToken.Pos, p.curToken.Literal))

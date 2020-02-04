@@ -21,6 +21,8 @@ func Show(node Node) string {
 		return fmt.Sprintf("(%s%s)", node.Operator, Show(node.Right))
 	case *InfixExpression:
 		return fmt.Sprintf("(%s %s %s)", Show(node.Left), node.Operator, Show(node.Right))
+	case *AssignExpression:
+		return fmt.Sprintf("(%s = %s)", Show(node.Left), Show(node.Value))
 	case *CallExpression:
 		var b bytes.Buffer
 		for i, param := range node.Parameters {
@@ -63,8 +65,6 @@ func Show(node Node) string {
 		}
 		b.WriteString(")")
 		return b.String()
-	case *AssignStatement:
-		return fmt.Sprintf("(%s = %s)", Show(node.Ident), Show(node.Value))
 	case *ReturnStatement:
 		if node.Value == nil {
 			return "(return)"

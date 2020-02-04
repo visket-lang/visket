@@ -10,6 +10,7 @@ type ErrorList []string
 
 func (el ErrorList) ShowExit() {
 	if len(el) != 0 {
+		Error(fmt.Sprintf("parser has %d errors", len(el)))
 		for _, e := range el {
 			Error(e)
 		}

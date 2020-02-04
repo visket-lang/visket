@@ -5,75 +5,77 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 )
 
-func (c *CodeGen) genExpression(expr ast.Expression) value.Value {
+func (c *CodeGen) genExpression(expr ast.Expression) Value {
 	switch expr := expr.(type) {
 	case *ast.InfixExpression:
 		return c.genInfix(expr)
 	case *ast.CallExpression:
 		return c.genCallExpression(expr)
+	case *ast.IndexExpression:
+		return c.genIndexExpression(expr)
+	case *ast.AssignExpression:
+		return c.genAssignExpression(expr)
 	case *ast.IntegerLiteral:
-		return constant.NewInt(types.I32, int64(expr.Value))
+		return c.genIntegerLiteral(expr)
 	case *ast.Identifier:
-		v, ok := c.context.findVariable(expr)
-		if !ok {
-			errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
-		}
-		_, ok = v.Type().(*types.PointerType)
-		if ok {
-			return c.contextBlock.NewLoad(internal.PtrElmType(v), v)
-		} else {
-			return v
-		}
+		return c.genIdentifier(expr)
 	}
 
 	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
-	return nil
+	return Value{} //unreachable
 }
 
-func (c *CodeGen) genInfix(ie *ast.InfixExpression) value.Value {
-	lhs := c.genExpression(ie.Left)
-	rhs := c.genExpression(ie.Right)
+func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
+	lhs := c.genExpression(ie.Left).Load(c.contextBlock)
+	rhs := c.genExpression(ie.Right).Load(c.contextBlock)
+
+	var opResult value.Value
 
 	switch ie.Operator {
 	case "+":
-		return c.contextBlock.NewAdd(lhs, rhs)
+		opResult = c.contextBlock.NewAdd(lhs, rhs)
 	case "-":
-		return c.contextBlock.NewSub(lhs, rhs)
+		opResult = c.contextBlock.NewSub(lhs, rhs)
 	case "*":
-		return c.contextBlock.NewMul(lhs, rhs)
+		opResult = c.contextBlock.NewMul(lhs, rhs)
 	case "/":
-		return c.contextBlock.NewSDiv(lhs, rhs)
+		opResult = c.contextBlock.NewSDiv(lhs, rhs)
 	case "%":
-		return c.contextBlock.NewSRem(lhs, rhs)
+		opResult = c.contextBlock.NewSRem(lhs, rhs)
 	case "<<":
-		return c.contextBlock.NewShl(lhs, rhs)
+		opResult = c.contextBlock.NewShl(lhs, rhs)
 	case ">>":
-		return c.contextBlock.NewAShr(lhs, rhs)
+		opResult = c.contextBlock.NewAShr(lhs, rhs)
 	case "==":
-		return c.contextBlock.NewICmp(enum.IPredEQ, lhs, rhs)
+		opResult = c.contextBlock.NewICmp(enum.IPredEQ, lhs, rhs)
 	case "!=":
-		return c.contextBlock.NewICmp(enum.IPredNE, lhs, rhs)
+		opResult = c.contextBlock.NewICmp(enum.IPredNE, lhs, rhs)
 	case "<":
-		return c.contextBlock.NewICmp(enum.IPredULT, lhs, rhs)
+		opResult = c.contextBlock.NewICmp(enum.IPredULT, lhs, rhs)
 	case "<=":
-		return c.contextBlock.NewICmp(enum.IPredULE, lhs, rhs)
+		opResult = c.contextBlock.NewICmp(enum.IPredULE, lhs, rhs)
 	case ">":
-		return c.contextBlock.NewICmp(enum.IPredUGT, lhs, rhs)
+		opResult = c.contextBlock.NewICmp(enum.IPredUGT, lhs, rhs)
 	case ">=":
-		return c.contextBlock.NewICmp(enum.IPredUGE, lhs, rhs)
+		opResult = c.contextBlock.NewICmp(enum.IPredUGE, lhs, rhs)
+	default:
+		errors.ErrorExit(fmt.Sprintf("unexpected operator: %s\n", ie.Operator))
 	}
 
-	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s\n", ie.Operator))
-	return nil
+	return Value{
+		Value:      opResult,
+		IsVariable: false,
+	}
 }
 
-func (c *CodeGen) genCallExpression(expr *ast.CallExpression) value.Value {
+func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	f, ok := c.context.findFunction(expr.Function)
 	if !ok {
 		errors.ErrorExit(fmt.Sprintf("%s | undefined function %s", expr.Token.Pos, expr.Function.String()))
@@ -88,7 +90,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) value.Value {
 	var params []value.Value
 
 	for i, param := range expr.Parameters {
-		v := c.genExpression(param)
+		v := c.genExpression(param).Load(c.contextBlock)
 		params = append(params, v)
 		if v.Type() != f.Sig.Params[i] {
 			errors.ErrorExit(fmt.Sprintf("%s | type mismatched %s and %s", expr.Token.Pos, v.Type(), f.Sig.Params[i].String()))
@@ -96,5 +98,93 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) value.Value {
 		}
 	}
 
-	return c.contextBlock.NewCall(f, params...)
+	funcRet := c.contextBlock.NewCall(f, params...)
+
+	return Value{
+		Value:      funcRet,
+		IsVariable: false,
+	}
+}
+func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
+	lhs := c.genExpression(expr.Left).Value
+	rhs := c.genExpression(expr.Value).Load(c.contextBlock)
+
+	lhsTyp := internal.PtrElmType(lhs)
+	rhsTyp := rhs.Type()
+
+	if !lhsTyp.Equal(rhsTyp) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, lhsTyp, rhsTyp))
+	}
+
+	switch expr.Token.Type {
+	case token.ASSIGN:
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.ADD_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewAdd(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.SUB_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewSub(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.MUL_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewMul(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.QUO_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewSDiv(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.REM_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewSRem(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.SHL_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewShl(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	case token.SHR_ASSIGN:
+		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
+		rhs = c.contextBlock.NewAShr(vValue, rhs)
+		c.contextBlock.NewStore(rhs, lhs)
+	}
+
+	return Value{
+		Value:      rhs,
+		IsVariable: true,
+	}
+}
+
+func (c *CodeGen) genIndexExpression(expr *ast.IndexExpression) Value {
+	left := c.genExpression(expr.Left).Value
+	leftTyp := internal.PtrElmType(left)
+
+	if _, ok := leftTyp.(*types.ArrayType); !ok {
+		errors.ErrorExit(fmt.Sprintf("%s | cannot index %s", expr.Token.Pos, leftTyp))
+
+	}
+
+	index := c.genExpression(expr.Index).Load(c.contextBlock)
+	val := c.contextBlock.NewGetElementPtr(leftTyp, left, constant.NewInt(types.I64, 0), index)
+	val.InBounds = true
+	return Value{
+		Value:      val,
+		IsVariable: true,
+	}
+}
+
+func (c *CodeGen) genIntegerLiteral(expr *ast.IntegerLiteral) Value {
+	return Value{
+		Value:      constant.NewInt(types.I32, int64(expr.Value)),
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
+	v, ok := c.context.findVariable(expr)
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
+	}
+
+	return v
 }
