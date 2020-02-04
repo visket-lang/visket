@@ -56,6 +56,20 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
+func (p *Parser) ParseProgram() *ast.Program {
+	program := &ast.Program{}
+
+	for !p.curTokenIs(token.EOF) {
+		stmt := p.parseTopLevelStatement()
+		if stmt != nil {
+			program.Statements = append(program.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return program
+}
+
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.peekToken = p.l.NextToken()
@@ -112,18 +126,4 @@ func (p *Parser) curPrecedence() int {
 
 func (p *Parser) error(msg string) {
 	p.Errors = append(p.Errors, msg)
-}
-
-func (p *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{}
-
-	for !p.curTokenIs(token.EOF) {
-		stmt := p.parseStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
-		}
-		p.nextToken()
-	}
-
-	return program
 }
