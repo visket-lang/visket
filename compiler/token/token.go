@@ -9,6 +9,7 @@ const (
 
 	IDENT = "IDENT"
 	INT   = "INT"
+	FLOAT = "FLOAT"
 
 	ADD = "+"
 	SUB = "-"

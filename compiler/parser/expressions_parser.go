@@ -37,6 +37,8 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		return p.parseMinusPrefix()
 	case token.INT:
 		return p.parseIntegerLiteral()
+	case token.FLOAT:
+		return p.parseFloatLiteral()
 	case token.LPAREN:
 		return p.parseGroupedExpression()
 	case token.IDENT:
@@ -66,6 +68,19 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 	n, err := strconv.Atoi(p.curToken.Literal)
 	if err != nil {
 		p.error(fmt.Sprintf("%s | Could not parse %s as integer", p.curToken.Pos, p.curToken.Literal))
+		return nil
+	}
+
+	lit.Value = n
+	return lit
+}
+
+func (p *Parser) parseFloatLiteral() *ast.FloatLiteral {
+	lit := &ast.FloatLiteral{Token: p.curToken}
+
+	n, err := strconv.ParseFloat(p.curToken.Literal, 32)
+	if err != nil {
+		p.error(fmt.Sprintf("%s | Could not parse %s as float", p.curToken.Pos, p.curToken.Literal))
 		return nil
 	}
 
@@ -177,11 +192,46 @@ func (p *Parser) parseAssignExpression(left ast.Expression) *ast.AssignExpressio
 	}
 
 	p.nextToken()
-	stmt.Value = p.parseExpression(LOWEST)
+	right := p.parseExpression(LOWEST)
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
+
+	if stmt.Token.Type == token.ASSIGN {
+		stmt.Value = right
+		return stmt
+	}
+
+	// "=" 以外は糖衣構文として実装する
+	value := &ast.InfixExpression{
+		Left:     left,
+		Operator: "",
+		Right:    right,
+	}
+
+	switch stmt.Token.Type {
+	case token.ADD_ASSIGN:
+		value.Operator = token.ADD
+	case token.SUB_ASSIGN:
+		value.Operator = token.SUB
+	case token.MUL_ASSIGN:
+		value.Operator = token.MUL
+	case token.QUO_ASSIGN:
+		value.Operator = token.QUO
+	case token.REM_ASSIGN:
+		value.Operator = token.REM
+	case token.SHL_ASSIGN:
+		value.Operator = token.SHL
+	case token.SHR_ASSIGN:
+		value.Operator = token.SHR
+	}
+
+	stmt.Token = token.Token{
+		Type:    token.ASSIGN,
+		Literal: "=",
+	}
+	stmt.Value = value
 
 	return stmt
 }

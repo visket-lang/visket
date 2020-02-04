@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/arata-nvm/Solitude/compiler/types"
 )
@@ -14,7 +13,7 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseFunctionStatement()
 	}
 
-	errors.ErrorExit(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
+	p.error(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
 	return nil
 }
 
@@ -271,16 +270,24 @@ func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
 		Token: token.Token{},
 		Expression: &ast.AssignExpression{
 			Token: token.Token{
-				Type:    token.ADD_ASSIGN,
-				Literal: "+=",
+				Type:    token.ASSIGN,
+				Literal: "=",
 			},
 			Left: ident,
-			Value: &ast.IntegerLiteral{
+			Value: &ast.InfixExpression{
 				Token: token.Token{
-					Type:    token.INT,
-					Literal: "1",
+					Type:    token.ADD,
+					Literal: "+",
 				},
-				Value: 1,
+				Left:     ident,
+				Operator: "+",
+				Right: &ast.IntegerLiteral{
+					Token: token.Token{
+						Type:    token.INT,
+						Literal: "1",
+					},
+					Value: 1,
+				},
 			},
 		},
 	}

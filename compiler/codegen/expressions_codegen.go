@@ -5,7 +5,6 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
@@ -24,6 +23,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genAssignExpression(expr)
 	case *ast.IntegerLiteral:
 		return c.genIntegerLiteral(expr)
+	case *ast.FloatLiteral:
+		return c.genFloatLiteral(expr)
 	case *ast.Identifier:
 		return c.genIdentifier(expr)
 	}
@@ -36,9 +37,22 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	lhs := c.genExpression(ie.Left).Load(c.contextBlock)
 	rhs := c.genExpression(ie.Right).Load(c.contextBlock)
 
+	lhsTyp := lhs.Type()
+	rhsTyp := rhs.Type()
+	if lhsTyp.Equal(types.I32) && rhsTyp.Equal(types.I32) {
+		return c.genInfixInteger(ie.Operator, lhs, rhs)
+	} else if lhsTyp.Equal(types.Float) && rhsTyp.Equal(types.Float) {
+		return c.genInfixFloat(ie.Operator, lhs, rhs)
+	}
+
+	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s\n", lhsTyp, ie.Operator, rhsTyp))
+	return Value{} // unreachable
+}
+
+func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value) Value {
 	var opResult value.Value
 
-	switch ie.Operator {
+	switch op {
 	case "+":
 		opResult = c.contextBlock.NewAdd(lhs, rhs)
 	case "-":
@@ -66,7 +80,41 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	case ">=":
 		opResult = c.contextBlock.NewICmp(enum.IPredUGE, lhs, rhs)
 	default:
-		errors.ErrorExit(fmt.Sprintf("unexpected operator: %s\n", ie.Operator))
+		errors.ErrorExit(fmt.Sprintf("unexpected operator: int %s int\n", op))
+	}
+
+	return Value{
+		Value:      opResult,
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value) Value {
+	var opResult value.Value
+
+	switch op {
+	case "+":
+		opResult = c.contextBlock.NewFAdd(lhs, rhs)
+	case "-":
+		opResult = c.contextBlock.NewFSub(lhs, rhs)
+	case "*":
+		opResult = c.contextBlock.NewFMul(lhs, rhs)
+	case "/":
+		opResult = c.contextBlock.NewFDiv(lhs, rhs)
+	case "==":
+		opResult = c.contextBlock.NewFCmp(enum.FPredOEQ, lhs, rhs)
+	case "!=":
+		opResult = c.contextBlock.NewFCmp(enum.FPredONE, lhs, rhs)
+	case "<":
+		opResult = c.contextBlock.NewFCmp(enum.FPredOLT, lhs, rhs)
+	case "<=":
+		opResult = c.contextBlock.NewFCmp(enum.FPredOLE, lhs, rhs)
+	case ">":
+		opResult = c.contextBlock.NewFCmp(enum.FPredOGT, lhs, rhs)
+	case ">=":
+		opResult = c.contextBlock.NewFCmp(enum.FPredOGE, lhs, rhs)
+	default:
+		errors.ErrorExit(fmt.Sprintf("unexpected operator: float %s float\n", op))
 	}
 
 	return Value{
@@ -116,38 +164,7 @@ func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
 		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, lhsTyp, rhsTyp))
 	}
 
-	switch expr.Token.Type {
-	case token.ASSIGN:
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.ADD_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewAdd(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.SUB_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewSub(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.MUL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewMul(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.QUO_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewSDiv(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.REM_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewSRem(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.SHL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewShl(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.SHR_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewAShr(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	}
+	c.contextBlock.NewStore(rhs, lhs)
 
 	return Value{
 		Value:      rhs,
@@ -176,6 +193,13 @@ func (c *CodeGen) genIndexExpression(expr *ast.IndexExpression) Value {
 func (c *CodeGen) genIntegerLiteral(expr *ast.IntegerLiteral) Value {
 	return Value{
 		Value:      constant.NewInt(types.I32, int64(expr.Value)),
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genFloatLiteral(expr *ast.FloatLiteral) Value {
+	return Value{
+		Value:      constant.NewFloat(types.Float, expr.Value),
 		IsVariable: false,
 	}
 }
