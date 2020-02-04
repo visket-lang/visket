@@ -5,7 +5,6 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
@@ -165,38 +164,7 @@ func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
 		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, lhsTyp, rhsTyp))
 	}
 
-	switch expr.Token.Type {
-	case token.ASSIGN:
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.ADD_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewAdd(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.SUB_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewSub(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.MUL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewMul(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.QUO_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewSDiv(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.REM_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewSRem(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.SHL_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewShl(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	case token.SHR_ASSIGN:
-		vValue := c.contextBlock.NewLoad(lhsTyp, lhs)
-		rhs = c.contextBlock.NewAShr(vValue, rhs)
-		c.contextBlock.NewStore(rhs, lhs)
-	}
+	c.contextBlock.NewStore(rhs, lhs)
 
 	return Value{
 		Value:      rhs,

@@ -270,16 +270,24 @@ func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
 		Token: token.Token{},
 		Expression: &ast.AssignExpression{
 			Token: token.Token{
-				Type:    token.ADD_ASSIGN,
-				Literal: "+=",
+				Type:    token.ASSIGN,
+				Literal: "=",
 			},
 			Left: ident,
-			Value: &ast.IntegerLiteral{
+			Value: &ast.InfixExpression{
 				Token: token.Token{
-					Type:    token.INT,
-					Literal: "1",
+					Type:    token.ADD,
+					Literal: "+",
 				},
-				Value: 1,
+				Left:     ident,
+				Operator: "+",
+				Right: &ast.IntegerLiteral{
+					Token: token.Token{
+						Type:    token.INT,
+						Literal: "1",
+					},
+					Value: 1,
+				},
 			},
 		},
 	}

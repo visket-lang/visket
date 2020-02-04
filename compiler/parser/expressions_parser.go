@@ -192,11 +192,46 @@ func (p *Parser) parseAssignExpression(left ast.Expression) *ast.AssignExpressio
 	}
 
 	p.nextToken()
-	stmt.Value = p.parseExpression(LOWEST)
+	right := p.parseExpression(LOWEST)
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
+
+	if stmt.Token.Type == token.ASSIGN {
+		stmt.Value = right
+		return stmt
+	}
+
+	// "=" 以外は糖衣構文として実装する
+	value := &ast.InfixExpression{
+		Left:     left,
+		Operator: "",
+		Right:    right,
+	}
+
+	switch stmt.Token.Type {
+	case token.ADD_ASSIGN:
+		value.Operator = token.ADD
+	case token.SUB_ASSIGN:
+		value.Operator = token.SUB
+	case token.MUL_ASSIGN:
+		value.Operator = token.MUL
+	case token.QUO_ASSIGN:
+		value.Operator = token.QUO
+	case token.REM_ASSIGN:
+		value.Operator = token.REM
+	case token.SHL_ASSIGN:
+		value.Operator = token.SHL
+	case token.SHR_ASSIGN:
+		value.Operator = token.SHR
+	}
+
+	stmt.Token = token.Token{
+		Type:    token.ASSIGN,
+		Literal: "=",
+	}
+	stmt.Value = value
 
 	return stmt
 }
