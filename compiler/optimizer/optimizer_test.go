@@ -9,8 +9,8 @@ import (
 func TestOptimize(t *testing.T) {
 	program := &ast.Program{
 		Functions: []*ast.FunctionStatement{{
-			Ident:      &ast.Identifier{Token: token.Token{Literal: "main"}},
-			Body:       &ast.BlockStatement{
+			Ident: &ast.Identifier{Token: token.Token{Literal: "main"}},
+			Body: &ast.BlockStatement{
 				Statements: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.InfixExpression{
