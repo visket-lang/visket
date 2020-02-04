@@ -9,7 +9,7 @@ func Show(node Node) string {
 	switch node := node.(type) {
 	case *Program:
 		var b bytes.Buffer
-		for _, stmt := range node.Statements {
+		for _, stmt := range node.Functions {
 			b.WriteString(Show(stmt))
 		}
 		return b.String()

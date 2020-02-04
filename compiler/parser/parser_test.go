@@ -5,7 +5,33 @@ import (
 	"testing"
 )
 
-func TestParse(t *testing.T) {
+func TestParseProgram(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"func f(a: int) {return 1}", "func Ident(f)(Ident(a)) {return Int(1)}"},
+		{"func hoge(fuga: int) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
+
+		{"func num() {return 2} func main() {return num()}", "func Ident(num)() {return Int(2)}func Ident(main)() {return Call(Ident(num)())}"},
+		{"func add(n: int) {return n + 2} func main() {return num(1)}", "func Ident(add)(Ident(n)) {return Infix(Ident(n) + Int(2))}func Ident(main)() {return Call(Ident(num)(Int(1)))}"},
+		{"func add(a: int, b: int) {return a + b} func main() {return num(1, 2)}", "func Ident(add)(Ident(a),Ident(b)) {return Infix(Ident(a) + Ident(b))}func Ident(main)() {return Call(Ident(num)(Int(1),Int(2)))}"},
+	}
+
+	for i, test := range tests {
+		l := lexer.NewFromString(test.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+		actual := program.Inspect()
+
+		if actual != test.expected {
+			t.Fatalf("tests[%d] - expected=%q, got=%q", i, test.expected, actual)
+		}
+	}
+}
+
+func TestParseStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -49,9 +75,6 @@ func TestParse(t *testing.T) {
 		{"func f(a: int) {return 1}", "func Ident(f)(Ident(a)) {return Int(1)}"},
 		{"func hoge(fuga: int) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
 
-		{"func num() {return 2} func main() {return num()}", "func Ident(num)() {return Int(2)}func Ident(main)() {return Call(Ident(num)())}"},
-		{"func add(n: int) {return n + 2} func main() {return num(1)}", "func Ident(add)(Ident(n)) {return Infix(Ident(n) + Int(2))}func Ident(main)() {return Call(Ident(num)(Int(1)))}"},
-		{"func add(a: int, b: int) {return a + b} func main() {return num(1, 2)}", "func Ident(add)(Ident(a),Ident(b)) {return Infix(Ident(a) + Ident(b))}func Ident(main)() {return Call(Ident(num)(Int(1),Int(2)))}"},
 		{"if 1 { 1 } else { 0 }", "if Int(1) {Int(1)} else {Int(0)}"},
 
 		{"while 1 { 1 }", "while Int(1) {Int(1)}"},
@@ -68,7 +91,7 @@ func TestParse(t *testing.T) {
 	for i, test := range tests {
 		l := lexer.NewFromString(test.input)
 		p := New(l)
-		program := p.ParseProgram()
+		program := p.parseStatement()
 		checkParserErrors(t, p)
 		actual := program.Inspect()
 

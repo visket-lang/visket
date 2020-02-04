@@ -3,9 +3,20 @@ package parser
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/arata-nvm/Solitude/compiler/types"
 )
+
+func (p *Parser) parseTopLevelStatement() ast.Statement {
+	switch p.curToken.Type {
+	case token.FUNCTION:
+		return p.parseFunctionStatement()
+	}
+
+	errors.ErrorExit(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
+	return nil
+}
 
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {

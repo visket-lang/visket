@@ -20,12 +20,12 @@ type Expression interface {
 }
 
 type Program struct {
-	Statements []Statement
+	Functions []*FunctionStatement
 }
 
 func (p *Program) Inspect() string {
 	var buf bytes.Buffer
-	for _, s := range p.Statements {
+	for _, s := range p.Functions {
 		buf.WriteString(s.Inspect())
 	}
 	return buf.String()
@@ -33,7 +33,7 @@ func (p *Program) Inspect() string {
 
 func (p *Program) String() string {
 	var buf bytes.Buffer
-	for _, s := range p.Statements {
+	for _, s := range p.Functions {
 		buf.WriteString(s.String())
 	}
 	return buf.String()
