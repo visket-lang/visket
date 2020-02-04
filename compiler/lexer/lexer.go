@@ -178,8 +178,7 @@ func (l *Lexer) NextToken() token.Token {
 			t := token.LookUpIdent(ident)
 			return l.newToken(t, ident)
 		} else if isDigit(l.ch) {
-			numLit := l.readNumber()
-			return l.newToken(token.INT, numLit)
+			return l.readNumberLiteral()
 		}
 		errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.ch))
 	}
@@ -187,6 +186,18 @@ func (l *Lexer) NextToken() token.Token {
 	l.readChar()
 
 	return tok
+}
+
+func (l *Lexer) readNumberLiteral() token.Token {
+	numLit := l.readNumber()
+	// .. -> range
+	if l.ch == '.' && l.peekChar() != '.' {
+		// Float
+		l.readChar()
+		return l.newToken(token.FLOAT, fmt.Sprintf("%s.%s", numLit, l.readNumber()))
+	}
+
+	return l.newToken(token.INT, numLit)
 }
 
 func (l *Lexer) readChar() {

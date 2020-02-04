@@ -7,6 +7,8 @@ import (
 
 func TestNextToken(t *testing.T) {
 	input := `
+10
+10.945
 10 + 2
 8 - 4
 42 * 89
@@ -45,6 +47,9 @@ array[1]
 		expectedType    token.TokenType
 		expectedLiteral string
 	}{
+		{token.INT, "10"},
+		{token.FLOAT, "10.945"},
+
 		{token.INT, "10"},
 		{token.ADD, "+"},
 		{token.INT, "2"},
