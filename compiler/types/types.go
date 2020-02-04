@@ -100,6 +100,23 @@ func (i *SlInt) String() string {
 
 func (i *SlInt) isSlType() {}
 
+type SlFloat struct {
+}
+
+func NewSlFloat() *SlFloat {
+	return &SlFloat{}
+}
+
+func (f *SlFloat) LlvmType() llvmTypes.Type {
+	return llvmTypes.Float
+}
+
+func (f *SlFloat) String() string {
+	return "float"
+}
+
+func (f *SlFloat) isSlType() {}
+
 type SlBool struct {
 }
 

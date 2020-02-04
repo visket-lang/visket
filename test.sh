@@ -68,6 +68,15 @@ try 0 "func main(): int { if 10 > 10 { return 1 } return 0}"
 try 1 "func main(): int { if 10 >= 10 { return 1 } return 0}"
 try 0 "func main(): int { if 9 >= 10 { return 1 } return 0}"
 
+try 1 "func main(): int { if 9.0 < 10.0 { return 1 } return 0}"
+try 0 "func main(): int { if 10.0 < 10.0 { return 1 } return 0}"
+try 1 "func main(): int { if 10.0 <= 10.0 { return 1 } return 0}"
+try 0 "func main(): int { if 10.0 <= 9.0 { return 1 } return 0}"
+try 1 "func main(): int { if 10.0 > 9.0 { return 1 } return 0}"
+try 0 "func main(): int { if 10.0 > 10.0 { return 1 } return 0}"
+try 1 "func main(): int { if 10.0 >= 10.0 { return 1 } return 0}"
+try 0 "func main(): int { if 9.0 >= 10.0 { return 1 } return 0}"
+
 try 10 \
 "func main(): int {
   var a = 10
