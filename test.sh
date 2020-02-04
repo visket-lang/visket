@@ -291,4 +291,13 @@ try 3 \
   return a[b]
 }"
 
+try 20 \
+"func main(): int {
+  return test1(10)
+}
+
+func test1(a: int): int {
+  return a * 2
+}"
+
 echo "all tests passed"

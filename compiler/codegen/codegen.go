@@ -40,7 +40,11 @@ func (c *CodeGen) GenerateCode() {
 	c.genInputFunction()
 
 	for _, s := range c.program.Functions {
-		c.genFunctionStatement(s)
+		c.genFunctionDeclaration(s)
+	}
+
+	for _, s := range c.program.Functions {
+		c.genFunctionBody(s)
 	}
 
 	irCode := c.module.String()
