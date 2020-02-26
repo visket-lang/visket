@@ -3,8 +3,8 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	. "github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
@@ -134,21 +134,17 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	c.contextFunction = nil
 }
 
-func addLineNum(blockName string, tok token.Token) string {
-	return fmt.Sprintf("%s.%d", blockName, tok.Pos.Line)
-}
-
 func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 	hasAlternative := stmt.Alternative != nil
 
 	condition := c.genExpression(stmt.Condition).Load(c.contextBlock)
-	blockThen := c.contextFunction.NewBlock(addLineNum("if.then", stmt.Token))
+	blockThen := c.contextFunction.NewBlock(NextLabel("if.then"))
 	var blockElse *ir.Block
-	blockMerge := c.contextFunction.NewBlock(addLineNum("if.merge", stmt.Token))
+	blockMerge := c.contextFunction.NewBlock(NextLabel("if.merge"))
 	c.contextCondAfter = append(c.contextCondAfter, blockMerge)
 
 	if hasAlternative {
-		blockElse = c.contextFunction.NewBlock(addLineNum("if.else", stmt.Token))
+		blockElse = c.contextFunction.NewBlock(NextLabel("if.else"))
 		c.contextBlock.NewCondBr(condition, blockThen, blockElse)
 	} else {
 		c.contextBlock.NewCondBr(condition, blockThen, blockMerge)
@@ -177,8 +173,8 @@ func (c *CodeGen) genIfStatement(stmt *ast.IfStatement) {
 }
 
 func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
-	blockLoop := c.contextFunction.NewBlock(addLineNum("while.loop", stmt.Token))
-	blockExit := c.contextFunction.NewBlock(addLineNum("while.exit", stmt.Token))
+	blockLoop := c.contextFunction.NewBlock(NextLabel("while.loop"))
+	blockExit := c.contextFunction.NewBlock(NextLabel("while.exit"))
 
 	cond := c.genExpression(stmt.Condition).Load(c.contextBlock)
 	result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
@@ -198,8 +194,8 @@ func (c *CodeGen) genWhileStatement(stmt *ast.WhileStatement) {
 }
 
 func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
-	blockLoop := c.contextFunction.NewBlock(addLineNum("for.loop", stmt.Token))
-	blockExit := c.contextFunction.NewBlock(addLineNum("for.exit", stmt.Token))
+	blockLoop := c.contextFunction.NewBlock(NextLabel("for.loop"))
+	blockExit := c.contextFunction.NewBlock(NextLabel("for.exit"))
 
 	if stmt.Init != nil {
 		c.genStatement(stmt.Init)
