@@ -17,10 +17,11 @@ type CodeGen struct {
 	isDebug bool
 	context *Context
 
-	module           *ir.Module
-	contextFunction  *ir.Func
-	contextBlock     *ir.Block
-	contextCondAfter []*ir.Block
+	module            *ir.Module
+	contextFunction   *ir.Func
+	contextEntryBlock *ir.Block
+	contextBlock      *ir.Block
+	contextCondAfter  []*ir.Block
 }
 
 func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {

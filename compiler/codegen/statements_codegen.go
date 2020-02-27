@@ -55,7 +55,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, typ, val.Type()))
 	}
 
-	named := c.contextBlock.NewAlloca(val.Type())
+	named := c.contextEntryBlock.NewAlloca(val.Type())
 	named.SetName(stmt.Ident.String())
 	c.context.addVariable(stmt.Ident, Value{
 		Value:      named,
@@ -114,6 +114,7 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 
 	c.into()
 	c.contextBlock = c.contextFunction.NewBlock("entry")
+	c.contextEntryBlock = c.contextBlock
 
 	for i, p := range stmt.Parameters {
 		c.context.addVariable(p, Value{
@@ -128,6 +129,7 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 		c.contextBlock.NewRet(nil)
 	}
 
+	c.contextEntryBlock = nil
 	c.contextBlock = nil
 	c.outOf()
 
