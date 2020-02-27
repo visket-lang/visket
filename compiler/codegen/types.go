@@ -31,3 +31,13 @@ type Member struct {
 	Id   int
 	Type types.Type
 }
+
+func (s *Struct) findMember(name string) int {
+	for _, m := range s.Members {
+		if m.Name == name {
+			return m.Id
+		}
+	}
+
+	return -1
+}

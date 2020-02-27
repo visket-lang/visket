@@ -29,6 +29,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genIdentifier(expr)
 	case *ast.NewExpression:
 		return c.genNewExpression(expr)
+	case *ast.LoadMemberExpression:
+		return c.genLoadMemberExpression(expr)
 	}
 
 	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
@@ -224,5 +226,37 @@ func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
 	return Value{
 		Value:      c.contextBlock.NewAlloca(typ),
 		IsVariable: true,
+	}
+}
+func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value {
+	lhs := c.genExpression(expr.Left).Value
+	lhsTyp := internal.PtrElmType(lhs)
+
+	structLlvmTyp, ok := lhsTyp.(*types.StructType)
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent))
+
+	}
+
+	structTyp, ok := c.context.findStruct(structLlvmTyp.Name())
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent))
+
+	}
+
+	id := structTyp.findMember(expr.MemberIdent.String())
+	if id == -1 {
+		errors.ErrorExit(fmt.Sprintf("%s | unresolved member: %s\n", expr.Token.Pos, expr.String()))
+	}
+
+	member := structTyp.Members[id]
+
+	zero := constant.NewInt(types.I32, 0)
+	index := constant.NewInt(types.I32, int64(member.Id))
+	val := c.contextBlock.NewGetElementPtr(lhsTyp, lhs, zero, index)
+
+	return Value{
+		Value:      val,
+		IsVariable: true, // TODO
 	}
 }
