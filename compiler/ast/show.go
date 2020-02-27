@@ -42,15 +42,15 @@ func Show(node Node) string {
 		return Show(node.Expression)
 	case *FunctionStatement:
 		var b bytes.Buffer
-		for i, param := range node.Parameters {
+		for i, p := range node.Sig.Params {
 			if i != 0 {
 				b.WriteString(", ")
 			}
-			b.WriteString(Show(param))
+			b.WriteString(Show(p))
 			b.WriteString(": ")
-			b.WriteString(node.Type.Params[i].String())
+			b.WriteString(p.Type.String())
 		}
-		return fmt.Sprintf("(def-func %s[%s]: %s (%s))", Show(node.Ident), b.String(), node.Type.RetType, Show(node.Body))
+		return fmt.Sprintf("(def-func %s[%s]: %s (%s))", Show(node.Sig.Ident), b.String(), node.Sig.RetType, Show(node.Body))
 	case *VarStatement:
 		var b bytes.Buffer
 		b.WriteString("(var ")

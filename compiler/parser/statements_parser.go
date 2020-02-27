@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/token"
-	"github.com/arata-nvm/Solitude/compiler/types"
 )
 
 func (p *Parser) parseTopLevelStatement() ast.Statement {
@@ -47,8 +46,7 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	if p.peekTokenIs(token.COLON) {
 		p.nextToken()
 		p.nextToken()
-		pt := p.parseType()
-		stmt.Type = pt
+		stmt.Type = p.parseType()
 	}
 
 	if !p.peekTokenIs(token.ASSIGN) {
@@ -85,19 +83,21 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 }
 
 func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
-	stmt := &ast.FunctionStatement{Token: p.curToken}
+	stmt := &ast.FunctionStatement{
+		Token: p.curToken,
+		Sig:   &ast.FunctionSignature{},
+	}
 
 	p.nextToken()
-	stmt.Ident = p.parseIdentifier()
+	stmt.Sig.Ident = p.parseIdentifier()
 
 	if !p.expectPeek(token.LPAREN) {
 		return nil
 	}
 
-	params, paramTypes := p.parseFunctionParameters()
-	stmt.Parameters = params
+	stmt.Sig.Params = p.parseFunctionParameters()
 
-	var retType types.SlType = types.VOID
+	retType := &ast.Type{Token: token.Token{Literal: "void"}}
 
 	if p.peekTokenIs(token.COLON) {
 		p.nextToken()
@@ -105,7 +105,7 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 		retType = p.parseType()
 	}
 
-	stmt.Type = types.NewSlFunction(retType, paramTypes)
+	stmt.Sig.RetType = retType
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
@@ -113,55 +113,51 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 
 	stmt.Body = p.parseBlockStatement()
 
-	// 以下コード生成を簡単にするため
-
-	if stmt.Type.RetType == types.VOID {
-		return stmt
-	}
-
-	// 関数の末尾は return を強制させる
-	lastBodyStatement := stmt.Body.Statements[len(stmt.Body.Statements)-1]
-	_, ok := lastBodyStatement.(*ast.ReturnStatement)
-	if !ok {
-		p.error(fmt.Sprintf("%s | missing return at end of function", p.curToken.Pos))
-		return nil
-	}
-
 	return stmt
 }
 
-func (p *Parser) parseFunctionParameters() ([]*ast.Identifier, []types.SlType) {
-	var params []*ast.Identifier
-	var paramTypes []types.SlType
+func (p *Parser) parseFunctionParameters() []*ast.Param {
+	var params []*ast.Param
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
-		return params, paramTypes
+		return params
 	}
 
 	p.nextToken()
 
-	params = append(params, p.parseIdentifier())
+	ident := p.parseIdentifier()
 	if !p.expectPeek(token.COLON) {
-		return nil, nil
+		return nil
 	}
 	p.nextToken()
-	paramTypes = append(paramTypes, p.parseType())
+	typ := p.parseType()
+
+	params = append(params, &ast.Param{
+		Ident: ident,
+		Type:  typ,
+	})
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
-		params = append(params, p.parseIdentifier())
+		ident = p.parseIdentifier()
+
 		p.expectPeek(token.COLON)
 		p.nextToken()
-		paramTypes = append(paramTypes, p.parseType())
+		typ = p.parseType()
+
+		params = append(params, &ast.Param{
+			Ident: ident,
+			Type:  typ,
+		})
 	}
 
 	if !p.expectPeek(token.RPAREN) {
-		return nil, nil
+		return nil
 	}
 
-	return params, paramTypes
+	return params
 }
 
 func (p *Parser) parseIfStatement() *ast.IfStatement {
@@ -325,19 +321,19 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
-func (p *Parser) parseType() types.SlType {
-	// 配列
+func (p *Parser) parseType() *ast.Type {
+	typ := &ast.Type{}
+
 	if p.curTokenIs(token.LBRACKET) {
+		// 配列
+		typ.IsArray = true
 		p.nextToken()
-		length := p.parseIntegerLiteral()
+		length := p.parseIntegerLiteral().Value
+		typ.Len = uint64(length)
 		p.expectPeek(token.RBRACKET)
 		p.nextToken()
-		return types.NewSlArray(length.Value, p.parseType())
 	}
 
-	if typ, ok := types.LookupType(p.curToken.Literal); ok {
-		return typ
-	}
-	p.error(fmt.Sprintf("%s | unknown type %s", p.curToken.Pos, p.curToken.Literal))
-	return nil
+	typ.Token = p.curToken
+	return typ
 }

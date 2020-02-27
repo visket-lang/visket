@@ -37,17 +37,16 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.String()))
 	}
 
+	var typ types.Type
 	var val value.Value
 	if stmt.Value != nil {
 		val = c.genExpression(stmt.Value).Load(c.contextBlock)
 	} else {
-		val = constant.NewZeroInitializer(stmt.Type.LlvmType())
+		typ = c.llvmType(stmt.Type)
+		val = constant.NewZeroInitializer(typ)
 	}
 
-	var typ types.Type
-	if stmt.Type != nil {
-		typ = stmt.Type.LlvmType()
-	} else {
+	if stmt.Type == nil {
 		typ = val.Type()
 	}
 
@@ -85,29 +84,29 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 }
 
 func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
-	_, ok := c.context.findFunction(stmt.Ident)
+	_, ok := c.context.findFunction(stmt.Sig.Ident)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("%s | already declared function %s", stmt.Token.Pos, stmt.Ident))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared function %s", stmt.Token.Pos, stmt.Sig.Ident))
 	}
 
 	var params []*ir.Param
 
-	for i, p := range stmt.Parameters {
-		typ := stmt.Type.Params[i].LlvmType()
+	for _, p := range stmt.Sig.Params {
+		typ := c.llvmType(p.Type)
 		param := ir.NewParam(p.String(), typ)
 		params = append(params, param)
 	}
 
-	returnTyp := stmt.Type.RetType.LlvmType()
+	returnTyp := c.llvmType(stmt.Sig.RetType)
 
-	function := c.module.NewFunc(stmt.Ident.String(), returnTyp, params...)
-	c.context.addFunction(stmt.Ident, function)
+	function := c.module.NewFunc(stmt.Sig.Ident.String(), returnTyp, params...)
+	c.context.addFunction(stmt.Sig.Ident, function)
 }
 
 func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
-	f, ok := c.context.findFunction(stmt.Ident)
+	f, ok := c.context.findFunction(stmt.Sig.Ident)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undeclared function %s", stmt.Token.Pos, stmt.Ident))
+		errors.ErrorExit(fmt.Sprintf("%s | undeclared function %s", stmt.Token.Pos, stmt.Sig.Ident))
 	}
 
 	c.contextFunction = f
@@ -116,8 +115,8 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	c.contextBlock = c.contextFunction.NewBlock("entry")
 	c.contextEntryBlock = c.contextBlock
 
-	for i, p := range stmt.Parameters {
-		c.context.addVariable(p, Value{
+	for i, p := range stmt.Sig.Params {
+		c.context.addVariable(p.Ident, Value{
 			Value:      f.Params[i],
 			IsVariable: false,
 		})
@@ -127,6 +126,10 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 
 	if f.Sig.RetType == types.Void {
 		c.contextBlock.NewRet(nil)
+	}
+
+	if c.contextBlock.Term == nil {
+		errors.ErrorExit(fmt.Sprintf("%s | missing return at end of function", stmt.Token.Pos))
 	}
 
 	c.contextEntryBlock = nil
