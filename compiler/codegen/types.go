@@ -19,3 +19,15 @@ func (c *CodeGen) llvmType(t *ast.Type) types.Type {
 
 	return typ
 }
+
+type Struct struct {
+	Name    string
+	Members []*Member
+	Type    *types.StructType
+}
+
+type Member struct {
+	Name string
+	Id   int
+	Type types.Type
+}
