@@ -4,12 +4,14 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/llir/llvm/ir"
+	llvmType "github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 )
 
 type Context struct {
 	variables map[string]Value
 	functions map[string]*ir.Func
+	types     map[string]llvmType.Type
 	parent    *Context
 }
 
@@ -26,11 +28,22 @@ func (v Value) Load(block *ir.Block) value.Value {
 }
 
 func newContext(parent *Context) *Context {
-	return &Context{
+	c := &Context{
 		variables: make(map[string]Value),
 		functions: make(map[string]*ir.Func),
+		types:     make(map[string]llvmType.Type),
 		parent:    parent,
 	}
+
+	c.initType()
+	return c
+}
+
+func (c *Context) initType() {
+	c.addType("void", llvmType.Void)
+	c.addType("bool", llvmType.I1)
+	c.addType("int", llvmType.I32)
+	c.addType("bool", llvmType.Float)
 }
 
 func (c *Context) addVariable(ident *ast.Identifier, v Value) {
@@ -67,6 +80,20 @@ func (c *Context) findFunction(ident *ast.Identifier) (*ir.Func, bool) {
 	}
 
 	return f, ok
+}
+
+func (c *Context) addType(name string, t llvmType.Type) {
+	c.types[name] = t
+}
+
+func (c *Context) findType(name string) (llvmType.Type, bool) {
+	t, ok := c.types[name]
+
+	if !ok && c.parent != nil {
+		return c.parent.findType(name)
+	}
+
+	return t, ok
 }
 
 func (c *CodeGen) into() {

@@ -10,12 +10,12 @@ func TestParseProgram(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"func f(a: int) {return 1}", "func Ident(f)(Ident(a)) {return Int(1)}"},
-		{"func hoge(fuga: int) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
+		{"func f(a: int) {return 1}", "func Ident(f)(Ident(a): Type(int)): Type(void) {return Int(1)}"},
+		{"func hoge(fuga: int): int {return fuga}", "func Ident(hoge)(Ident(fuga): Type(int)): Type(int) {return Ident(fuga)}"},
 
-		{"func num() {return 2} func main() {return num()}", "func Ident(num)() {return Int(2)}func Ident(main)() {return Call(Ident(num)())}"},
-		{"func add(n: int) {return n + 2} func main() {return num(1)}", "func Ident(add)(Ident(n)) {return Infix(Ident(n) + Int(2))}func Ident(main)() {return Call(Ident(num)(Int(1)))}"},
-		{"func add(a: int, b: int) {return a + b} func main() {return num(1, 2)}", "func Ident(add)(Ident(a),Ident(b)) {return Infix(Ident(a) + Ident(b))}func Ident(main)() {return Call(Ident(num)(Int(1),Int(2)))}"},
+		{"func num(): int {return 2} func main() {return num()}", "func Ident(num)(): Type(int) {return Int(2)}func Ident(main)(): Type(void) {return Call(Ident(num)())}"},
+		{"func add(n: int): int {return n + 2} func main() {return num(1)}", "func Ident(add)(Ident(n): Type(int)): Type(int) {return Infix(Ident(n) + Int(2))}func Ident(main)(): Type(void) {return Call(Ident(num)(Int(1)))}"},
+		{"func add(a: int, b: int): int {return a + b} func main() {return num(1, 2)}", "func Ident(add)(Ident(a): Type(int), Ident(b): Type(int)): Type(int) {return Infix(Ident(a) + Ident(b))}func Ident(main)(): Type(void) {return Call(Ident(num)(Int(1),Int(2)))}"},
 	}
 
 	for i, test := range tests {
@@ -73,8 +73,8 @@ func TestParseStatement(t *testing.T) {
 		{"return 0", "return Int(0)"},
 		{"return hoge", "return Ident(hoge)"},
 
-		{"func f(a: int) {return 1}", "func Ident(f)(Ident(a)) {return Int(1)}"},
-		{"func hoge(fuga: int) {return fuga}", "func Ident(hoge)(Ident(fuga)) {return Ident(fuga)}"},
+		{"func f(a: int) {return 1}", "func Ident(f)(Ident(a): Type(int)): Type(void) {return Int(1)}"},
+		{"func hoge(fuga: int) {return fuga}", "func Ident(hoge)(Ident(fuga): Type(int)): Type(void) {return Ident(fuga)}"},
 
 		{"if 1 { 1 } else { 0 }", "if Int(1) {Int(1)} else {Int(0)}"},
 

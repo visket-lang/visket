@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/token"
-	"github.com/arata-nvm/Solitude/compiler/types"
-	"strings"
 )
 
 type BlockStatement struct {
@@ -53,26 +51,16 @@ func (es *ExpressionStatement) String() string {
 func (es *ExpressionStatement) statementNode() {}
 
 type FunctionStatement struct {
-	Token      token.Token
-	Ident      *Identifier
-	Parameters []*Identifier
-	Body       *BlockStatement
-	Type       *types.SlFunction
+	Token token.Token
+	Sig   *FunctionSignature
+	Body  *BlockStatement
 }
 
 func (fs *FunctionStatement) Inspect() string {
 	var buf bytes.Buffer
 
-	var p []string
-	for _, param := range fs.Parameters {
-		p = append(p, param.Inspect())
-	}
-
-	buf.WriteString("func ")
-	buf.WriteString(fs.Ident.Inspect())
-	buf.WriteString("(")
-	buf.WriteString(strings.Join(p, ","))
-	buf.WriteString(") ")
+	buf.WriteString(fs.Sig.Inspect())
+	buf.WriteString(" ")
 	buf.WriteString(fs.Body.Inspect())
 	return buf.String()
 }
@@ -80,27 +68,64 @@ func (fs *FunctionStatement) Inspect() string {
 func (fs *FunctionStatement) String() string {
 	var buf bytes.Buffer
 
-	var p []string
-	for _, param := range fs.Parameters {
-		p = append(p, param.String())
-	}
-
-	buf.WriteString("func ")
-	buf.WriteString(fs.Ident.String())
-	buf.WriteString("(")
-	buf.WriteString(strings.Join(p, ","))
-	buf.WriteString(")")
+	buf.WriteString(fs.Sig.String())
+	buf.WriteString(" ")
 	buf.WriteString(fs.Body.String())
 	return buf.String()
 }
 
 func (fs *FunctionStatement) statementNode() {}
 
+type FunctionSignature struct {
+	Ident   *Identifier
+	Params  []*Param
+	RetType *Type
+}
+
+func (fs *FunctionSignature) Inspect() string {
+	var buf bytes.Buffer
+
+	for i, param := range fs.Params {
+		if i != 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(param.Inspect())
+	}
+
+	return fmt.Sprintf("func %s(%s): %s", fs.Ident.Inspect(), buf.String(), fs.RetType.Inspect())
+}
+
+func (fs *FunctionSignature) String() string {
+	var buf bytes.Buffer
+
+	for i, param := range fs.Params {
+		if i != 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(param.String())
+	}
+
+	return fmt.Sprintf("func %s(%s): %s", fs.Ident.String(), buf.String(), fs.RetType.String())
+}
+
+type Param struct {
+	Ident *Identifier
+	Type  *Type
+}
+
+func (p *Param) Inspect() string {
+	return fmt.Sprintf("%s: %s", p.Ident.Inspect(), p.Type.Inspect())
+}
+
+func (p *Param) String() string {
+	return fmt.Sprintf("%s: %s", p.Ident.String(), p.Type.String())
+}
+
 type VarStatement struct {
 	Token token.Token
 	Ident *Identifier
 	Value Expression
-	Type  types.SlType
+	Type  *Type
 }
 
 func (vs *VarStatement) Inspect() string {
@@ -112,6 +137,28 @@ func (vs *VarStatement) String() string {
 }
 
 func (vs *VarStatement) statementNode() {}
+
+type Type struct {
+	Token token.Token
+
+	IsArray bool
+	Len     uint64
+}
+
+func (t *Type) Inspect() string {
+	return fmt.Sprintf("Type(%s)", t)
+}
+
+func (t *Type) String() string {
+	var buf bytes.Buffer
+
+	if t.IsArray {
+		buf.WriteString(fmt.Sprintf("[%d]", t.Len))
+	}
+
+	buf.WriteString(t.Token.Literal)
+	return buf.String()
+}
 
 type ReturnStatement struct {
 	Token token.Token
@@ -236,3 +283,40 @@ func (fs *ForStatement) String() string {
 }
 
 func (fs *ForStatement) statementNode() {}
+
+type StructStatement struct {
+	Token   token.Token
+	Ident   *Identifier
+	Members []*MemberDecl
+}
+
+func (ss *StructStatement) Inspect() string {
+	var buf bytes.Buffer
+
+	buf.WriteString(fmt.Sprintf("struct %s { ", ss.Ident.Inspect()))
+	for _, m := range ss.Members {
+		buf.WriteString(fmt.Sprintf("%s %s ", m.Ident.Inspect(), m.Type.String()))
+	}
+	buf.WriteString("}")
+
+	return buf.String()
+}
+
+func (ss *StructStatement) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString(fmt.Sprintf("struct %s { ", ss.Ident.String()))
+	for _, m := range ss.Members {
+		buf.WriteString(fmt.Sprintf("%s %s ", m.Ident.String(), m.Type.String()))
+	}
+	buf.WriteString("}")
+
+	return buf.String()
+}
+
+func (ss *StructStatement) statementNode() {}
+
+type MemberDecl struct {
+	Ident *Identifier
+	Type  *Type
+}

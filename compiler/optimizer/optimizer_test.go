@@ -9,7 +9,11 @@ import (
 func TestOptimize(t *testing.T) {
 	program := &ast.Program{
 		Functions: []*ast.FunctionStatement{{
-			Ident: &ast.Identifier{Token: token.Token{Literal: "main"}},
+			Sig: &ast.FunctionSignature{
+				Ident:   &ast.Identifier{Token: token.Token{Literal: "main"}},
+				Params:  make([]*ast.Param, 0),
+				RetType: &ast.Type{Token: token.Token{Literal: "void"}},
+			},
 			Body: &ast.BlockStatement{
 				Statements: []ast.Statement{
 					&ast.ExpressionStatement{
@@ -28,7 +32,7 @@ func TestOptimize(t *testing.T) {
 		}},
 	}
 
-	expected := "func Ident(main)() {Infix(Int(6) * Ident(x))}"
+	expected := "func Ident(main)(): Type(void) {Infix(Int(6) * Ident(x))}"
 
 	o := New(program)
 	o.Optimize()
