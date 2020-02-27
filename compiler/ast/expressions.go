@@ -151,3 +151,18 @@ func (ie *IndexExpression) String() string {
 }
 
 func (ie *IndexExpression) expressionNode() {}
+
+type NewExpression struct {
+	Token token.Token
+	Ident *Identifier
+}
+
+func (ne *NewExpression) Inspect() string {
+	return fmt.Sprintf("new %s", ne.Ident.Inspect())
+}
+
+func (ne *NewExpression) String() string {
+	return fmt.Sprintf("new %s", ne.Ident)
+}
+
+func (ne *NewExpression) expressionNode() {}

@@ -43,6 +43,8 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		return p.parseGroupedExpression()
 	case token.IDENT:
 		return p.parseIdentifier()
+	case token.NEW:
+		return p.parseNewExpression()
 	}
 
 	p.error(fmt.Sprintf("%s | no prefix parse function for %s found", p.curToken.Pos, p.curToken.Type))
@@ -101,6 +103,15 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 
 func (p *Parser) parseIdentifier() *ast.Identifier {
 	return &ast.Identifier{Token: p.curToken}
+}
+
+func (p *Parser) parseNewExpression() *ast.NewExpression {
+	expr := &ast.NewExpression{Token: p.curToken}
+	p.nextToken()
+
+	expr.Ident = p.parseIdentifier()
+
+	return expr
 }
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
