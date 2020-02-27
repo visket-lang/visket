@@ -45,6 +45,7 @@ struct Foo {
   X int
   Y float
 }
+new Foo
 `
 
 	tests := []struct {
@@ -220,6 +221,9 @@ struct Foo {
 		{token.IDENT, "Y"},
 		{token.IDENT, "float"},
 		{token.RBRACE, "}"},
+
+		{token.NEW, "new"},
+		{token.IDENT, "Foo"},
 
 		{token.EOF, ""},
 	}
