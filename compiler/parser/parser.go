@@ -64,6 +64,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 		switch stmt := stmt.(type) {
 		case *ast.FunctionStatement:
 			program.Functions = append(program.Functions, stmt)
+		case *ast.StructStatement:
+			program.Structs = append(program.Structs, stmt)
 		default:
 			p.error(fmt.Sprintf("unexpected statement: %s", stmt.Inspect()))
 		}
