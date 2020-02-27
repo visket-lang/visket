@@ -41,6 +41,10 @@ for var i = 0; i < 10; i=i+1 { 1 }
 // while 1 { 1 }
 [1, 2, 3]
 array[1]
+struct Foo {
+  X int
+  Y float
+}
 `
 
 	tests := []struct {
@@ -207,6 +211,15 @@ array[1]
 		{token.LBRACKET, "["},
 		{token.INT, "1"},
 		{token.RBRACKET, "]"},
+
+		{token.STRUCT, "struct"},
+		{token.IDENT, "Foo"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "X"},
+		{token.IDENT, "int"},
+		{token.IDENT, "Y"},
+		{token.IDENT, "float"},
+		{token.RBRACE, "}"},
 
 		{token.EOF, ""},
 	}

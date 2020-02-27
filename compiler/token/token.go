@@ -59,6 +59,7 @@ const (
 	WHILE    = "while"
 	FOR      = "for"
 	IN       = "in"
+	STRUCT   = "struct"
 )
 
 var keywords = map[string]TokenType{
@@ -70,6 +71,7 @@ var keywords = map[string]TokenType{
 	"while":  WHILE,
 	"for":    FOR,
 	"in":     IN,
+	"struct": STRUCT,
 }
 
 type Token struct {
