@@ -27,6 +27,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genFloatLiteral(expr)
 	case *ast.Identifier:
 		return c.genIdentifier(expr)
+	case *ast.NewExpression:
+		return c.genNewExpression(expr)
 	}
 
 	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
@@ -211,4 +213,16 @@ func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 	}
 
 	return v
+}
+
+func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
+	typ, ok := c.context.findType(expr.Ident.String())
+	if !ok {
+		errors.ErrorExit(fmt.Sprintf("%s | unknown type %s", expr.Token.Pos, expr.Ident))
+	}
+
+	return Value{
+		Value:      c.contextBlock.NewAlloca(typ),
+		IsVariable: true,
+	}
 }
