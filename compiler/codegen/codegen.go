@@ -40,6 +40,10 @@ func (c *CodeGen) GenerateCode() {
 	c.genPrintFunction()
 	c.genInputFunction()
 
+	for _, s := range c.program.Structs {
+		c.genStructStatement(s)
+	}
+
 	for _, s := range c.program.Functions {
 		c.genFunctionDeclaration(s)
 	}

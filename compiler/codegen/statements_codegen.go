@@ -241,3 +241,26 @@ func (c *CodeGen) genBlockStatement(stmt *ast.BlockStatement) {
 		c.genStatement(s)
 	}
 }
+
+func (c *CodeGen) genStructStatement(stmt *ast.StructStatement) {
+	s := &Struct{
+		Name: stmt.Ident.String(),
+	}
+
+	var llvmMembers []types.Type
+	for i, m := range stmt.Members {
+		typ := c.llvmType(m.Type)
+		s.Members = append(s.Members, &Member{
+			Name: m.Ident.String(),
+			Id:   i,
+			Type: typ,
+		})
+
+		llvmMembers = append(llvmMembers, typ)
+	}
+
+	s.Type = types.NewStruct(llvmMembers...)
+
+	c.module.NewTypeDef(s.Name, s.Type)
+	c.context.addStruct(s.Name, s)
+}
