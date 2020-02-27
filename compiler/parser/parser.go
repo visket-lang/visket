@@ -36,6 +36,7 @@ var precedences = map[token.TokenType]int{
 	token.REM:      PRODUCT,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
+	token.PERIOD:   INDEX,
 }
 
 type Parser struct {

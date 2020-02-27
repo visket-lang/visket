@@ -90,6 +90,7 @@ func TestParseStatement(t *testing.T) {
 		{"array[a * 10 + 1]", "Ident(array)[Infix(Infix(Ident(a) * Int(10)) + Int(1))]"},
 
 		{"new Foo", "new Ident(Foo)"},
+		{"foo.X", "Ident(foo).Ident(X)"},
 	}
 
 	for i, test := range tests {

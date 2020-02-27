@@ -166,3 +166,19 @@ func (ne *NewExpression) String() string {
 }
 
 func (ne *NewExpression) expressionNode() {}
+
+type LoadMemberExpression struct {
+	Token       token.Token
+	Left        Expression
+	MemberIdent *Identifier
+}
+
+func (lme *LoadMemberExpression) Inspect() string {
+	return fmt.Sprintf("%s.%s", lme.Left.Inspect(), lme.MemberIdent.Inspect())
+}
+
+func (lme *LoadMemberExpression) String() string {
+	return fmt.Sprintf("%s.%s", lme.Left.String(), lme.MemberIdent.String())
+}
+
+func (lme *LoadMemberExpression) expressionNode() {}
