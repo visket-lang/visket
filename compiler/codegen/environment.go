@@ -43,7 +43,7 @@ func (c *Context) initType() {
 	c.addType("void", llvmType.Void)
 	c.addType("bool", llvmType.I1)
 	c.addType("int", llvmType.I32)
-	c.addType("bool", llvmType.Float)
+	c.addType("float", llvmType.Float)
 }
 
 func (c *Context) addVariable(ident *ast.Identifier, v Value) {
