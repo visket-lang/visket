@@ -41,6 +41,7 @@ const (
 	ASSIGN = "="
 
 	COMMA     = ","
+	PERIOD    = "."
 	COLON     = ":"
 	SEMICOLON = ";"
 
