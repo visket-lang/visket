@@ -10,6 +10,7 @@ run: build
 
 test: build
 	@./test.sh
+	@./test_err.sh
 
 clean:
 	rm -rf $(BINDIR) tmp tmp.sl
