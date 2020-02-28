@@ -36,6 +36,7 @@ var precedences = map[token.TokenType]int{
 	token.REM:      PRODUCT,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
+	token.PERIOD:   INDEX,
 }
 
 type Parser struct {
@@ -64,6 +65,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 		switch stmt := stmt.(type) {
 		case *ast.FunctionStatement:
 			program.Functions = append(program.Functions, stmt)
+		case *ast.StructStatement:
+			program.Structs = append(program.Structs, stmt)
 		default:
 			p.error(fmt.Sprintf("unexpected statement: %s", stmt.Inspect()))
 		}

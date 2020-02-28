@@ -12,6 +12,7 @@ type Context struct {
 	variables map[string]Value
 	functions map[string]*ir.Func
 	types     map[string]llvmType.Type
+	structs   map[string]*Struct
 	parent    *Context
 }
 
@@ -32,6 +33,7 @@ func newContext(parent *Context) *Context {
 		variables: make(map[string]Value),
 		functions: make(map[string]*ir.Func),
 		types:     make(map[string]llvmType.Type),
+		structs:   make(map[string]*Struct),
 		parent:    parent,
 	}
 
@@ -43,7 +45,7 @@ func (c *Context) initType() {
 	c.addType("void", llvmType.Void)
 	c.addType("bool", llvmType.I1)
 	c.addType("int", llvmType.I32)
-	c.addType("bool", llvmType.Float)
+	c.addType("float", llvmType.Float)
 }
 
 func (c *Context) addVariable(ident *ast.Identifier, v Value) {
@@ -94,6 +96,21 @@ func (c *Context) findType(name string) (llvmType.Type, bool) {
 	}
 
 	return t, ok
+}
+
+func (c *Context) addStruct(name string, s *Struct) {
+	c.structs[name] = s
+	c.addType(name, s.Type)
+}
+
+func (c *Context) findStruct(name string) (*Struct, bool) {
+	s, ok := c.structs[name]
+
+	if !ok && c.parent != nil {
+		return c.parent.findStruct(name)
+	}
+
+	return s, ok
 }
 
 func (c *CodeGen) into() {

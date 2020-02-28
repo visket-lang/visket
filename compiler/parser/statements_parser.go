@@ -10,6 +10,8 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.FUNCTION:
 		return p.parseFunctionStatement()
+	case token.STRUCT:
+		return p.parseStructStatement()
 	}
 
 	p.error(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
@@ -33,6 +35,41 @@ func (p *Parser) parseStatement() ast.Statement {
 	default:
 		return p.parseExpressionStatement()
 	}
+}
+
+func (p *Parser) parseStructStatement() *ast.StructStatement {
+	stmt := &ast.StructStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	stmt.Ident = p.parseIdentifier()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	for p.peekTokenIs(token.IDENT) {
+		m := &ast.MemberDecl{}
+
+		if !p.expectPeek(token.IDENT) {
+			return nil
+		}
+		m.Ident = p.parseIdentifier()
+
+		if !p.expectPeek(token.IDENT) {
+			return nil
+		}
+		m.Type = p.parseType()
+
+		stmt.Members = append(stmt.Members, m)
+	}
+
+	if !p.expectPeek(token.RBRACE) {
+		return nil
+	}
+
+	return stmt
 }
 
 func (p *Parser) parseVarStatement() *ast.VarStatement {

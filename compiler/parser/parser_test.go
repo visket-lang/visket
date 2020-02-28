@@ -16,6 +16,7 @@ func TestParseProgram(t *testing.T) {
 		{"func num(): int {return 2} func main() {return num()}", "func Ident(num)(): Type(int) {return Int(2)}func Ident(main)(): Type(void) {return Call(Ident(num)())}"},
 		{"func add(n: int): int {return n + 2} func main() {return num(1)}", "func Ident(add)(Ident(n): Type(int)): Type(int) {return Infix(Ident(n) + Int(2))}func Ident(main)(): Type(void) {return Call(Ident(num)(Int(1)))}"},
 		{"func add(a: int, b: int): int {return a + b} func main() {return num(1, 2)}", "func Ident(add)(Ident(a): Type(int), Ident(b): Type(int)): Type(int) {return Infix(Ident(a) + Ident(b))}func Ident(main)(): Type(void) {return Call(Ident(num)(Int(1),Int(2)))}"},
+		{"struct Foo { X int Y float }", "struct Ident(Foo) { Ident(X) int Ident(Y) float }"},
 	}
 
 	for i, test := range tests {
@@ -87,6 +88,9 @@ func TestParseStatement(t *testing.T) {
 
 		{"array[1]", "Ident(array)[Int(1)]"},
 		{"array[a * 10 + 1]", "Ident(array)[Infix(Infix(Ident(a) * Int(10)) + Int(1))]"},
+
+		{"new Foo", "new Ident(Foo)"},
+		{"foo.X", "Ident(foo).Ident(X)"},
 	}
 
 	for i, test := range tests {

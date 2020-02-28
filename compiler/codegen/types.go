@@ -19,3 +19,25 @@ func (c *CodeGen) llvmType(t *ast.Type) types.Type {
 
 	return typ
 }
+
+type Struct struct {
+	Name    string
+	Members []*Member
+	Type    *types.StructType
+}
+
+type Member struct {
+	Name string
+	Id   int
+	Type types.Type
+}
+
+func (s *Struct) findMember(name string) int {
+	for _, m := range s.Members {
+		if m.Name == name {
+			return m.Id
+		}
+	}
+
+	return -1
+}

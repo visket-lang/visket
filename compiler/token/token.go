@@ -41,6 +41,7 @@ const (
 	ASSIGN = "="
 
 	COMMA     = ","
+	PERIOD    = "."
 	COLON     = ":"
 	SEMICOLON = ";"
 
@@ -59,6 +60,8 @@ const (
 	WHILE    = "while"
 	FOR      = "for"
 	IN       = "in"
+	STRUCT   = "struct"
+	NEW      = "new"
 )
 
 var keywords = map[string]TokenType{
@@ -70,6 +73,8 @@ var keywords = map[string]TokenType{
 	"while":  WHILE,
 	"for":    FOR,
 	"in":     IN,
+	"struct": STRUCT,
+	"new":    NEW,
 }
 
 type Token struct {
