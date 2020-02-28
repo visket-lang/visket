@@ -11,13 +11,13 @@ func TestParseProgram(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"func f(a: int) {return 1}", "(def-func f(a: int): void ((return 1)))"},
+		{"func f(a: int): int {return 1}", "(def-func f(a: int): int ((return 1)))"},
 		{"func hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
 
-		{"func num(): int {return 2} func main() {return num()}", "(def-func num(): int ((return 2)))(def-func main(): void ((return (func-call num()))))"},
-		{"func add(n: int): int {return n + 2} func main() {return num(1)}", "(def-func add(n: int): int ((return (n + 2))))(def-func main(): void ((return (func-call num(1)))))"},
-		{"func add(a: int, b: int): int {return a + b} func main() {return num(1, 2)}", "(def-func add(a: int, b: int): int ((return (a + b))))(def-func main(): void ((return (func-call num(1, 2)))))"},
-		{"struct Foo { X int Y float }", "(struct Foo(X: intY: float))"},
+		{"func num(): int {return 2} func main(): int {return num()}", "(def-func num(): int ((return 2)))(def-func main(): int ((return (func-call num()))))"},
+		{"func add(n: int): int {return n + 2} func main(): int {return num(1)}", "(def-func add(n: int): int ((return (n + 2))))(def-func main(): int ((return (func-call num(1)))))"},
+		{"func add(a: int, b: int): int {return a + b} func main(): int {return num(1, 2)}", "(def-func add(a: int, b: int): int ((return (a + b))))(def-func main(): int ((return (func-call num(1, 2)))))"},
+		{"struct Foo { X int Y float }", "(struct Foo(X: int, Y: float))"},
 	}
 
 	for i, test := range tests {
@@ -75,8 +75,8 @@ func TestParseStatement(t *testing.T) {
 		{"return 0", "(return 0)"},
 		{"return hoge", "(return hoge)"},
 
-		{"func f(a: int) {return 1}", "(def-func f(a: int): void ((return 1)))"},
-		{"func hoge(fuga: int) {return fuga}", "(def-func hoge(fuga: int): void ((return fuga)))"},
+		{"func f(a: int): int {return 1}", "(def-func f(a: int): int ((return 1)))"},
+		{"func hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
 
 		{"if 1 { 1 } else { 0 }", "(if 1(1)(0))"},
 
