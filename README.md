@@ -21,6 +21,9 @@ func fib(n) {
 
 More examples can be found [here](https://github.com/arata-nvm/Solitude/tree/master/examples).
 
+## Try it on Docker
+1. `git clone https://github.com/arata-nvm/Solitude && cd Solitude`
+2. `make docker/run`
 ## Features
 
 ### Language Features
@@ -42,6 +45,7 @@ More examples can be found [here](https://github.com/arata-nvm/Solitude/tree/mas
 
 ## Dependencies
 - Clang == 9.x
+- GNU Make
 
 ## Development
 
