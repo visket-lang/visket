@@ -15,7 +15,7 @@ func Show(node Node) string {
 		for _, stmt := range node.Functions {
 			b.WriteString(Show(stmt))
 		}
-		fmt.Println(b.String())
+		return b.String()
 	case *Identifier:
 		return node.Token.Literal
 	case *IntegerLiteral:
@@ -120,7 +120,10 @@ func Show(node Node) string {
 		b.WriteString("(struct ")
 		b.WriteString(Show(node.Ident))
 		b.WriteString("(")
-		for _, m := range node.Members {
+		for i, m := range node.Members {
+			if i != 0 {
+				b.WriteString(", ")
+			}
 			b.WriteString(fmt.Sprintf("%s%s", Show(m.Ident), Show(m.Type)))
 		}
 		b.WriteString("))")
