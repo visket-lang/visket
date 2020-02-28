@@ -34,20 +34,21 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Token.Pos, stmt.Ident.Token.Literal))
 	}
 
 	var typ types.Type
 	var val value.Value
 	if stmt.Value != nil {
 		val = c.genExpression(stmt.Value).Load(c.contextBlock)
+		typ = val.Type()
 	} else {
 		typ = c.llvmType(stmt.Type)
 		val = constant.NewZeroInitializer(typ)
 	}
 
-	if stmt.Type == nil {
-		typ = val.Type()
+	if stmt.Type != nil {
+		typ = c.llvmType(stmt.Type)
 	}
 
 	if !typ.Equal(val.Type()) {
@@ -86,7 +87,7 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 	_, ok := c.context.findFunction(stmt.Sig.Ident)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("%s | already declared function %s", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared function '%s'", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
 	}
 
 	var params []*ir.Param
@@ -106,7 +107,7 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	f, ok := c.context.findFunction(stmt.Sig.Ident)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undeclared function %s", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | undeclared function '%s'", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
 	}
 
 	c.contextFunction = f

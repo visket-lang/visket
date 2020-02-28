@@ -180,7 +180,7 @@ func (l *Lexer) NextToken() token.Token {
 		} else if isDigit(l.ch) {
 			return l.readNumberLiteral()
 		}
-		errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor: %c", l.getCurrentPos(), l.ch))
+		errors.ErrorExit(fmt.Sprintf("%s | Illegal charactor '%c'", l.getCurrentPos(), l.ch))
 	}
 
 	l.readChar()

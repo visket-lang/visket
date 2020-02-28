@@ -5,6 +5,7 @@ import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/arata-nvm/Solitude/compiler/token"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
@@ -44,16 +45,16 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	lhsTyp := lhs.Type()
 	rhsTyp := rhs.Type()
 	if lhsTyp.Equal(types.I32) && rhsTyp.Equal(types.I32) {
-		return c.genInfixInteger(ie.Operator, lhs, rhs)
+		return c.genInfixInteger(ie.Operator, lhs, rhs, ie.Token.Pos)
 	} else if lhsTyp.Equal(types.Float) && rhsTyp.Equal(types.Float) {
-		return c.genInfixFloat(ie.Operator, lhs, rhs)
+		return c.genInfixFloat(ie.Operator, lhs, rhs, ie.Token.Pos)
 	}
 
-	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s\n", lhsTyp, ie.Operator, rhsTyp))
+	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s", lhsTyp, ie.Operator, rhsTyp))
 	return Value{} // unreachable
 }
 
-func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value) Value {
+func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value, pos *token.Position) Value {
 	var opResult value.Value
 
 	switch op {
@@ -84,7 +85,7 @@ func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value) V
 	case ">=":
 		opResult = c.contextBlock.NewICmp(enum.IPredUGE, lhs, rhs)
 	default:
-		errors.ErrorExit(fmt.Sprintf("unexpected operator: int %s int\n", op))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s %s %s", pos, lhs.Type(), op, rhs.Type()))
 	}
 
 	return Value{
@@ -93,7 +94,7 @@ func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value) V
 	}
 }
 
-func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value) Value {
+func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value, pos *token.Position) Value {
 	var opResult value.Value
 
 	switch op {
@@ -118,7 +119,7 @@ func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value) Val
 	case ">=":
 		opResult = c.contextBlock.NewFCmp(enum.FPredOGE, lhs, rhs)
 	default:
-		errors.ErrorExit(fmt.Sprintf("unexpected operator: float %s float\n", op))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s %s %s", pos, lhs.Type(), op, rhs.Type()))
 	}
 
 	return Value{
@@ -130,13 +131,13 @@ func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value) Val
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	f, ok := c.context.findFunction(expr.Function)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undefined function %s", expr.Token.Pos, expr.Function.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | undefined function '%s'", expr.Token.Pos, expr.Function.Token.Literal))
 	}
 
 	if len(expr.Parameters) < len(f.Params) {
-		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to %s", expr.Token.Pos, expr.Function.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to '%s'", expr.Token.Pos, expr.Function.Token.Literal))
 	} else if len(expr.Parameters) > len(f.Params) {
-		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to %s", expr.Token.Pos, expr.Function.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to '%s'", expr.Token.Pos, expr.Function.Token.Literal))
 	}
 
 	var params []value.Value
@@ -145,7 +146,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		v := c.genExpression(param).Load(c.contextBlock)
 		params = append(params, v)
 		if v.Type() != f.Sig.Params[i] {
-			errors.ErrorExit(fmt.Sprintf("%s | type mismatched %s and %s", expr.Token.Pos, v.Type(), f.Sig.Params[i].String()))
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, v.Type(), f.Sig.Params[i].String()))
 
 		}
 	}
@@ -181,7 +182,7 @@ func (c *CodeGen) genIndexExpression(expr *ast.IndexExpression) Value {
 	leftTyp := internal.PtrElmType(left)
 
 	if _, ok := leftTyp.(*types.ArrayType); !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | cannot index %s", expr.Token.Pos, leftTyp))
+		errors.ErrorExit(fmt.Sprintf("%s | cannot index '%s'", expr.Token.Pos, leftTyp))
 
 	}
 
@@ -211,7 +212,7 @@ func (c *CodeGen) genFloatLiteral(expr *ast.FloatLiteral) Value {
 func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 	v, ok := c.context.findVariable(expr)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unresolved variable '%s'", expr.Token.Pos, expr.Token.Literal))
 	}
 
 	return v
@@ -220,7 +221,7 @@ func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
 	typ, ok := c.context.findType(expr.Ident.Token.Literal)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unknown type %s", expr.Token.Pos, expr.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", expr.Token.Pos, expr.Ident.Token.Literal))
 	}
 
 	return Value{
@@ -234,17 +235,17 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 
 	structLlvmTyp, ok := lhsTyp.(*types.StructType)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
 	}
 
 	structTyp, ok := c.context.findStruct(structLlvmTyp.Name())
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
 	}
 
 	id := structTyp.findMember(expr.MemberIdent.Token.Literal)
 	if id == -1 {
-		errors.ErrorExit(fmt.Sprintf("%s | unresolved member: %s\n", expr.Token.Pos, expr.MemberIdent.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unresolved member '%s'", expr.Token.Pos, expr.MemberIdent.Token.Literal))
 	}
 
 	member := structTyp.Members[id]
