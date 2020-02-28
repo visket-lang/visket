@@ -9,6 +9,7 @@ func TestNextToken(t *testing.T) {
 	input := `
 10
 10.945
+"hoge"
 10 + 2
 8 - 4
 42 * 89
@@ -55,6 +56,7 @@ bar.X
 	}{
 		{token.INT, "10"},
 		{token.FLOAT, "10.945"},
+		{token.STRING, "hoge"},
 
 		{token.INT, "10"},
 		{token.ADD, "+"},

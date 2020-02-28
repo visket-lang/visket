@@ -172,6 +172,11 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = l.newToken(token.PERIOD, ".")
 		}
+	case '"':
+		l.readChar()
+		strLit := l.readUntil('"')
+		l.readChar()
+		tok = l.newToken(token.STRING, strLit)
 	default:
 		if isLetter(l.ch) {
 			ident := l.readIdentifier()
@@ -235,6 +240,15 @@ func (l *Lexer) readIdentifier() string {
 func (l *Lexer) readNumber() string {
 	readPos := l.position
 	for isDigit(l.ch) {
+		l.readChar()
+	}
+
+	return l.input[readPos:l.position]
+}
+
+func (l *Lexer) readUntil(c byte) string {
+	readPos := l.position
+	for l.ch != c {
 		l.readChar()
 	}
 
