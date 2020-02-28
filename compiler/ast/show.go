@@ -9,6 +9,9 @@ func Show(node Node) string {
 	switch node := node.(type) {
 	case *Program:
 		var b bytes.Buffer
+		for _, stmt := range node.Structs {
+			b.WriteString(Show(stmt))
+		}
 		for _, stmt := range node.Functions {
 			b.WriteString(Show(stmt))
 		}
@@ -16,6 +19,8 @@ func Show(node Node) string {
 	case *Identifier:
 		return node.Token.Literal
 	case *IntegerLiteral:
+		return node.Token.Literal
+	case *FloatLiteral:
 		return node.Token.Literal
 	case *PrefixExpression:
 		return fmt.Sprintf("(%s%s)", node.Operator, Show(node.Right))
@@ -31,7 +36,13 @@ func Show(node Node) string {
 			}
 			b.WriteString(Show(param))
 		}
-		return fmt.Sprintf("(func-call %s[%s])", Show(node.Function), b.String())
+		return fmt.Sprintf("(func-call %s(%s))", Show(node.Function), b.String())
+	case *IndexExpression:
+		return fmt.Sprintf("(%s[%s])", Show(node.Left), Show(node.Index))
+	case *NewExpression:
+		return fmt.Sprintf("(new %s)", node.Ident)
+	case *LoadMemberExpression:
+		return fmt.Sprintf("(%s.%s)", Show(node.Left), node.MemberIdent)
 	case *BlockStatement:
 		var b bytes.Buffer
 		for _, stmt := range node.Statements {
@@ -47,10 +58,10 @@ func Show(node Node) string {
 				b.WriteString(", ")
 			}
 			b.WriteString(Show(p))
-			b.WriteString(": ")
-			b.WriteString(p.Type.String())
 		}
-		return fmt.Sprintf("(def-func %s[%s]: %s (%s))", Show(node.Sig.Ident), b.String(), node.Sig.RetType, Show(node.Body))
+		return fmt.Sprintf("(def-func %s(%s): %s (%s))", Show(node.Sig.Ident), b.String(), node.Sig.RetType, Show(node.Body))
+	case *Param:
+		return fmt.Sprintf("%s%s", Show(node.Ident), Show(node.Type))
 	case *VarStatement:
 		var b bytes.Buffer
 		b.WriteString("(var ")
@@ -90,7 +101,7 @@ func Show(node Node) string {
 		b.WriteString(Show(node.Condition))
 		b.WriteString("(")
 		b.WriteString(Show(node.Body))
-		b.WriteString(")")
+		b.WriteString("))")
 		return b.String()
 	case *ForStatement:
 		var b bytes.Buffer
@@ -104,6 +115,18 @@ func Show(node Node) string {
 		b.WriteString(Show(node.Body))
 		b.WriteString("))")
 		return b.String()
+	case *StructStatement:
+		var b bytes.Buffer
+		b.WriteString("(struct ")
+		b.WriteString(Show(node.Ident))
+		b.WriteString("(")
+		for _, m := range node.Members {
+			b.WriteString(fmt.Sprintf("%s%s", Show(m.Ident), Show(m.Type)))
+		}
+		b.WriteString("))")
+		return b.String()
+	case *Type:
+		return fmt.Sprintf(": %s", node.String())
 	}
 	return fmt.Sprintf("unknown: %s", node.String())
 }
