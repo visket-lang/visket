@@ -41,13 +41,14 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	var val value.Value
 	if stmt.Value != nil {
 		val = c.genExpression(stmt.Value).Load(c.contextBlock)
+		typ = val.Type()
 	} else {
 		typ = c.llvmType(stmt.Type)
 		val = constant.NewZeroInitializer(typ)
 	}
 
-	if stmt.Type == nil {
-		typ = val.Type()
+	if stmt.Type != nil {
+		typ = c.llvmType(stmt.Type)
 	}
 
 	if !typ.Equal(val.Type()) {
