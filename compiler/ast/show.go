@@ -22,6 +22,8 @@ func Show(node Node) string {
 		return fmt.Sprintf("%d", node.Value)
 	case *FloatLiteral:
 		return fmt.Sprintf("%f", node.Value)
+	case *StringLiteral:
+		return fmt.Sprintf("\"%s\"", node.Value)
 	case *PrefixExpression:
 		return fmt.Sprintf("(%s%s)", node.Op, Show(node.Right))
 	case *InfixExpression:

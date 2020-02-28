@@ -25,6 +25,13 @@ type FloatLiteral struct {
 
 func (fl *FloatLiteral) expressionNode() {}
 
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode() {}
+
 type PrefixExpression struct {
 	OpPos token.Position
 	Op    string
