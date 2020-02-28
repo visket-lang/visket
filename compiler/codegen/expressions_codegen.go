@@ -33,7 +33,7 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genLoadMemberExpression(expr)
 	}
 
-	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", expr.Inspect()))
+	errors.ErrorExit(fmt.Sprintf("unexpexted expression: %s\n", ast.Show(expr)))
 	return Value{} //unreachable
 }
 
@@ -130,13 +130,13 @@ func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value) Val
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	f, ok := c.context.findFunction(expr.Function)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undefined function %s", expr.Token.Pos, expr.Function.String()))
+		errors.ErrorExit(fmt.Sprintf("%s | undefined function %s", expr.Token.Pos, expr.Function.Token.Literal))
 	}
 
 	if len(expr.Parameters) < len(f.Params) {
-		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to %s", expr.Token.Pos, expr.Function.String()))
+		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to %s", expr.Token.Pos, expr.Function.Token.Literal))
 	} else if len(expr.Parameters) > len(f.Params) {
-		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to %s", expr.Token.Pos, expr.Function.String()))
+		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to %s", expr.Token.Pos, expr.Function.Token.Literal))
 	}
 
 	var params []value.Value
@@ -211,16 +211,16 @@ func (c *CodeGen) genFloatLiteral(expr *ast.FloatLiteral) Value {
 func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 	v, ok := c.context.findVariable(expr)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.String()))
+		errors.ErrorExit(fmt.Sprintf("unresolved variable: %s\n", expr.Token.Literal))
 	}
 
 	return v
 }
 
 func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
-	typ, ok := c.context.findType(expr.Ident.String())
+	typ, ok := c.context.findType(expr.Ident.Token.Literal)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unknown type %s", expr.Token.Pos, expr.Ident))
+		errors.ErrorExit(fmt.Sprintf("%s | unknown type %s", expr.Token.Pos, expr.Ident.Token.Literal))
 	}
 
 	return Value{
@@ -234,17 +234,17 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 
 	structLlvmTyp, ok := lhsTyp.(*types.StructType)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
 	}
 
 	structTyp, ok := c.context.findStruct(structLlvmTyp.Name())
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
 	}
 
-	id := structTyp.findMember(expr.MemberIdent.String())
+	id := structTyp.findMember(expr.MemberIdent.Token.Literal)
 	if id == -1 {
-		errors.ErrorExit(fmt.Sprintf("%s | unresolved member: %s\n", expr.Token.Pos, expr.String()))
+		errors.ErrorExit(fmt.Sprintf("%s | unresolved member: %s\n", expr.Token.Pos, expr.MemberIdent.Token.Literal))
 	}
 
 	member := structTyp.Members[id]

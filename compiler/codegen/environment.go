@@ -49,7 +49,7 @@ func (c *Context) initType() {
 }
 
 func (c *Context) addVariable(ident *ast.Identifier, v Value) {
-	c.variables[ident.String()] = v
+	c.variables[ident.Token.Literal] = v
 }
 
 func (c *Context) addVariableByName(name string, v Value) {
@@ -57,7 +57,7 @@ func (c *Context) addVariableByName(name string, v Value) {
 }
 
 func (c *Context) findVariable(ident *ast.Identifier) (Value, bool) {
-	v, ok := c.variables[ident.String()]
+	v, ok := c.variables[ident.Token.Literal]
 
 	if !ok && c.parent != nil {
 		return c.parent.findVariable(ident)
@@ -67,7 +67,7 @@ func (c *Context) findVariable(ident *ast.Identifier) (Value, bool) {
 }
 
 func (c *Context) addFunction(ident *ast.Identifier, f *ir.Func) {
-	c.functions[ident.String()] = f
+	c.functions[ident.Token.Literal] = f
 }
 
 func (c *Context) addFunctionByName(name string, f *ir.Func) {
@@ -75,7 +75,7 @@ func (c *Context) addFunctionByName(name string, f *ir.Func) {
 }
 
 func (c *Context) findFunction(ident *ast.Identifier) (*ir.Func, bool) {
-	f, ok := c.functions[ident.String()]
+	f, ok := c.functions[ident.Token.Literal]
 
 	if !ok && c.parent != nil {
 		return c.parent.findFunction(ident)

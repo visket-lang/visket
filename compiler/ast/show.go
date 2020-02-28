@@ -40,9 +40,9 @@ func Show(node Node) string {
 	case *IndexExpression:
 		return fmt.Sprintf("(%s[%s])", Show(node.Left), Show(node.Index))
 	case *NewExpression:
-		return fmt.Sprintf("(new %s)", node.Ident)
+		return fmt.Sprintf("(new %s)", node.Ident.Token.Literal)
 	case *LoadMemberExpression:
-		return fmt.Sprintf("(%s.%s)", Show(node.Left), node.MemberIdent)
+		return fmt.Sprintf("(%s.%s)", Show(node.Left), node.MemberIdent.Token.Literal)
 	case *BlockStatement:
 		var b bytes.Buffer
 		for _, stmt := range node.Statements {
@@ -59,16 +59,16 @@ func Show(node Node) string {
 			}
 			b.WriteString(Show(p))
 		}
-		return fmt.Sprintf("(def-func %s(%s): %s (%s))", Show(node.Sig.Ident), b.String(), node.Sig.RetType, Show(node.Body))
+		return fmt.Sprintf("(def-func %s(%s): %s (%s))", Show(node.Sig.Ident), b.String(), node.Sig.RetType.Token.Literal, Show(node.Body))
 	case *Param:
-		return fmt.Sprintf("%s%s", Show(node.Ident), Show(node.Type))
+		return fmt.Sprintf("%s: %s", Show(node.Ident), Show(node.Type))
 	case *VarStatement:
 		var b bytes.Buffer
 		b.WriteString("(var ")
 		b.WriteString(Show(node.Ident))
 		if node.Type != nil {
 			b.WriteString(": ")
-			b.WriteString(node.Type.String())
+			b.WriteString(node.Type.Token.Literal)
 		}
 		if node.Value != nil {
 			b.WriteString(" = ")
@@ -124,12 +124,19 @@ func Show(node Node) string {
 			if i != 0 {
 				b.WriteString(", ")
 			}
-			b.WriteString(fmt.Sprintf("%s%s", Show(m.Ident), Show(m.Type)))
+			b.WriteString(fmt.Sprintf("%s: %s", Show(m.Ident), Show(m.Type)))
 		}
 		b.WriteString("))")
 		return b.String()
 	case *Type:
-		return fmt.Sprintf(": %s", node.String())
+		var buf bytes.Buffer
+
+		if node.IsArray {
+			buf.WriteString(fmt.Sprintf("[%d]", node.Len))
+		}
+
+		buf.WriteString(node.Token.Literal)
+		return buf.String()
 	}
-	return fmt.Sprintf("unknown: %s", node.String())
+	return fmt.Sprintf("unknown: %s", node)
 }

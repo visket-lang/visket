@@ -27,14 +27,14 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	case *ast.ForStatement:
 		c.genForStatement(stmt)
 	default:
-		errors.ErrorExit(fmt.Sprintf("unexpexted statement: %s\n", stmt.Inspect()))
+		errors.ErrorExit(fmt.Sprintf("unexpexted statement: %s\n", ast.Show(stmt)))
 	}
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	_, ok := c.context.findVariable(stmt.Ident)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.String()))
+		errors.ErrorExit(fmt.Sprintf("already declared variable: %s\n", stmt.Ident.Token.Literal))
 	}
 
 	var typ types.Type
@@ -55,7 +55,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	}
 
 	named := c.contextEntryBlock.NewAlloca(val.Type())
-	named.SetName(stmt.Ident.String())
+	named.SetName(stmt.Ident.Token.Literal)
 	c.context.addVariable(stmt.Ident, Value{
 		Value:      named,
 		IsVariable: true,
@@ -86,27 +86,27 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 	_, ok := c.context.findFunction(stmt.Sig.Ident)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("%s | already declared function %s", stmt.Token.Pos, stmt.Sig.Ident))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared function %s", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
 	}
 
 	var params []*ir.Param
 
 	for _, p := range stmt.Sig.Params {
 		typ := c.llvmType(p.Type)
-		param := ir.NewParam(p.String(), typ)
+		param := ir.NewParam(p.Ident.Token.Literal, typ)
 		params = append(params, param)
 	}
 
 	returnTyp := c.llvmType(stmt.Sig.RetType)
 
-	function := c.module.NewFunc(stmt.Sig.Ident.String(), returnTyp, params...)
+	function := c.module.NewFunc(stmt.Sig.Ident.Token.Literal, returnTyp, params...)
 	c.context.addFunction(stmt.Sig.Ident, function)
 }
 
 func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	f, ok := c.context.findFunction(stmt.Sig.Ident)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undeclared function %s", stmt.Token.Pos, stmt.Sig.Ident))
+		errors.ErrorExit(fmt.Sprintf("%s | undeclared function %s", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
 	}
 
 	c.contextFunction = f
@@ -244,14 +244,14 @@ func (c *CodeGen) genBlockStatement(stmt *ast.BlockStatement) {
 
 func (c *CodeGen) genStructStatement(stmt *ast.StructStatement) {
 	s := &Struct{
-		Name: stmt.Ident.String(),
+		Name: stmt.Ident.Token.Literal,
 	}
 
 	var llvmMembers []types.Type
 	for i, m := range stmt.Members {
 		typ := c.llvmType(m.Type)
 		s.Members = append(s.Members, &Member{
-			Name: m.Ident.String(),
+			Name: m.Ident.Token.Literal,
 			Id:   i,
 			Type: typ,
 		})
