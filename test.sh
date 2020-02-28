@@ -309,4 +309,31 @@ func test1(a: int): int {
   return a * 2
 }"
 
+try 10 \
+"struct Foo {
+  X int
+}
+func main(): int {
+  var foo1 = new Foo
+  foo1.X = 10
+  var foo2 = new Foo
+  foo2.X = 20
+  return foo1.X
+}"
+
+
+try 20 \
+"struct Foo {
+  X int
+}
+struct Bar {
+  A Foo
+}
+func main(): int {
+  var bar = new Bar
+  bar.A = new Foo
+  bar.A.X = 20
+  return bar.A.X
+}"
+
 echo "all tests passed"
