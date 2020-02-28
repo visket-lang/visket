@@ -32,11 +32,11 @@ func TestOptimize(t *testing.T) {
 		}},
 	}
 
-	expected := "func Ident(main)(): Type(void) {Infix(Int(6) * Ident(x))}"
+	expected := "(def-func main(): void ((6 * x)))"
 
 	o := New(program)
 	o.Optimize()
-	if program.Inspect() != expected {
-		t.Fatalf("expected=%q, got=%q", expected, program.Inspect())
+	if ast.Show(program) != expected {
+		t.Fatalf("expected=%q, got=%q", expected, ast.Show(program))
 	}
 }
