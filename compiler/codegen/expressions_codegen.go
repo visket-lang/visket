@@ -235,13 +235,11 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 	structLlvmTyp, ok := lhsTyp.(*types.StructType)
 	if !ok {
 		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent))
-
 	}
 
 	structTyp, ok := c.context.findStruct(structLlvmTyp.Name())
 	if !ok {
 		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s\n", expr.Token.Pos, lhsTyp, expr.MemberIdent))
-
 	}
 
 	id := structTyp.findMember(expr.MemberIdent.String())
@@ -257,6 +255,6 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 
 	return Value{
 		Value:      val,
-		IsVariable: true, // TODO
+		IsVariable: true,
 	}
 }
