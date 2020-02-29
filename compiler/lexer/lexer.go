@@ -47,8 +47,8 @@ func (l *Lexer) newToken(tokenType token.TokenType, literal string) token.Token 
 	return token.New(tokenType, literal, l.getCurrentPos())
 }
 
-func (l *Lexer) getCurrentPos() *token.Position {
-	return &token.Position{
+func (l *Lexer) getCurrentPos() token.Position {
+	return token.Position{
 		Filename: l.filename,
 		Line:     l.line,
 	}

@@ -8,9 +8,9 @@ import (
 )
 
 func (c *CodeGen) llvmType(t *ast.Type) types.Type {
-	typ, ok := c.context.findType(t.Token.Literal)
+	typ, ok := c.context.findType(t.Name)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", t.Token.Pos, t.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", t.NamePos, t.Name))
 	}
 
 	if t.IsArray {

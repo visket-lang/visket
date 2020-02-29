@@ -60,11 +60,11 @@ func (c *CodeGen) GenerateCode() {
 }
 
 func (c *CodeGen) genBool() {
-	c.context.addVariableByName("false", Value{
+	c.context.addVariable("false", Value{
 		Value:      constant.False,
 		IsVariable: false,
 	})
-	c.context.addVariableByName("true", Value{
+	c.context.addVariable("true", Value{
 		Value:      constant.True,
 		IsVariable: false,
 	})
@@ -88,7 +88,7 @@ func (c *CodeGen) genPrintFunction() {
 
 	entryBlock.NewRet(constant.NewInt(types.I32, 0))
 
-	c.context.addFunctionByName(print.Name(), print)
+	c.context.addFunction(print.Name(), print)
 }
 
 func (c *CodeGen) genInputFunction() {
@@ -112,6 +112,6 @@ func (c *CodeGen) genInputFunction() {
 
 	entryBlock.NewRet(result)
 
-	c.context.addFunctionByName(input.Name(), input)
+	c.context.addFunction(input.Name(), input)
 
 }

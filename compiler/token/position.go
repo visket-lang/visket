@@ -7,6 +7,6 @@ type Position struct {
 	Line     int
 }
 
-func (p *Position) String() string {
+func (p Position) String() string {
 	return fmt.Sprintf("%s:%d", p.Filename, p.Line)
 }

@@ -1,9 +1,7 @@
 package optimizer
 
 import (
-	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/token"
 )
 
 type Optimizer struct {
@@ -91,7 +89,7 @@ func (o *Optimizer) optInfixExpression(expr *ast.InfixExpression) ast.Expression
 
 	var val int
 
-	switch expr.Operator {
+	switch expr.Op {
 	case "+":
 		val = lil.Value + ril.Value
 	case "-":
@@ -105,11 +103,6 @@ func (o *Optimizer) optInfixExpression(expr *ast.InfixExpression) ast.Expression
 	}
 
 	return &ast.IntegerLiteral{
-		Token: token.Token{
-			Type:    token.INT,
-			Literal: fmt.Sprintf("%d", val),
-			Pos:     nil,
-		},
 		Value: val,
 	}
 }
