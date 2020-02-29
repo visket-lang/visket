@@ -94,7 +94,7 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 
 	for _, p := range stmt.Sig.Params {
 		typ := c.llvmType(p.Type)
-		param := ir.NewParam(p.Ident.Token.Literal, typ)
+		param := ir.NewParam("", typ)
 		params = append(params, param)
 	}
 
@@ -117,9 +117,13 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	c.contextEntryBlock = c.contextBlock
 
 	for i, p := range stmt.Sig.Params {
+		typ := f.Params[i].Typ
+		val := c.contextBlock.NewAlloca(typ)
+		val.SetName(p.Ident.Token.Literal)
+		c.contextBlock.NewStore(f.Params[i], val)
 		c.context.addVariable(p.Ident, Value{
-			Value:      f.Params[i],
-			IsVariable: false,
+			Value:      val,
+			IsVariable: true,
 		})
 	}
 
