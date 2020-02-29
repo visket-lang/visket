@@ -224,11 +224,16 @@ func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
 		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", expr.Token.Pos, expr.Ident.Token.Literal))
 	}
 
+	val := c.contextBlock.NewAlloca(typ)
+	initVal := constant.NewZeroInitializer(typ)
+	c.contextBlock.NewStore(initVal, val)
+
 	return Value{
-		Value:      c.contextBlock.NewAlloca(typ),
+		Value:      val,
 		IsVariable: true,
 	}
 }
+
 func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value {
 	lhs := c.genExpression(expr.Left).Value
 	lhsTyp := internal.PtrElmType(lhs)
