@@ -88,7 +88,7 @@ try "tmp.sl:2 | unknown type 'Hoge'" \
   var a = new Hoge
 }"
 
-try "tmp.sl:1 | missing return at end of function" \
+try "tmp.sl:2 | missing return at end of function" \
 "func main(): int {
 }"
 
