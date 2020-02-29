@@ -5,76 +5,80 @@ import (
 )
 
 type Identifier struct {
-	Token token.Token
+	Pos  token.Position
+	Name string
 }
 
 func (i *Identifier) expressionNode() {}
 
 type IntegerLiteral struct {
-	Token token.Token
+	Pos   token.Position
 	Value int
 }
 
 func (il *IntegerLiteral) expressionNode() {}
 
 type FloatLiteral struct {
-	Token token.Token
+	Pos   token.Position
 	Value float64
 }
 
 func (fl *FloatLiteral) expressionNode() {}
 
 type PrefixExpression struct {
-	Token    token.Token
-	Operator string
-	Right    Expression
+	OpPos token.Position
+	Op    string
+	Right Expression
 }
 
 func (pe *PrefixExpression) expressionNode() {}
 
 type InfixExpression struct {
-	Token    token.Token
-	Left     Expression
-	Operator string
-	Right    Expression
+	Left  Expression
+	OpPos token.Position
+	Op    string
+	Right Expression
 }
 
 func (ie *InfixExpression) expressionNode() {}
 
 type AssignExpression struct {
-	Token token.Token
 	Left  Expression
+	OpPos token.Position
+	Op    string
 	Value Expression
 }
 
 func (rs *AssignExpression) expressionNode() {}
 
 type CallExpression struct {
-	Token      token.Token
-	Function   *Identifier
-	Parameters []Expression
+	Function *Identifier
+	LParen   token.Position
+	Args     []Expression
+	RParen   token.Position
 }
 
 func (ce *CallExpression) expressionNode() {}
 
 type IndexExpression struct {
-	Token token.Token
-	Left  Expression
-	Index Expression
+	Left   Expression
+	LBrack token.Position
+	Index  Expression
+	RBrack token.Position
 }
 
 func (ie *IndexExpression) expressionNode() {}
 
 type NewExpression struct {
-	Token token.Token
+	New   token.Position
 	Ident *Identifier
 }
 
 func (ne *NewExpression) expressionNode() {}
 
 type LoadMemberExpression struct {
-	Token       token.Token
 	Left        Expression
+	Period      token.Position
 	MemberIdent *Identifier
 }
 

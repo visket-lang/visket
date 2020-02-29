@@ -5,21 +5,22 @@ import (
 )
 
 type BlockStatement struct {
-	Token      token.Token
+	LBrace     token.Position
 	Statements []Statement
+	RBrace     token.Position
 }
 
 func (bs *BlockStatement) statementNode() {}
 
 type ExpressionStatement struct {
-	Token      token.Token
 	Expression Expression
 }
 
 func (es *ExpressionStatement) statementNode() {}
 
 type FunctionStatement struct {
-	Token token.Token
+	Func  token.Position
+	Ident *Identifier
 	Sig   *FunctionSignature
 	Body  *BlockStatement
 }
@@ -27,7 +28,6 @@ type FunctionStatement struct {
 func (fs *FunctionStatement) statementNode() {}
 
 type FunctionSignature struct {
-	Ident   *Identifier
 	Params  []*Param
 	RetType *Type
 }
@@ -38,30 +38,32 @@ type Param struct {
 }
 
 type VarStatement struct {
-	Token token.Token
-	Ident *Identifier
-	Value Expression
-	Type  *Type
+	Var    token.Position
+	Ident  *Identifier
+	Type   *Type
+	Assign token.Position
+	Value  Expression
 }
 
 func (vs *VarStatement) statementNode() {}
 
 type Type struct {
-	Token token.Token
+	NamePos token.Position
+	Name    string
 
 	IsArray bool
 	Len     uint64
 }
 
 type ReturnStatement struct {
-	Token token.Token
-	Value Expression
+	Return token.Position
+	Value  Expression
 }
 
 func (rs *ReturnStatement) statementNode() {}
 
 type IfStatement struct {
-	Token       token.Token
+	If          token.Position
 	Condition   Expression
 	Consequence *BlockStatement
 	Alternative *BlockStatement
@@ -70,7 +72,7 @@ type IfStatement struct {
 func (is *IfStatement) statementNode() {}
 
 type WhileStatement struct {
-	Token     token.Token
+	While     token.Position
 	Condition Expression
 	Body      *BlockStatement
 }
@@ -78,7 +80,7 @@ type WhileStatement struct {
 func (ws *WhileStatement) statementNode() {}
 
 type ForStatement struct {
-	Token     token.Token
+	For       token.Position
 	Init      Statement
 	Condition Expression
 	Post      Statement
@@ -88,9 +90,11 @@ type ForStatement struct {
 func (fs *ForStatement) statementNode() {}
 
 type StructStatement struct {
-	Token   token.Token
+	Struct  token.Position
 	Ident   *Identifier
+	LBrace  token.Position
 	Members []*MemberDecl
+	RBrace  token.Position
 }
 
 func (ss *StructStatement) statementNode() {}

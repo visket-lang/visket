@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/ast"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/llir/llvm/ir"
 	llvmType "github.com/llir/llvm/ir/types"
@@ -48,37 +47,29 @@ func (c *Context) initType() {
 	c.addType("float", llvmType.Float)
 }
 
-func (c *Context) addVariable(ident *ast.Identifier, v Value) {
-	c.variables[ident.Token.Literal] = v
-}
-
-func (c *Context) addVariableByName(name string, v Value) {
+func (c *Context) addVariable(name string, v Value) {
 	c.variables[name] = v
 }
 
-func (c *Context) findVariable(ident *ast.Identifier) (Value, bool) {
-	v, ok := c.variables[ident.Token.Literal]
+func (c *Context) findVariable(name string) (Value, bool) {
+	v, ok := c.variables[name]
 
 	if !ok && c.parent != nil {
-		return c.parent.findVariable(ident)
+		return c.parent.findVariable(name)
 	}
 
 	return v, ok
 }
 
-func (c *Context) addFunction(ident *ast.Identifier, f *ir.Func) {
-	c.functions[ident.Token.Literal] = f
-}
-
-func (c *Context) addFunctionByName(name string, f *ir.Func) {
+func (c *Context) addFunction(name string, f *ir.Func) {
 	c.functions[name] = f
 }
 
-func (c *Context) findFunction(ident *ast.Identifier) (*ir.Func, bool) {
-	f, ok := c.functions[ident.Token.Literal]
+func (c *Context) findFunction(name string) (*ir.Func, bool) {
+	f, ok := c.functions[name]
 
 	if !ok && c.parent != nil {
-		return c.parent.findFunction(ident)
+		return c.parent.findFunction(name)
 	}
 
 	return f, ok

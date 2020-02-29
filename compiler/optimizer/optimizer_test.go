@@ -2,29 +2,38 @@ package optimizer
 
 import (
 	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/token"
 	"testing"
 )
 
 func TestOptimize(t *testing.T) {
 	program := &ast.Program{
 		Functions: []*ast.FunctionStatement{{
+			Ident: &ast.Identifier{
+				Name: "main",
+			},
 			Sig: &ast.FunctionSignature{
-				Ident:   &ast.Identifier{Token: token.Token{Literal: "main"}},
-				Params:  make([]*ast.Param, 0),
-				RetType: &ast.Type{Token: token.Token{Literal: "void"}},
+				Params: make([]*ast.Param, 0),
+				RetType: &ast.Type{
+					Name: "void",
+				},
 			},
 			Body: &ast.BlockStatement{
 				Statements: []ast.Statement{
 					&ast.ExpressionStatement{
 						Expression: &ast.InfixExpression{
 							Left: &ast.InfixExpression{
-								Left:     &ast.IntegerLiteral{Value: 2},
-								Operator: "*",
-								Right:    &ast.IntegerLiteral{Value: 3},
+								Left: &ast.IntegerLiteral{
+									Value: 2,
+								},
+								Op: "*",
+								Right: &ast.IntegerLiteral{
+									Value: 3,
+								},
 							},
-							Operator: "*",
-							Right:    &ast.Identifier{Token: token.Token{Literal: "x"}},
+							Op: "*",
+							Right: &ast.Identifier{
+								Name: "x",
+							},
 						},
 					},
 				},

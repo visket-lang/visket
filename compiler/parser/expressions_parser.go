@@ -53,9 +53,9 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 
 func (p *Parser) parseMinusPrefix() *ast.InfixExpression {
 	expr := &ast.InfixExpression{
-		Token:    p.curToken,
-		Left:     &ast.IntegerLiteral{Token: token.New(token.INT, "0", p.curToken.Pos), Value: 0},
-		Operator: p.curToken.Literal,
+		Left:  &ast.IntegerLiteral{Value: 0},
+		OpPos: p.curPos,
+		Op:    p.curLiteral,
 	}
 
 	p.nextToken()
@@ -65,7 +65,7 @@ func (p *Parser) parseMinusPrefix() *ast.InfixExpression {
 }
 
 func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
-	lit := &ast.IntegerLiteral{Token: p.curToken}
+	lit := &ast.IntegerLiteral{Pos: p.curPos}
 
 	n, err := strconv.Atoi(p.curToken.Literal)
 	if err != nil {
@@ -78,7 +78,7 @@ func (p *Parser) parseIntegerLiteral() *ast.IntegerLiteral {
 }
 
 func (p *Parser) parseFloatLiteral() *ast.FloatLiteral {
-	lit := &ast.FloatLiteral{Token: p.curToken}
+	lit := &ast.FloatLiteral{Pos: p.curPos}
 
 	n, err := strconv.ParseFloat(p.curToken.Literal, 32)
 	if err != nil {
@@ -102,11 +102,14 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 }
 
 func (p *Parser) parseIdentifier() *ast.Identifier {
-	return &ast.Identifier{Token: p.curToken}
+	return &ast.Identifier{
+		Pos:  p.curPos,
+		Name: p.curLiteral,
+	}
 }
 
 func (p *Parser) parseNewExpression() *ast.NewExpression {
-	expr := &ast.NewExpression{Token: p.curToken}
+	expr := &ast.NewExpression{New: p.curPos}
 	p.nextToken()
 
 	expr.Ident = p.parseIdentifier()
@@ -132,9 +135,9 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	}
 
 	expr := &ast.InfixExpression{
-		Token:    p.curToken,
-		Left:     left,
-		Operator: op,
+		Left:  left,
+		OpPos: p.curPos,
+		Op:    p.curLiteral,
 	}
 
 	precedence := p.curPrecedence()
@@ -150,14 +153,15 @@ func (p *Parser) parseCallExpression(left ast.Expression) *ast.CallExpression {
 		return nil
 	}
 
-	expr := &ast.CallExpression{Token: p.curToken}
+	expr := &ast.CallExpression{LParen: p.peekToken.Pos}
 	expr.Function = function
-	expr.Parameters = p.parseCallParameters()
+	expr.Args = p.parseCallArguments()
+	expr.RParen = p.curPos
 
 	return expr
 }
 
-func (p *Parser) parseCallParameters() []ast.Expression {
+func (p *Parser) parseCallArguments() []ast.Expression {
 	var params []ast.Expression
 
 	if p.peekTokenIs(token.RPAREN) {
@@ -184,9 +188,8 @@ func (p *Parser) parseCallParameters() []ast.Expression {
 
 func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	exp := &ast.IndexExpression{
-		Token: p.curToken,
-		Left:  left,
-		Index: nil,
+		Left:   left,
+		LBrack: p.curPos,
 	}
 	p.nextToken()
 	exp.Index = p.parseExpression(LOWEST)
@@ -194,14 +197,15 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	if !p.expectPeek(token.RBRACKET) {
 		return nil
 	}
+	exp.RBrack = p.curPos
 
 	return exp
 }
 
 func (p *Parser) parseLoadMemberExpression(left ast.Expression) ast.Expression {
 	exp := &ast.LoadMemberExpression{
-		Token: p.curToken,
-		Left:  left,
+		Left:   left,
+		Period: p.curPos,
 	}
 	p.nextToken()
 	exp.MemberIdent = p.parseIdentifier()
@@ -211,8 +215,9 @@ func (p *Parser) parseLoadMemberExpression(left ast.Expression) ast.Expression {
 
 func (p *Parser) parseAssignExpression(left ast.Expression) *ast.AssignExpression {
 	stmt := &ast.AssignExpression{
-		Token: p.curToken,
 		Left:  left,
+		OpPos: p.curPos,
+		Op:    p.curLiteral,
 	}
 
 	p.nextToken()
@@ -222,39 +227,36 @@ func (p *Parser) parseAssignExpression(left ast.Expression) *ast.AssignExpressio
 		p.nextToken()
 	}
 
-	if stmt.Token.Type == token.ASSIGN {
+	if stmt.Op == token.ASSIGN {
 		stmt.Value = right
 		return stmt
 	}
 
 	// "=" 以外は糖衣構文として実装する
 	value := &ast.InfixExpression{
-		Left:     left,
-		Operator: "",
-		Right:    right,
+		Left:  left,
+		OpPos: stmt.OpPos,
+		Right: right,
 	}
 
-	switch stmt.Token.Type {
+	switch stmt.Op {
 	case token.ADD_ASSIGN:
-		value.Operator = token.ADD
+		value.Op = token.ADD
 	case token.SUB_ASSIGN:
-		value.Operator = token.SUB
+		value.Op = token.SUB
 	case token.MUL_ASSIGN:
-		value.Operator = token.MUL
+		value.Op = token.MUL
 	case token.QUO_ASSIGN:
-		value.Operator = token.QUO
+		value.Op = token.QUO
 	case token.REM_ASSIGN:
-		value.Operator = token.REM
+		value.Op = token.REM
 	case token.SHL_ASSIGN:
-		value.Operator = token.SHL
+		value.Op = token.SHL
 	case token.SHR_ASSIGN:
-		value.Operator = token.SHR
+		value.Op = token.SHR
 	}
 
-	stmt.Token = token.Token{
-		Type:    token.ASSIGN,
-		Literal: "=",
-	}
+	stmt.Op = "="
 	stmt.Value = value
 
 	return stmt

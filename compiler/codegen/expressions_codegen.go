@@ -45,16 +45,16 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	lhsTyp := lhs.Type()
 	rhsTyp := rhs.Type()
 	if lhsTyp.Equal(types.I32) && rhsTyp.Equal(types.I32) {
-		return c.genInfixInteger(ie.Operator, lhs, rhs, ie.Token.Pos)
+		return c.genInfixInteger(ie.Op, lhs, rhs, ie.OpPos)
 	} else if lhsTyp.Equal(types.Float) && rhsTyp.Equal(types.Float) {
-		return c.genInfixFloat(ie.Operator, lhs, rhs, ie.Token.Pos)
+		return c.genInfixFloat(ie.Op, lhs, rhs, ie.OpPos)
 	}
 
-	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s", lhsTyp, ie.Operator, rhsTyp))
+	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s", lhsTyp, ie.Op, rhsTyp))
 	return Value{} // unreachable
 }
 
-func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value, pos *token.Position) Value {
+func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value, pos token.Position) Value {
 	var opResult value.Value
 
 	switch op {
@@ -94,7 +94,7 @@ func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value, p
 	}
 }
 
-func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value, pos *token.Position) Value {
+func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value, pos token.Position) Value {
 	var opResult value.Value
 
 	switch op {
@@ -129,25 +129,24 @@ func (c *CodeGen) genInfixFloat(op string, lhs value.Value, rhs value.Value, pos
 }
 
 func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
-	f, ok := c.context.findFunction(expr.Function)
+	f, ok := c.context.findFunction(expr.Function.Name)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undefined function '%s'", expr.Token.Pos, expr.Function.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | undefined function '%s'", expr.LParen, expr.Function.Name))
 	}
 
-	if len(expr.Parameters) < len(f.Params) {
-		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to '%s'", expr.Token.Pos, expr.Function.Token.Literal))
-	} else if len(expr.Parameters) > len(f.Params) {
-		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to '%s'", expr.Token.Pos, expr.Function.Token.Literal))
+	if len(expr.Args) < len(f.Params) {
+		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to '%s'", expr.LParen, expr.Function.Name))
+	} else if len(expr.Args) > len(f.Params) {
+		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to '%s'", expr.LParen, expr.Function.Name))
 	}
 
 	var params []value.Value
 
-	for i, param := range expr.Parameters {
+	for i, param := range expr.Args {
 		v := c.genExpression(param).Load(c.contextBlock)
 		params = append(params, v)
 		if v.Type() != f.Sig.Params[i] {
-			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, v.Type(), f.Sig.Params[i].String()))
-
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.LParen, v.Type(), f.Sig.Params[i].String()))
 		}
 	}
 
@@ -158,6 +157,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		IsVariable: false,
 	}
 }
+
 func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
 	lhs := c.genExpression(expr.Left).Value
 	rhs := c.genExpression(expr.Value).Load(c.contextBlock)
@@ -166,7 +166,7 @@ func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
 	rhsTyp := rhs.Type()
 
 	if !lhsTyp.Equal(rhsTyp) {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.Token.Pos, lhsTyp, rhsTyp))
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.OpPos, lhsTyp, rhsTyp))
 	}
 
 	c.contextBlock.NewStore(rhs, lhs)
@@ -182,7 +182,7 @@ func (c *CodeGen) genIndexExpression(expr *ast.IndexExpression) Value {
 	leftTyp := internal.PtrElmType(left)
 
 	if _, ok := leftTyp.(*types.ArrayType); !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | cannot index '%s'", expr.Token.Pos, leftTyp))
+		errors.ErrorExit(fmt.Sprintf("%s | cannot index '%s'", expr.LBrack, leftTyp))
 
 	}
 
@@ -210,18 +210,18 @@ func (c *CodeGen) genFloatLiteral(expr *ast.FloatLiteral) Value {
 }
 
 func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
-	v, ok := c.context.findVariable(expr)
+	v, ok := c.context.findVariable(expr.Name)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unresolved variable '%s'", expr.Token.Pos, expr.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unresolved variable '%s'", expr.Pos, expr.Name))
 	}
 
 	return v
 }
 
 func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
-	typ, ok := c.context.findType(expr.Ident.Token.Literal)
+	typ, ok := c.context.findType(expr.Ident.Name)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", expr.Token.Pos, expr.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", expr.New, expr.Ident.Name))
 	}
 
 	val := c.contextBlock.NewAlloca(typ)
@@ -240,17 +240,17 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 
 	structLlvmTyp, ok := lhsTyp.(*types.StructType)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Period, lhsTyp, expr.MemberIdent.Name))
 	}
 
 	structTyp, ok := c.context.findStruct(structLlvmTyp.Name())
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Token.Pos, lhsTyp, expr.MemberIdent.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Period, lhsTyp, expr.MemberIdent.Name))
 	}
 
-	id := structTyp.findMember(expr.MemberIdent.Token.Literal)
+	id := structTyp.findMember(expr.MemberIdent.Name)
 	if id == -1 {
-		errors.ErrorExit(fmt.Sprintf("%s | unresolved member '%s'", expr.Token.Pos, expr.MemberIdent.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | unresolved member '%s'", expr.Period, expr.MemberIdent.Name))
 	}
 
 	member := structTyp.Members[id]

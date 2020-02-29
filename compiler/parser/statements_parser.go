@@ -38,7 +38,9 @@ func (p *Parser) parseStatement() ast.Statement {
 }
 
 func (p *Parser) parseStructStatement() *ast.StructStatement {
-	stmt := &ast.StructStatement{Token: p.curToken}
+	stmt := &ast.StructStatement{
+		Struct: p.curPos,
+	}
 
 	if !p.expectPeek(token.IDENT) {
 		return nil
@@ -48,6 +50,7 @@ func (p *Parser) parseStructStatement() *ast.StructStatement {
 	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}
+	stmt.LBrace = p.curPos
 
 	for p.peekTokenIs(token.IDENT) {
 		m := &ast.MemberDecl{}
@@ -68,12 +71,13 @@ func (p *Parser) parseStructStatement() *ast.StructStatement {
 	if !p.expectPeek(token.RBRACE) {
 		return nil
 	}
+	stmt.RBrace = p.curPos
 
 	return stmt
 }
 
 func (p *Parser) parseVarStatement() *ast.VarStatement {
-	stmt := &ast.VarStatement{Token: p.curToken}
+	stmt := &ast.VarStatement{Var: p.curPos}
 
 	if !p.expectPeek(token.IDENT) {
 		return nil
@@ -89,6 +93,7 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	if !p.peekTokenIs(token.ASSIGN) {
 		return stmt
 	}
+	stmt.Assign = p.curPos
 
 	p.nextToken()
 	p.nextToken()
@@ -102,7 +107,7 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
-	stmt := &ast.ReturnStatement{Token: p.curToken}
+	stmt := &ast.ReturnStatement{Return: p.curPos}
 
 	p.nextToken()
 
@@ -121,12 +126,12 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 	stmt := &ast.FunctionStatement{
-		Token: p.curToken,
-		Sig:   &ast.FunctionSignature{},
+		Func: p.curPos,
+		Sig:  &ast.FunctionSignature{},
 	}
 
 	p.nextToken()
-	stmt.Sig.Ident = p.parseIdentifier()
+	stmt.Ident = p.parseIdentifier()
 
 	if !p.expectPeek(token.LPAREN) {
 		return nil
@@ -134,7 +139,9 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 
 	stmt.Sig.Params = p.parseFunctionParameters()
 
-	retType := &ast.Type{Token: token.Token{Literal: "void"}}
+	retType := &ast.Type{
+		Name: "void",
+	}
 
 	if p.peekTokenIs(token.COLON) {
 		p.nextToken()
@@ -198,7 +205,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Param {
 }
 
 func (p *Parser) parseIfStatement() *ast.IfStatement {
-	stmt := &ast.IfStatement{Token: p.curToken}
+	stmt := &ast.IfStatement{If: p.curPos}
 
 	p.nextToken()
 	stmt.Condition = p.parseExpression(LOWEST)
@@ -223,7 +230,7 @@ func (p *Parser) parseIfStatement() *ast.IfStatement {
 }
 
 func (p *Parser) parseWhileStatement() *ast.WhileStatement {
-	stmt := &ast.WhileStatement{Token: p.curToken}
+	stmt := &ast.WhileStatement{While: p.curPos}
 
 	p.nextToken()
 	stmt.Condition = p.parseExpression(LOWEST)
@@ -238,11 +245,11 @@ func (p *Parser) parseWhileStatement() *ast.WhileStatement {
 }
 
 func (p *Parser) parseForStatement() *ast.ForStatement {
-	stmt := &ast.ForStatement{Token: p.curToken}
+	stmt := &ast.ForStatement{For: p.curPos}
 	p.nextToken()
 
 	if p.peekTokenIs(token.IN) {
-		return p.parseForRangeStatement(stmt.Token)
+		return p.parseForRangeStatement(stmt.For)
 	}
 
 	if !p.curTokenIs(token.SEMICOLON) {
@@ -266,8 +273,8 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	return stmt
 }
 
-func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
-	stmt := &ast.ForStatement{Token: tok}
+func (p *Parser) parseForRangeStatement(tok token.Position) *ast.ForStatement {
+	stmt := &ast.ForStatement{For: tok}
 
 	ident := p.parseIdentifier()
 
@@ -287,38 +294,25 @@ func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
 
 	// TODO すでに変数が宣言されている時の処理
 	stmt.Init = &ast.VarStatement{
-		Token: token.Token{Type: token.VAR, Literal: "var"},
 		Ident: ident,
+		Type:  nil,
 		Value: start,
 	}
 
 	stmt.Condition = &ast.InfixExpression{
-		Token:    token.Token{Type: token.LTE, Literal: "<="},
-		Left:     ident,
-		Operator: "<=",
-		Right:    end,
+		Left:  ident,
+		Op:    "<=",
+		Right: end,
 	}
 
 	stmt.Post = &ast.ExpressionStatement{
-		Token: token.Token{},
 		Expression: &ast.AssignExpression{
-			Token: token.Token{
-				Type:    token.ASSIGN,
-				Literal: "=",
-			},
 			Left: ident,
+			Op:   "=",
 			Value: &ast.InfixExpression{
-				Token: token.Token{
-					Type:    token.ADD,
-					Literal: "+",
-				},
-				Left:     ident,
-				Operator: "+",
+				Left: ident,
+				Op:   "+",
 				Right: &ast.IntegerLiteral{
-					Token: token.Token{
-						Type:    token.INT,
-						Literal: "1",
-					},
 					Value: 1,
 				},
 			},
@@ -332,9 +326,9 @@ func (p *Parser) parseForRangeStatement(tok token.Token) *ast.ForStatement {
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
-	stmt := &ast.ExpressionStatement{Token: p.curToken}
-
-	stmt.Expression = p.parseExpression(LOWEST)
+	stmt := &ast.ExpressionStatement{
+		Expression: p.parseExpression(LOWEST),
+	}
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
@@ -344,7 +338,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 }
 
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
-	block := &ast.BlockStatement{Token: p.curToken}
+	block := &ast.BlockStatement{LBrace: p.curPos}
 
 	p.nextToken()
 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
@@ -354,6 +348,8 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 		}
 		p.nextToken()
 	}
+
+	block.RBrace = p.curPos
 
 	return block
 }
@@ -371,6 +367,7 @@ func (p *Parser) parseType() *ast.Type {
 		p.nextToken()
 	}
 
-	typ.Token = p.curToken
+	typ.Name = p.curLiteral
+	typ.NamePos = p.curPos
 	return typ
 }

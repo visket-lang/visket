@@ -32,9 +32,9 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
-	_, ok := c.context.findVariable(stmt.Ident)
+	_, ok := c.context.findVariable(stmt.Ident.Name)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Token.Pos, stmt.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Var, stmt.Ident.Name))
 	}
 
 	var typ types.Type
@@ -52,12 +52,12 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	}
 
 	if !typ.Equal(val.Type()) {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, typ, val.Type()))
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Var, typ, val.Type()))
 	}
 
 	named := c.contextEntryBlock.NewAlloca(val.Type())
-	named.SetName(stmt.Ident.Token.Literal)
-	c.context.addVariable(stmt.Ident, Value{
+	named.SetName(stmt.Ident.Name)
+	c.context.addVariable(stmt.Ident.Name, Value{
 		Value:      named,
 		IsVariable: true,
 	})
@@ -69,7 +69,7 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 
 	if stmt.Value == nil {
 		if retType != types.Void {
-			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, retType, types.Void))
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Return, retType, types.Void))
 		}
 		c.contextBlock.NewRet(nil)
 		return
@@ -78,16 +78,16 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 	result := c.genExpression(stmt.Value).Load(c.contextBlock)
 
 	if retType != result.Type() {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Token.Pos, retType, result.Type()))
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Return, retType, result.Type()))
 	}
 
 	c.contextBlock.NewRet(result)
 }
 
 func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
-	_, ok := c.context.findFunction(stmt.Sig.Ident)
+	_, ok := c.context.findFunction(stmt.Ident.Name)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("%s | already declared function '%s'", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared function '%s'", stmt.Func, stmt.Ident.Name))
 	}
 
 	var params []*ir.Param
@@ -100,14 +100,14 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 
 	returnTyp := c.llvmType(stmt.Sig.RetType)
 
-	function := c.module.NewFunc(stmt.Sig.Ident.Token.Literal, returnTyp, params...)
-	c.context.addFunction(stmt.Sig.Ident, function)
+	function := c.module.NewFunc(stmt.Ident.Name, returnTyp, params...)
+	c.context.addFunction(stmt.Ident.Name, function)
 }
 
 func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
-	f, ok := c.context.findFunction(stmt.Sig.Ident)
+	f, ok := c.context.findFunction(stmt.Ident.Name)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undeclared function '%s'", stmt.Token.Pos, stmt.Sig.Ident.Token.Literal))
+		errors.ErrorExit(fmt.Sprintf("%s | undeclared function '%s'", stmt.Func, stmt.Ident.Name))
 	}
 
 	c.contextFunction = f
@@ -119,9 +119,9 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	for i, p := range stmt.Sig.Params {
 		typ := f.Params[i].Typ
 		val := c.contextBlock.NewAlloca(typ)
-		val.SetName(p.Ident.Token.Literal)
+		val.SetName(p.Ident.Name)
 		c.contextBlock.NewStore(f.Params[i], val)
-		c.context.addVariable(p.Ident, Value{
+		c.context.addVariable(p.Ident.Name, Value{
 			Value:      val,
 			IsVariable: true,
 		})
@@ -134,7 +134,7 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	}
 
 	if c.contextBlock.Term == nil {
-		errors.ErrorExit(fmt.Sprintf("%s | missing return at end of function", stmt.Token.Pos))
+		errors.ErrorExit(fmt.Sprintf("%s | missing return at end of function", stmt.Body.RBrace))
 	}
 
 	c.contextEntryBlock = nil
@@ -249,14 +249,14 @@ func (c *CodeGen) genBlockStatement(stmt *ast.BlockStatement) {
 
 func (c *CodeGen) genStructStatement(stmt *ast.StructStatement) {
 	s := &Struct{
-		Name: stmt.Ident.Token.Literal,
+		Name: stmt.Ident.Name,
 	}
 
 	var llvmMembers []types.Type
 	for i, m := range stmt.Members {
 		typ := c.llvmType(m.Type)
 		s.Members = append(s.Members, &Member{
-			Name: m.Ident.Token.Literal,
+			Name: m.Ident.Name,
 			Id:   i,
 			Type: typ,
 		})

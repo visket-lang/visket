@@ -40,9 +40,11 @@ var precedences = map[token.TokenType]int{
 }
 
 type Parser struct {
-	l         *lexer.Lexer
-	curToken  token.Token
-	peekToken token.Token
+	l          *lexer.Lexer
+	curToken   token.Token
+	curPos     token.Position
+	curLiteral string
+	peekToken  token.Token
 
 	Errors errors.ErrorList
 }
@@ -78,6 +80,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
+	p.curPos = p.curToken.Pos
+	p.curLiteral = p.curToken.Literal
 	p.peekToken = p.l.NextToken()
 
 	// コメントはASTに含めない
