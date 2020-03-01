@@ -77,8 +77,8 @@ type IndexExpression struct {
 func (ie *IndexExpression) expressionNode() {}
 
 type NewExpression struct {
-	New   token.Position
-	Ident *Identifier
+	New  token.Position
+	Type *Type
 }
 
 func (ne *NewExpression) expressionNode() {}

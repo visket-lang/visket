@@ -123,7 +123,7 @@ func (p *Parser) parseNewExpression() *ast.NewExpression {
 	expr := &ast.NewExpression{New: p.curPos}
 	p.nextToken()
 
-	expr.Ident = p.parseIdentifier()
+	expr.Type = p.parseType()
 
 	return expr
 }

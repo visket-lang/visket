@@ -42,7 +42,7 @@ func Show(node Node) string {
 	case *IndexExpression:
 		return fmt.Sprintf("(%s[%s])", Show(node.Left), Show(node.Index))
 	case *NewExpression:
-		return fmt.Sprintf("(new %s)", node.Ident.Name)
+		return fmt.Sprintf("(new %s)", node.Type.Name)
 	case *LoadMemberExpression:
 		return fmt.Sprintf("(%s.%s)", Show(node.Left), node.MemberIdent.Name)
 	case *BlockStatement:

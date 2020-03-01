@@ -219,11 +219,7 @@ func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 }
 
 func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
-	typ, ok := c.context.findType(expr.Ident.Name)
-	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", expr.New, expr.Ident.Name))
-	}
-
+	typ := c.llvmType(expr.Type)
 	val := c.contextBlock.NewAlloca(typ)
 	initVal := constant.NewZeroInitializer(typ)
 	c.contextBlock.NewStore(initVal, val)
