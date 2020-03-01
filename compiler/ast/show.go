@@ -115,6 +115,18 @@ func Show(node Node) string {
 		b.WriteString(Show(node.Body))
 		b.WriteString("))")
 		return b.String()
+	case *ForRangeStatement:
+		var b bytes.Buffer
+		b.WriteString("(for ")
+		b.WriteString(Show(node.VarName))
+		b.WriteString(" in ")
+		b.WriteString(Show(node.From))
+		b.WriteString("..")
+		b.WriteString(Show(node.To))
+		b.WriteString("(")
+		b.WriteString(Show(node.Body))
+		b.WriteString("))")
+		return b.String()
 	case *StructStatement:
 		var b bytes.Buffer
 		b.WriteString("(struct ")

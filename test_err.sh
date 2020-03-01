@@ -124,4 +124,9 @@ try "tmp.sl:1 | unknown type 'hoge'" \
 try "tmp.sl:1 | Illegal charactor '@'" \
 "@"
 
+try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
+"func main() {
+  for i in 0..1.0 {}
+}"
+
 echo "all tests passed"

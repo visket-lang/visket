@@ -89,6 +89,17 @@ type ForStatement struct {
 
 func (fs *ForStatement) statementNode() {}
 
+type ForRangeStatement struct {
+	For     token.Position
+	VarName *Identifier
+	In      token.Position
+	From    Expression
+	To      Expression
+	Body    *BlockStatement
+}
+
+func (fs *ForRangeStatement) statementNode() {}
+
 type StructStatement struct {
 	Struct  token.Position
 	Ident   *Identifier

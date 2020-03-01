@@ -31,7 +31,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.WHILE:
 		return p.parseWhileStatement()
 	case token.FOR:
-		return p.parseForStatement()
+		return p.parseFor()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -252,13 +252,22 @@ func (p *Parser) parseWhileStatement() *ast.WhileStatement {
 	return stmt
 }
 
-func (p *Parser) parseForStatement() *ast.ForStatement {
-	stmt := &ast.ForStatement{For: p.curPos}
+func (p *Parser) parseFor() ast.Statement {
+	pos := p.curPos
 	p.nextToken()
 
+	var stmt ast.Statement
 	if p.peekTokenIs(token.IN) {
-		return p.parseForRangeStatement(stmt.For)
+		stmt = p.parseForRangeStatement(pos)
+	} else {
+		stmt = p.parseForStatement(pos)
 	}
+
+	return stmt
+}
+
+func (p *Parser) parseForStatement(pos token.Position) *ast.ForStatement {
+	stmt := &ast.ForStatement{For: pos}
 
 	if !p.curTokenIs(token.SEMICOLON) {
 		stmt.Init = p.parseStatement()
@@ -281,51 +290,25 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	return stmt
 }
 
-func (p *Parser) parseForRangeStatement(tok token.Position) *ast.ForStatement {
-	stmt := &ast.ForStatement{For: tok}
+func (p *Parser) parseForRangeStatement(pos token.Position) *ast.ForRangeStatement {
+	stmt := &ast.ForRangeStatement{For: pos}
 
-	ident := p.parseIdentifier()
+	stmt.VarName = p.parseIdentifier()
 
 	if !p.expectPeek(token.IN) {
 		return nil
 	}
 	p.nextToken()
+	stmt.In = p.curPos
 
-	start := p.parseExpression(LOWEST)
+	stmt.From = p.parseExpression(LOWEST)
 
 	if !p.expectPeek(token.RANGE) {
 		return nil
 	}
 	p.nextToken()
 
-	end := p.parseExpression(LOWEST)
-
-	// TODO すでに変数が宣言されている時の処理
-	stmt.Init = &ast.VarStatement{
-		Ident: ident,
-		Type:  nil,
-		Value: start,
-	}
-
-	stmt.Condition = &ast.InfixExpression{
-		Left:  ident,
-		Op:    "<=",
-		Right: end,
-	}
-
-	stmt.Post = &ast.ExpressionStatement{
-		Expression: &ast.AssignExpression{
-			Left: ident,
-			Op:   "=",
-			Value: &ast.InfixExpression{
-				Left: ident,
-				Op:   "+",
-				Right: &ast.IntegerLiteral{
-					Value: 1,
-				},
-			},
-		},
-	}
+	stmt.To = p.parseExpression(LOWEST)
 
 	p.nextToken()
 	stmt.Body = p.parseBlockStatement()
