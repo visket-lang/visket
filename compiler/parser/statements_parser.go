@@ -221,6 +221,14 @@ func (p *Parser) parseIfStatement() *ast.IfStatement {
 	}
 
 	p.nextToken()
+	if p.peekTokenIs(token.IF) {
+		p.nextToken()
+		stmt.Alternative = &ast.BlockStatement{
+			Statements: []ast.Statement{p.parseIfStatement()},
+		}
+		return stmt
+	}
+
 	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}

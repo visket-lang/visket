@@ -239,6 +239,17 @@ func main(): int {
   return fib(10)
 }"
 
+try 10 \
+"func main(): int {
+  var a = 5
+  if a > 3 {
+    return 10
+  } if a > 2 {
+    return 5
+  }
+    return 0
+}"
+
 try 45 \
 "func main(): int {
   var sum = 0
