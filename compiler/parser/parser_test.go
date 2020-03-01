@@ -79,6 +79,7 @@ func TestParseStatement(t *testing.T) {
 		{"func hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
 
 		{"if 1 { 1 } else { 0 }", "(if 1(1)(0))"},
+		{"if 1 { 1 } else if 0 { 2 } else { 3 }", "(if 1(1)((if 0(2)(3))))"},
 
 		{"while 1 { 1 }", "(while 1(1))"},
 
