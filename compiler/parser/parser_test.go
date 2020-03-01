@@ -85,7 +85,7 @@ func TestParseStatement(t *testing.T) {
 
 		{"a = a + 1", "(a = (a + 1))"},
 
-		{"for i in 0..10 {1}", "(for (var i = 0); (i <= 10); (i = (i + 1))(1))"},
+		{"for i in 0..10 {1}", "(for i in 0..10(1))"},
 		{"for var i = 0; i < 10; i = i + 1 {1}", "(for (var i = 0); (i < 10); (i = (i + 1))(1))"},
 
 		{"array[1]", "(array[1])"},

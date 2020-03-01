@@ -26,6 +26,8 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 		c.genWhileStatement(stmt)
 	case *ast.ForStatement:
 		c.genForStatement(stmt)
+	case *ast.ForRangeStatement:
+		c.genForRangeStatement(stmt)
 	default:
 		errors.ErrorExit(fmt.Sprintf("unexpexted statement: %s\n", ast.Show(stmt)))
 	}
@@ -238,6 +240,49 @@ func (c *CodeGen) genForStatement(stmt *ast.ForStatement) {
 
 	c.outOf()
 
+	c.contextBlock = blockExit
+}
+
+// TODO rewrite
+func (c *CodeGen) genForRangeStatement(stmt *ast.ForRangeStatement) {
+	blockLoop := c.contextFunction.NewBlock(NextLabel("for.loop"))
+	blockExit := c.contextFunction.NewBlock(NextLabel("for.exit"))
+
+	c.into()
+	from := c.genExpression(stmt.From).Load(c.contextBlock)
+	to := c.genExpression(stmt.To).Load(c.contextBlock)
+
+	if !from.Type().Equal(to.Type()) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.For, from.Type(), to.Type()))
+	}
+
+	typ := from.Type()
+	namedVar := c.contextEntryBlock.NewAlloca(typ)
+	namedVar.SetName(NextForNum(stmt.VarName.Name))
+	c.contextBlock.NewStore(from, namedVar)
+	c.context.addVariable("i", Value{
+		Value:      namedVar,
+		IsVariable: true,
+	})
+
+	val := c.contextBlock.NewLoad(typ, namedVar)
+	cond := c.contextBlock.NewICmp(enum.IPredULE, val, to)
+	result := c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
+	c.contextBlock.NewCondBr(result, blockLoop, blockExit)
+
+	c.contextBlock = blockLoop
+	c.genBlockStatement(stmt.Body)
+
+	val = c.contextBlock.NewLoad(typ, namedVar)
+	nextVal := c.contextBlock.NewAdd(val, constant.NewInt(types.I32, 1))
+	c.contextBlock.NewStore(nextVal, namedVar)
+
+	val = c.contextBlock.NewLoad(typ, namedVar)
+	cond = c.contextBlock.NewICmp(enum.IPredULE, val, to)
+	result = c.contextBlock.NewICmp(enum.IPredNE, cond, constant.False)
+	c.contextBlock.NewCondBr(result, blockLoop, blockExit)
+
+	c.outOf()
 	c.contextBlock = blockExit
 }
 
