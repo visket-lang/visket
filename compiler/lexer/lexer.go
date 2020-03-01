@@ -206,14 +206,14 @@ func (l *Lexer) readNumberLiteral() token.Token {
 }
 
 func (l *Lexer) readChar() {
+	if l.ch == '\n' || l.ch == '\r' {
+		l.line++
+	}
+
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {
 		l.ch = l.input[l.readPosition]
-	}
-
-	if l.ch == '\n' || l.ch == '\r' {
-		l.line++
 	}
 
 	l.position = l.readPosition
