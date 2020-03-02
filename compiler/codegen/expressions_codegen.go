@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/codegen/builtin"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
@@ -26,6 +27,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genIntegerLiteral(expr)
 	case *ast.FloatLiteral:
 		return c.genFloatLiteral(expr)
+	case *ast.StringLiteral:
+		return c.genStringLiteral(expr)
 	case *ast.Identifier:
 		return c.genIdentifier(expr)
 	case *ast.NewExpression:
@@ -145,7 +148,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	for i, param := range expr.Args {
 		v := c.genExpression(param).Load(c.contextBlock)
 		params = append(params, v)
-		if v.Type() != f.Sig.Params[i] {
+		if !v.Type().Equal(f.Sig.Params[i]) {
 			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.LParen, v.Type(), f.Sig.Params[i].String()))
 		}
 	}
@@ -209,6 +212,14 @@ func (c *CodeGen) genFloatLiteral(expr *ast.FloatLiteral) Value {
 	}
 }
 
+func (c *CodeGen) genStringLiteral(expr *ast.StringLiteral) Value {
+	str := builtin.NewString(expr.Value, c.contextBlock, c.module)
+	return Value{
+		Value:      c.contextBlock.NewLoad(builtin.STRING, str),
+		IsVariable: false,
+	}
+}
+
 func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 	v, ok := c.context.findVariable(expr.Name)
 	if !ok {
@@ -219,11 +230,7 @@ func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 }
 
 func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {
-	typ, ok := c.context.findType(expr.Ident.Name)
-	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | unknown type '%s'", expr.New, expr.Ident.Name))
-	}
-
+	typ := c.llvmType(expr.Type)
 	val := c.contextBlock.NewAlloca(typ)
 	initVal := constant.NewZeroInitializer(typ)
 	c.contextBlock.NewStore(initVal, val)

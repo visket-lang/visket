@@ -49,7 +49,7 @@ try "tmp.sl:2 | type mismatch 'float' and 'i32'" \
 }
 func test(a: int) {}"
 
-try "tmp.sl:3 | unresolved variable 'a'" \
+try "tmp.sl:2 | unresolved variable 'a'" \
 "func main() {
   a
 }"
