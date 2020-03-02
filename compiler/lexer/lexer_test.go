@@ -48,6 +48,7 @@ struct Foo {
 }
 new Foo
 bar.X
+import "std"
 `
 
 	tests := []struct {
@@ -233,6 +234,9 @@ bar.X
 		{token.IDENT, "bar"},
 		{token.PERIOD, "."},
 		{token.IDENT, "X"},
+
+		{token.IMPORT, "import"},
+		{token.STRING, "std"},
 
 		{token.EOF, ""},
 	}
