@@ -145,7 +145,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	for i, param := range expr.Args {
 		v := c.genExpression(param).Load(c.contextBlock)
 		params = append(params, v)
-		if v.Type() != f.Sig.Params[i] {
+		if !v.Type().Equal(f.Sig.Params[i]) {
 			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.LParen, v.Type(), f.Sig.Params[i].String()))
 		}
 	}
