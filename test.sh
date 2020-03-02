@@ -322,7 +322,7 @@ func test1(a: int): int {
 
 try 10 \
 "struct Foo {
-  X int
+  X: int
 }
 func main(): int {
   var foo1 = new Foo
@@ -335,10 +335,10 @@ func main(): int {
 
 try 20 \
 "struct Foo {
-  X int
+  X: int
 }
 struct Bar {
-  A Foo
+  A: Foo
 }
 func main(): int {
   var bar = new Bar
@@ -349,7 +349,7 @@ func main(): int {
 
 try 0 \
 "struct Foo {
-  X int
+  X: int
 }
 func main(): int {
   var foo1 = new Foo
@@ -358,10 +358,10 @@ func main(): int {
 
 try 0 \
 "struct Foo {
-  X int
+  X: int
 }
 struct Bar {
-  A Foo
+  A: Foo
 }
 func main(): int {
   var bar = new Bar

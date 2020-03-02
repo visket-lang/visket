@@ -77,7 +77,7 @@ try "tmp.sl:3 | unexpected operator: i32.A" \
 }"
 
 try "tmp.sl:4 | unresolved member 'A'" \
-"struct Foo { X int }
+"struct Foo { X: int }
 func main() {
   var foo = new Foo
   foo.A
