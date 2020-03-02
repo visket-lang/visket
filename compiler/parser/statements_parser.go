@@ -60,10 +60,11 @@ func (p *Parser) parseStructStatement() *ast.StructStatement {
 		}
 		m.Ident = p.parseIdentifier()
 
-		if !p.expectPeek(token.IDENT) {
-			return nil
+		if p.peekTokenIs(token.COLON) {
+			p.nextToken()
+			p.nextToken()
+			m.Type = p.parseType()
 		}
-		m.Type = p.parseType()
 
 		stmt.Members = append(stmt.Members, m)
 	}

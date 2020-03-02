@@ -42,8 +42,8 @@ for var i = 0; i < 10; i=i+1 { 1 }
 [1, 2, 3]
 array[1]
 struct Foo {
-  X int
-  Y float
+  X: int
+  Y: float
 }
 new Foo
 bar.X
@@ -218,8 +218,10 @@ bar.X
 		{token.IDENT, "Foo"},
 		{token.LBRACE, "{"},
 		{token.IDENT, "X"},
+		{token.COLON, ":"},
 		{token.IDENT, "int"},
 		{token.IDENT, "Y"},
+		{token.COLON, ":"},
 		{token.IDENT, "float"},
 		{token.RBRACE, "}"},
 
