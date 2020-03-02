@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/codegen/builtin"
 	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
@@ -26,6 +27,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genIntegerLiteral(expr)
 	case *ast.FloatLiteral:
 		return c.genFloatLiteral(expr)
+	case *ast.StringLiteral:
+		return c.genStringLiteral(expr)
 	case *ast.Identifier:
 		return c.genIdentifier(expr)
 	case *ast.NewExpression:
@@ -205,6 +208,14 @@ func (c *CodeGen) genIntegerLiteral(expr *ast.IntegerLiteral) Value {
 func (c *CodeGen) genFloatLiteral(expr *ast.FloatLiteral) Value {
 	return Value{
 		Value:      constant.NewFloat(types.Float, expr.Value),
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genStringLiteral(expr *ast.StringLiteral) Value {
+	str := builtin.NewString(expr.Value, c.contextBlock, c.module)
+	return Value{
+		Value:      c.contextBlock.NewLoad(builtin.STRING, str),
 		IsVariable: false,
 	}
 }

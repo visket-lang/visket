@@ -3,6 +3,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/Solitude/compiler/codegen/builtin"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
@@ -39,6 +40,9 @@ func (c *CodeGen) GenerateCode() {
 	c.genBool()
 	c.genPrintFunction()
 	c.genInputFunction()
+
+	c.module.NewTypeDef("string", builtin.STRING)
+	c.context.addType("string", builtin.STRING)
 
 	for _, s := range c.program.Structs {
 		c.genStructStatement(s)
