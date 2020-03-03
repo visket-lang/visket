@@ -43,8 +43,17 @@ func newContext(parent *Context) *Context {
 func (c *Context) initType() {
 	c.addType("void", llvmType.Void)
 	c.addType("bool", llvmType.I1)
+
 	c.addType("int", llvmType.I32)
+	c.addType("int8", llvmType.I8)
+	c.addType("int16", llvmType.I16)
+	c.addType("int32", llvmType.I32)
+	c.addType("int64", llvmType.I64)
+
 	c.addType("float", llvmType.Float)
+	c.addType("float32", llvmType.Float)
+	c.addType("float64", llvmType.Double)
+
 }
 
 func (c *Context) addVariable(name string, v Value) {
