@@ -137,7 +137,7 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	case "[":
 		return p.parseIndexExpression(left)
 	case ".":
-		return p.parseLoadMemberExpression(left)
+		return p.parseDotExpression(left)
 	case
 		token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN,
 		token.MUL_ASSIGN, token.QUO_ASSIGN, token.REM_ASSIGN,
@@ -213,15 +213,29 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	return exp
 }
 
-func (p *Parser) parseLoadMemberExpression(left ast.Expression) ast.Expression {
-	exp := &ast.LoadMemberExpression{
-		Left:   left,
-		Period: p.curPos,
+func (p *Parser) parseDotExpression(left ast.Expression) ast.Expression {
+	period := p.curPos
+	p.nextToken()
+	ident := p.parseIdentifier()
+
+	if !p.peekTokenIs(token.LPAREN) {
+		return &ast.LoadMemberExpression{
+			Left:        left,
+			Period:      period,
+			MemberIdent: ident,
+		}
+	}
+
+	expr := &ast.CallExpression{
+		Function: ident,
 	}
 	p.nextToken()
-	exp.MemberIdent = p.parseIdentifier()
 
-	return exp
+	expr.LParen = p.curPos
+	expr.Args = append([]ast.Expression{left}, p.parseCallArguments()...)
+	expr.RParen = p.curPos
+
+	return expr
 }
 
 func (p *Parser) parseAssignExpression(left ast.Expression) *ast.AssignExpression {
