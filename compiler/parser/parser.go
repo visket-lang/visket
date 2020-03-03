@@ -69,6 +69,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 			program.Functions = append(program.Functions, stmt)
 		case *ast.StructStatement:
 			program.Structs = append(program.Structs, stmt)
+		case *ast.ImportStatement:
 		default:
 			p.error(fmt.Sprintf("unexpected statement: %s", ast.Show(stmt)))
 		}

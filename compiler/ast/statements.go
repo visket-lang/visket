@@ -114,3 +114,10 @@ type MemberDecl struct {
 	Ident *Identifier
 	Type  *Type
 }
+
+type ImportStatement struct {
+	Import token.Position
+	File   *Identifier
+}
+
+func (is *ImportStatement) statementNode() {}

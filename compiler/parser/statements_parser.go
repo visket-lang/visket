@@ -12,6 +12,8 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseFunctionStatement()
 	case token.STRUCT:
 		return p.parseStructStatement()
+	case token.IMPORT:
+		return p.parseImportStatement()
 	}
 
 	p.error(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
@@ -73,6 +75,23 @@ func (p *Parser) parseStructStatement() *ast.StructStatement {
 		return nil
 	}
 	stmt.RBrace = p.curPos
+
+	return stmt
+}
+
+// TODO rewrite
+func (p *Parser) parseImportStatement() *ast.ImportStatement {
+	stmt := &ast.ImportStatement{Import: p.curPos}
+
+	if !p.peekTokenIs(token.STRING) {
+		p.error(fmt.Sprintf("%s | expected next token to be %s, got %s instead", p.curToken.Pos, token.STRING, p.peekToken.Type))
+		return nil
+	}
+
+	stmt.File = &ast.Identifier{
+		Pos:  p.peekToken.Pos,
+		Name: p.peekToken.Literal,
+	}
 
 	return stmt
 }
