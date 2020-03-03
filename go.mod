@@ -1,4 +1,4 @@
-module github.com/arata-nvm/Solitude
+module github.com/arata-nvm/visket
 
 go 1.13
 

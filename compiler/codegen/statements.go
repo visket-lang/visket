@@ -2,9 +2,9 @@ package codegen
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/compiler/ast"
-	. "github.com/arata-nvm/Solitude/compiler/codegen/internal"
-	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/ast"
+	. "github.com/arata-nvm/visket/compiler/codegen/internal"
+	"github.com/arata-nvm/visket/compiler/errors"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"

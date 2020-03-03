@@ -14,4 +14,4 @@ enabled = true
 
 
   [analyzers.meta]
-  import_path = 'github.com/arata-nvm/Solitude'
+  import_path = 'github.com/arata-nvm/visket'

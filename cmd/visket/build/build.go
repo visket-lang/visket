@@ -2,9 +2,9 @@ package build
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/compiler"
-	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/errors"
+	"github.com/arata-nvm/visket/compiler"
+	"github.com/arata-nvm/visket/compiler/ast"
+	"github.com/arata-nvm/visket/compiler/errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -54,7 +54,7 @@ func Build(filename, outputPath string, isDebug, optimize bool) error {
 	fmt.Println("Building")
 	compiled := c.GenIR()
 
-	tmpDir, err := ioutil.TempDir("", "solitude")
+	tmpDir, err := ioutil.TempDir("", "visket")
 	if err != nil {
 		return err
 	}

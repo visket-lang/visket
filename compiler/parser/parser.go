@@ -2,10 +2,10 @@ package parser
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/lexer"
-	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/arata-nvm/visket/compiler/ast"
+	"github.com/arata-nvm/visket/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/lexer"
+	"github.com/arata-nvm/visket/compiler/token"
 )
 
 const (

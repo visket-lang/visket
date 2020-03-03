@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/lexer"
+	"github.com/arata-nvm/visket/compiler/ast"
+	"github.com/arata-nvm/visket/compiler/lexer"
 	"testing"
 )
 

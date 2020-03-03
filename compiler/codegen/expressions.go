@@ -2,11 +2,11 @@ package codegen
 
 import (
 	"fmt"
-	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/codegen/builtin"
-	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
-	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/arata-nvm/visket/compiler/ast"
+	"github.com/arata-nvm/visket/compiler/codegen/builtin"
+	"github.com/arata-nvm/visket/compiler/codegen/internal"
+	"github.com/arata-nvm/visket/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/token"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"

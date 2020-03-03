@@ -1,7 +1,7 @@
 package codegen
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
+	"github.com/arata-nvm/visket/compiler/codegen/internal"
 	"github.com/llir/llvm/ir"
 	llvmType "github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"

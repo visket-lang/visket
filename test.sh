@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OPT=$*
-TARGET=bin/solitude
+TARGET=bin/visket
 
 try() {
   expected="$1"

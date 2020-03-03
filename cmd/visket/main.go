@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/arata-nvm/Solitude/cmd/solitude/build"
+	"github.com/arata-nvm/visket/cmd/visket/build"
 	"log"
 	"os"
 )
@@ -21,8 +21,8 @@ func main() {
 
 	filename := flag.Arg(0)
 	if filename == "" {
-		fmt.Printf("solitude %s\n", VERSION)
-		fmt.Println("Usage: solitude [options] <filename>")
+		fmt.Printf("visket %s\n", VERSION)
+		fmt.Println("Usage: visket [options] <filename>")
 		os.Exit(1)
 	}
 
