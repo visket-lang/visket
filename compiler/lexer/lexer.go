@@ -3,8 +3,8 @@ package lexer
 import (
 	"bytes"
 	"fmt"
-	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/arata-nvm/visket/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/token"
 	"io/ioutil"
 )
 

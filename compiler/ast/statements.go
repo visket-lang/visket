@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/token"
+	"github.com/arata-nvm/visket/compiler/token"
 )
 
 type BlockStatement struct {

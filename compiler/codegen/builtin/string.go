@@ -1,7 +1,7 @@
 package builtin
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/codegen/internal"
+	"github.com/arata-nvm/visket/compiler/codegen/internal"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"

@@ -1,6 +1,6 @@
-![](https://img.shields.io/github/workflow/status/arata-nvm/Solitude/Go?style=for-the-badge)
-![](https://img.shields.io/codecov/c/github/arata-nvm/Solitude?style=for-the-badge)
-# Solitude
+![](https://img.shields.io/github/workflow/status/arata-nvm/visket/Go?style=for-the-badge)
+![](https://img.shields.io/codecov/c/github/arata-nvm/visket?style=for-the-badge)
+# Visket
 
 A compiled programming language
 
@@ -19,10 +19,10 @@ func fib(n) {
 }
 ```
 
-More examples can be found [here](https://github.com/arata-nvm/Solitude/tree/master/examples).
+More examples can be found [here](https://github.com/arata-nvm/visket/tree/master/examples).
 
 ## Try it on Docker
-1. `git clone https://github.com/arata-nvm/Solitude && cd Solitude`
+1. `git clone https://github.com/arata-nvm/visket && cd visket`
 2. `make docker/run`
 ## Features
 
@@ -50,11 +50,11 @@ More examples can be found [here](https://github.com/arata-nvm/Solitude/tree/mas
 ## Development
 
 ### Building from source
-1. `git clone https://github.com/arata-nvm/Solitude && cd Solitude`
+1. `git clone https://github.com/arata-nvm/visket && cd visket`
 2. `make`
 
-### Compiling a Solitude program
-1. `./bin/solitude -O <filename>`
+### Compiling a Visket program
+1. `./bin/visket -O <filename>`
 
 ## License
 MIT

@@ -2,12 +2,12 @@ package compiler
 
 import (
 	"bytes"
-	"github.com/arata-nvm/Solitude/compiler/ast"
-	"github.com/arata-nvm/Solitude/compiler/codegen"
-	"github.com/arata-nvm/Solitude/compiler/errors"
-	"github.com/arata-nvm/Solitude/compiler/lexer"
-	"github.com/arata-nvm/Solitude/compiler/optimizer"
-	"github.com/arata-nvm/Solitude/compiler/parser"
+	"github.com/arata-nvm/visket/compiler/ast"
+	"github.com/arata-nvm/visket/compiler/codegen"
+	"github.com/arata-nvm/visket/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/lexer"
+	"github.com/arata-nvm/visket/compiler/optimizer"
+	"github.com/arata-nvm/visket/compiler/parser"
 	"log"
 )
 

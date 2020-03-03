@@ -11,7 +11,7 @@ RUN set -x \
 
 ENV PATH /usr/lib/go-1.13/bin:$PATH
 
-ADD . /solitude
+ADD . /visket
 
-WORKDIR /solitude
+WORKDIR /visket
 

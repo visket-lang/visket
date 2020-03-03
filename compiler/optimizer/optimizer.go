@@ -1,7 +1,7 @@
 package optimizer
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/ast"
+	"github.com/arata-nvm/visket/compiler/ast"
 )
 
 type Optimizer struct {

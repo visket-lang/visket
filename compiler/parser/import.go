@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/arata-nvm/Solitude/compiler/lexer"
+	"github.com/arata-nvm/visket/compiler/lexer"
 	"os"
 	"path"
 )

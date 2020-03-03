@@ -1,11 +1,11 @@
-TARGET = solitude
+TARGET = visket
 BINDIR = bin
 
-NAME=aratanvm/solitude
+NAME=aratanvm/$(TARGET)
 VERSION=0.0.1
 
 build:
-	@cd cmd/solitude && go build -o ../../$(BINDIR)/$(TARGET)
+	@cd cmd/$(TARGET) && go build -o ../../$(BINDIR)/$(TARGET)
 
 run: build
 	@./${BINDIR}/${TARGET}
@@ -21,6 +21,6 @@ docker/build:
 	docker build -t $(NAME):$(VERSION) .
 
 docker/run: docker/build
-	docker run -it --name "Solitude" $(NAME):$(VERSION) /bin/bash
+	docker run -it --name "Visket" $(NAME):$(VERSION) /bin/bash
 
 .PHONY: build run test clean
