@@ -188,6 +188,10 @@ func (p *Parser) parseFunctionParameters() []*ast.Param {
 		return params
 	}
 
+	isReference := p.peekTokenIs(token.REF)
+	if isReference {
+		p.nextToken()
+	}
 	p.nextToken()
 
 	ident := p.parseIdentifier()
@@ -198,12 +202,17 @@ func (p *Parser) parseFunctionParameters() []*ast.Param {
 	typ := p.parseType()
 
 	params = append(params, &ast.Param{
-		Ident: ident,
-		Type:  typ,
+		Ident:       ident,
+		Type:        typ,
+		IsReference: isReference,
 	})
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
+		isReference = p.peekTokenIs(token.REF)
+		if isReference {
+			p.nextToken()
+		}
 		p.nextToken()
 		ident = p.parseIdentifier()
 
@@ -212,8 +221,9 @@ func (p *Parser) parseFunctionParameters() []*ast.Param {
 		typ = p.parseType()
 
 		params = append(params, &ast.Param{
-			Ident: ident,
-			Type:  typ,
+			Ident:       ident,
+			Type:        typ,
+			IsReference: isReference,
 		})
 	}
 

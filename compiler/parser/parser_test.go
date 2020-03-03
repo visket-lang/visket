@@ -98,6 +98,8 @@ func TestParseStatement(t *testing.T) {
 		{"foo.init()", "(func-call init(foo))"},
 		{"foo.set(1, \"hoge\", fuga)", "(func-call set(foo, 1, \"hoge\", fuga))"},
 		{"foo.m1().m2()", "(func-call m2((func-call m1(foo))))"},
+
+		{"func f(ref a: int): int {return 1}", "(def-func f(ref a: int): int ((return 1)))"},
 	}
 
 	for i, test := range tests {

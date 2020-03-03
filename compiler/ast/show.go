@@ -63,7 +63,11 @@ func Show(node Node) string {
 		}
 		return fmt.Sprintf("(def-func %s(%s): %s (%s))", Show(node.Ident), b.String(), Show(node.Sig.RetType), Show(node.Body))
 	case *Param:
-		return fmt.Sprintf("%s: %s", Show(node.Ident), Show(node.Type))
+		ref := ""
+		if node.IsReference {
+			ref = "ref "
+		}
+		return fmt.Sprintf("%s%s: %s", ref, Show(node.Ident), Show(node.Type))
 	case *VarStatement:
 		var b bytes.Buffer
 		b.WriteString("(var ")
