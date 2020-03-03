@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/arata-nvm/Solitude/compiler/errors"
 	"github.com/arata-nvm/Solitude/compiler/token"
@@ -173,8 +174,7 @@ func (l *Lexer) NextToken() token.Token {
 			tok = l.newToken(token.PERIOD, ".")
 		}
 	case '"':
-		l.readChar()
-		strLit := l.readUntil('"')
+		strLit := l.readString()
 		l.readChar()
 		tok = l.newToken(token.STRING, strLit)
 	default:
@@ -246,13 +246,18 @@ func (l *Lexer) readNumber() string {
 	return l.input[readPos:l.position]
 }
 
-func (l *Lexer) readUntil(c byte) string {
-	readPos := l.position
-	for l.ch != c {
+func (l *Lexer) readString() string {
+	var buf bytes.Buffer
+	for {
 		l.readChar()
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+
+		buf.WriteByte(l.ch)
 	}
 
-	return l.input[readPos:l.position]
+	return buf.String()
 }
 
 func (l *Lexer) readLine() string {
