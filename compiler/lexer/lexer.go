@@ -55,6 +55,10 @@ func (l *Lexer) getCurrentPos() token.Position {
 	}
 }
 
+func (l *Lexer) Filename() string {
+	return l.filename
+}
+
 func (l *Lexer) NextToken() token.Token {
 	l.skipWhiteSpace()
 
@@ -175,7 +179,6 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '"':
 		strLit := l.readString()
-		l.readChar()
 		tok = l.newToken(token.STRING, strLit)
 	default:
 		if isLetter(l.ch) {

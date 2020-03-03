@@ -63,6 +63,7 @@ const (
 	IN       = "in"
 	STRUCT   = "struct"
 	NEW      = "new"
+	IMPORT   = "import"
 )
 
 var keywords = map[string]TokenType{
@@ -76,6 +77,7 @@ var keywords = map[string]TokenType{
 	"in":     IN,
 	"struct": STRUCT,
 	"new":    NEW,
+	"import": IMPORT,
 }
 
 type Token struct {

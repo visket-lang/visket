@@ -49,6 +49,7 @@ struct Foo {
 new Foo
 bar.X
 "\a\b\f\n\r\t\v\"\\"
+import "std"
 `
 
 	tests := []struct {
@@ -236,6 +237,9 @@ bar.X
 		{token.IDENT, "X"},
 
 		{token.STRING, "\a\b\f\n\r\t\v\"\\"},
+
+		{token.IMPORT, "import"},
+		{token.STRING, "std"},
 
 		{token.EOF, ""},
 	}
