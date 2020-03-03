@@ -175,7 +175,6 @@ func (l *Lexer) NextToken() token.Token {
 	case '"':
 		l.readChar()
 		strLit := l.readUntil('"')
-		l.readChar()
 		tok = l.newToken(token.STRING, strLit)
 	default:
 		if isLetter(l.ch) {
