@@ -40,7 +40,7 @@ var precedences = map[token.TokenType]int{
 }
 
 type Parser struct {
-	l          *lexer.Lexer
+	l          []*lexer.Lexer
 	curToken   token.Token
 	curPos     token.Position
 	curLiteral string
@@ -51,7 +51,7 @@ type Parser struct {
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
-		l: l,
+		l: []*lexer.Lexer{l},
 	}
 
 	p.nextToken()
@@ -70,6 +70,9 @@ func (p *Parser) ParseProgram() *ast.Program {
 		case *ast.StructStatement:
 			program.Structs = append(program.Structs, stmt)
 		case *ast.ImportStatement:
+			if ok := p.importFile(stmt.File.Name); !ok {
+				errors.ErrorExit(fmt.Sprintf("%s | cannot import '%s'", stmt.Import, stmt.File.Name))
+			}
 		default:
 			p.error(fmt.Sprintf("unexpected statement: %s", ast.Show(stmt)))
 		}
@@ -83,10 +86,16 @@ func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
 	p.curPos = p.curToken.Pos
 	p.curLiteral = p.curToken.Literal
-	p.peekToken = p.l.NextToken()
+	p.peekToken = p.l[len(p.l)-1].NextToken()
 
 	// コメントはASTに含めない
 	if p.curTokenIs(token.COMMENT) {
+		p.nextToken()
+	}
+
+	if p.curTokenIs(token.EOF) && len(p.l) > 1 {
+		p.l = p.l[:len(p.l)-1]
+		p.nextToken()
 		p.nextToken()
 	}
 }

@@ -54,6 +54,10 @@ func (l *Lexer) getCurrentPos() token.Position {
 	}
 }
 
+func (l *Lexer) Filename() string {
+	return l.filename
+}
+
 func (l *Lexer) NextToken() token.Token {
 	l.skipWhiteSpace()
 
