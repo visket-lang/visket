@@ -139,7 +139,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 
 	if len(expr.Args) < len(f.Params) {
 		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to '%s'", expr.LParen, expr.Function.Name))
-	} else if len(expr.Args) > len(f.Params) {
+	} else if !f.Sig.Variadic && len(expr.Args) > len(f.Params) {
 		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to '%s'", expr.LParen, expr.Function.Name))
 	}
 
@@ -148,6 +148,10 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	for i, param := range expr.Args {
 		v := c.genExpression(param).Load(c.contextBlock)
 		params = append(params, v)
+		if i >= len(f.Sig.Params) {
+			// variadic function
+			continue
+		}
 		if !v.Type().Equal(f.Sig.Params[i]) {
 			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.LParen, v.Type(), f.Sig.Params[i].String()))
 		}
