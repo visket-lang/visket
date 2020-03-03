@@ -199,7 +199,7 @@ func (l *Lexer) NextToken() token.Token {
 func (l *Lexer) readNumberLiteral() token.Token {
 	numLit := l.readNumber()
 	// .. -> range
-	if l.ch == '.' && l.peekChar() != '.' {
+	if l.ch == '.' && isDigit(l.peekChar()) {
 		// Float
 		l.readChar()
 		return l.newToken(token.FLOAT, fmt.Sprintf("%s.%s", numLit, l.readNumber()))
