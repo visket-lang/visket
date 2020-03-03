@@ -94,6 +94,10 @@ func TestParseStatement(t *testing.T) {
 
 		{"new Foo", "(new Foo)"},
 		{"foo.X", "(foo.X)"},
+
+		{"foo.init()", "(func-call init(foo))"},
+		{"foo.set(1, \"hoge\", fuga)", "(func-call set(foo, 1, \"hoge\", fuga))"},
+		{"foo.m1().m2()", "(func-call m2((func-call m1(foo))))"},
 	}
 
 	for i, test := range tests {

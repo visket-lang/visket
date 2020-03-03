@@ -39,6 +39,7 @@ if a { return 1 }
 else { return 0 }
 while 1 { 1 }
 for var i = 0; i < 10; i=i+1 { 1 }
+for i in 0..10 { 1 }
 // while 1 { 1 }
 [1, 2, 3]
 array[1]
@@ -50,6 +51,7 @@ new Foo
 bar.X
 "\a\b\f\n\r\t\v\"\\"
 import "std"
+1.upto(10)
 `
 
 	tests := []struct {
@@ -203,6 +205,16 @@ import "std"
 		{token.INT, "1"},
 		{token.RBRACE, "}"},
 
+		{token.FOR, "for"},
+		{token.IDENT, "i"},
+		{token.IN, "in"},
+		{token.INT, "0"},
+		{token.RANGE, ".."},
+		{token.INT, "10"},
+		{token.LBRACE, "{"},
+		{token.INT, "1"},
+		{token.RBRACE, "}"},
+
 		{token.COMMENT, "// while 1 { 1 }"},
 
 		{token.LBRACKET, "["},
@@ -240,6 +252,13 @@ import "std"
 
 		{token.IMPORT, "import"},
 		{token.STRING, "std"},
+
+		{token.INT, "1"},
+		{token.PERIOD, "."},
+		{token.IDENT, "upto"},
+		{token.LPAREN, "("},
+		{token.INT, "10"},
+		{token.RPAREN, ")"},
 
 		{token.EOF, ""},
 	}
