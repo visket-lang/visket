@@ -250,6 +250,34 @@ func (l *Lexer) readString() string {
 	var buf bytes.Buffer
 	for {
 		l.readChar()
+
+		if l.ch == '\\' {
+			switch l.peekChar() {
+			case 'a':
+				buf.WriteByte('\a')
+			case 'b':
+				buf.WriteByte('\b')
+			case 'f':
+				buf.WriteByte('\f')
+			case 'n':
+				buf.WriteByte('\n')
+			case 'r':
+				buf.WriteByte('\r')
+			case 't':
+				buf.WriteByte('\t')
+			case 'v':
+				buf.WriteByte('\v')
+			case '"':
+				buf.WriteByte('"')
+			case '\\':
+				buf.WriteByte('\\')
+			default:
+				errors.ErrorExit(fmt.Sprintf("%s | invalid escape sequence'", l.getCurrentPos()))
+			}
+			l.readChar()
+			continue
+		}
+
 		if l.ch == '"' || l.ch == 0 {
 			break
 		}
