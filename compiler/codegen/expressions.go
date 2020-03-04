@@ -146,7 +146,18 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 	var params []value.Value
 
 	for i, param := range expr.Args {
-		v := c.genExpression(param).Load(c.contextBlock)
+		// TODO rewrite
+		// isReference
+		exprVal := c.genExpression(param)
+		var v value.Value
+		if _, ok := f.Params[i].Typ.(*types.PointerType); ok {
+			if !exprVal.IsVariable {
+				errors.ErrorExit(fmt.Sprintf("%s | a ref value must be an assignable variable", expr.RParen))
+			}
+			v = exprVal.Value
+		} else {
+			v = exprVal.Load(c.contextBlock)
+		}
 		params = append(params, v)
 		if i >= len(f.Sig.Params) {
 			// variadic function
@@ -230,7 +241,7 @@ func (c *CodeGen) genIdentifier(expr *ast.Identifier) Value {
 		errors.ErrorExit(fmt.Sprintf("%s | unresolved variable '%s'", expr.Pos, expr.Name))
 	}
 
-	return v
+	return v.Dereference(c.contextBlock)
 }
 
 func (c *CodeGen) genNewExpression(expr *ast.NewExpression) Value {

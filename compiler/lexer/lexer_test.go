@@ -52,6 +52,8 @@ bar.X
 "\a\b\f\n\r\t\v\"\\"
 import "std"
 1.upto(10)
+func f(ref i: int) {}
+f(ref i)
 `
 
 	tests := []struct {
@@ -258,6 +260,22 @@ import "std"
 		{token.IDENT, "upto"},
 		{token.LPAREN, "("},
 		{token.INT, "10"},
+		{token.RPAREN, ")"},
+
+		{token.FUNCTION, "func"},
+		{token.IDENT, "f"},
+		{token.LPAREN, "("},
+		{token.REF, "ref"},
+		{token.IDENT, "i"},
+		{token.COLON, ":"},
+		{token.IDENT, "int"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+		{token.IDENT, "f"},
+		{token.LPAREN, "("},
+		{token.REF, "ref"},
+		{token.IDENT, "i"},
 		{token.RPAREN, ")"},
 
 		{token.EOF, ""},

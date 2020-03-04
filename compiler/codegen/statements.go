@@ -96,6 +96,9 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 
 	for _, p := range stmt.Sig.Params {
 		typ := c.llvmType(p.Type)
+		if p.IsReference {
+			typ = types.NewPointer(typ)
+		}
 		param := ir.NewParam("", typ)
 		params = append(params, param)
 	}
@@ -124,8 +127,9 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 		val.SetName(p.Ident.Name)
 		c.contextBlock.NewStore(f.Params[i], val)
 		c.context.addVariable(p.Ident.Name, Value{
-			Value:      val,
-			IsVariable: true,
+			Value:       val,
+			IsVariable:  true,
+			IsReference: p.IsReference,
 		})
 	}
 

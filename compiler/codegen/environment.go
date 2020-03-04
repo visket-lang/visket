@@ -16,8 +16,9 @@ type Context struct {
 }
 
 type Value struct {
-	Value      value.Value
-	IsVariable bool
+	Value       value.Value
+	IsVariable  bool
+	IsReference bool
 }
 
 func (v Value) Load(block *ir.Block) value.Value {
@@ -25,6 +26,17 @@ func (v Value) Load(block *ir.Block) value.Value {
 		return block.NewLoad(internal.PtrElmType(v.Value), v.Value)
 	}
 	return v.Value
+}
+
+func (v Value) Dereference(block *ir.Block) Value {
+	if v.IsReference {
+		return Value{
+			Value:       block.NewLoad(internal.PtrElmType(v.Value), v.Value),
+			IsVariable:  true,
+			IsReference: v.IsReference,
+		}
+	}
+	return v
 }
 
 func newContext(parent *Context) *Context {

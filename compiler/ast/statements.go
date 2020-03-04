@@ -33,8 +33,9 @@ type FunctionSignature struct {
 }
 
 type Param struct {
-	Ident *Identifier
-	Type  *Type
+	Ident       *Identifier
+	Type        *Type
+	IsReference bool
 }
 
 type VarStatement struct {
