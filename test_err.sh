@@ -129,4 +129,10 @@ try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
   for i in 0..1.0 {}
 }"
 
+try "tmp.sl:3 | a ref value must be an assignable variable" \
+"func test(ref i: int){}
+func main() {
+  test(1)
+}"
+
 echo "all tests passed"

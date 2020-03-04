@@ -368,4 +368,40 @@ func main(): int {
   return bar.A.X
 }"
 
+try 10 \
+"func test(ref i: int) {
+  i = 10
+}
+func main(): int {
+  var i = 0
+  test(i)
+  return i
+}"
+
+try 5 \
+"func test1(ref i: int) {
+  test2(i)
+}
+func test2(ref i: int) {
+  i = 5
+}
+func main(): int {
+  var i = 0
+  test1(i)
+  return i
+}"
+
+try 10 \
+"struct Foo {
+  X: int
+}
+func test(ref foo: Foo) {
+  foo.X = 10
+}
+func main(): int {
+  var foo: Foo
+  test(foo)
+  return foo.X
+}"
+
 echo "all tests passed"
