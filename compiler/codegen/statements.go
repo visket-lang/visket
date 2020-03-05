@@ -49,6 +49,7 @@ func (c *CodeGen) genGlobalVarStatement(stmt *ast.VarStatement) {
 	c.context.addVariable(global.Name(), Value{
 		Value:      global,
 		IsVariable: true,
+		IsConstant: stmt.IsConstant,
 	})
 
 	c.contextBlock = nil
@@ -67,6 +68,7 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	c.context.addVariable(stmt.Ident.Name, Value{
 		Value:      named,
 		IsVariable: true,
+		IsConstant: stmt.IsConstant,
 	})
 	c.contextBlock.NewStore(val, named)
 }

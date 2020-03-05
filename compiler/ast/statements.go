@@ -44,6 +44,8 @@ type VarStatement struct {
 	Type   *Type
 	Assign token.Position
 	Value  Expression
+
+	IsConstant bool
 }
 
 func (vs *VarStatement) statementNode() {}

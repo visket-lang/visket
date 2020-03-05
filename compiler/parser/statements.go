@@ -12,7 +12,7 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseFunctionStatement()
 	case token.STRUCT:
 		return p.parseStructStatement()
-	case token.VAR:
+	case token.VAR, token.VAL:
 		return p.parseVarStatement()
 	case token.IMPORT:
 		return p.parseImportStatement()
@@ -24,7 +24,7 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
-	case token.VAR:
+	case token.VAR, token.VAL:
 		return p.parseVarStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
@@ -99,7 +99,10 @@ func (p *Parser) parseImportStatement() *ast.ImportStatement {
 }
 
 func (p *Parser) parseVarStatement() *ast.VarStatement {
-	stmt := &ast.VarStatement{Var: p.curPos}
+	stmt := &ast.VarStatement{
+		Var:        p.curPos,
+		IsConstant: p.curTokenIs(token.VAL),
+	}
 
 	if !p.expectPeek(token.IDENT) {
 		return nil

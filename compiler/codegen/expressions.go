@@ -151,7 +151,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		exprVal := c.genExpression(param)
 		var v value.Value
 		if _, ok := f.Params[i].Typ.(*types.PointerType); ok {
-			if !exprVal.IsVariable {
+			if !exprVal.IsVariable || exprVal.IsConstant {
 				errors.ErrorExit(fmt.Sprintf("%s | a ref value must be an assignable variable", expr.RParen))
 			}
 			v = exprVal.Value
@@ -177,7 +177,12 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 }
 
 func (c *CodeGen) genAssignExpression(expr *ast.AssignExpression) Value {
-	lhs := c.genExpression(expr.Left).Value
+	left := c.genExpression(expr.Left)
+	if left.IsConstant {
+		errors.ErrorExit(fmt.Sprintf("%s | constant '%s' cannot be reassigned", expr.OpPos, ast.Show(expr.Left)))
+	}
+	lhs := left.Value
+
 	rhs := c.genExpression(expr.Value).Load(c.contextBlock)
 
 	lhsTyp := internal.PtrElmType(lhs)
