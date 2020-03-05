@@ -13,8 +13,7 @@ try() {
   if [ "$?" != "0" ]; then
     exit 1
   fi
-  ./tmp
-  actual=$?
+  actual=`./tmp`
 
   if [ "$actual" == "$expected" ]; then
     echo "=> $actual"
@@ -24,207 +23,218 @@ try() {
   fi
 }
 
-try 0 "func main(): int { return 0 }"
-try 42 "func main(): int { return 42 }"
+try 0 "func main() { print(0) }"
+try 42 "func main() { print(42) }"
 
-try 4 "func main(): int { return 2+2 }"
-try 52 "func main(): int { return 83-31 }"
+try 4 "func main() { print(2+2) }"
+try 52 "func main() { print(83-31) }"
 
-try 10 "func main(): int { return 10   -   0 }"
-try 10 "func main(): int { return 10 + 10 + 10 - 20 }"
-try 0 "func main(): int { return 10 - 10 + 10 - 10 }"
-try 20 "func main(): int { return 20 - 0 + 0 - 0 }"
+try 10 "func main() { print(10   -   0) }"
+try 10 "func main() { print(10 + 10 + 10 - 20) }"
+try 0 "func main() { print(10 - 10 + 10 - 10) }"
+try 20 "func main() { print(20 - 0 + 0 - 0) }"
 
-try 30 "func main(): int { return 10 + 10 * 2 }"
-try 102 "func main(): int { return 10 * 10 + 2 }"
-try 200 "func main(): int { return 10 * 10 * 2 }"
+try 30 "func main() { print(10 + 10 * 2) }"
+try 102 "func main() { print(10 * 10 + 2) }"
+try 200 "func main() { print(10 * 10 * 2) }"
 
-try 40 "func main(): int { return (10 + 10) * 2 }"
-try 120 "func main(): int { return 10 * (10 + 2) }"
+try 40 "func main() { print((10 + 10) * 2) }"
+try 120 "func main() { print(10 * (10 + 2)) }"
 
-try 10 "func main(): int { return (10 + 10) / 2 }"
-try 5 "func main(): int { return 60 / (10 + 2) }"
+try 10 "func main() { print((10 + 10) / 2) }"
+try 5 "func main() { print(60 / (10 + 2)) }"
 
-try 1 "func main(): int { return 9 % 2 }"
-try 3 "func main(): int { return 1 + 5 % 3 }"
+try 1 "func main() { print(9 % 2) }"
+try 3 "func main() { print(1 + 5 % 3) }"
 
-try 16 "func main(): int { return 2 << 3 }"
-try 2 "func main(): int { return 16 >> 3 }"
+try 16 "func main() { print(2 << 3) }"
+try 2 "func main() { print(16 >> 3) }"
 
-try 10 "func main(): int { return 120 + -110 }"
-try 0 "func main(): int { return -(-10 - (-10)) }"
+try 10 "func main() { print(120 + -110) }"
+try 0 "func main() { print(-(-10 - (-10))) }"
 
-try 1 "func main(): int { if 10 == 10 { return 1 } return 0}"
-try 0 "func main(): int { if 10 == 9 { return 1 } return 0}"
-try 1 "func main(): int { if 10 != 9 { return 1 } return 0}"
-try 0 "func main(): int { if 10 != 10 { return 1 } return 0}"
+try 1 "func main() { if 10 == 10 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10 == 9 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10 != 9 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10 != 10 { print(1) } else { print(0) }}"
 
-try 1 "func main(): int { if 9 < 10 { return 1 } return 0}"
-try 0 "func main(): int { if 10 < 10 { return 1 } return 0}"
-try 1 "func main(): int { if 10 <= 10 { return 1 } return 0}"
-try 0 "func main(): int { if 10 <= 9 { return 1 } return 0}"
-try 1 "func main(): int { if 10 > 9 { return 1 } return 0}"
-try 0 "func main(): int { if 10 > 10 { return 1 } return 0}"
-try 1 "func main(): int { if 10 >= 10 { return 1 } return 0}"
-try 0 "func main(): int { if 9 >= 10 { return 1 } return 0}"
+try 1 "func main() { if 9 < 10 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10 < 10 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10 <= 10 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10 <= 9 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10 > 9 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10 > 10 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10 >= 10 { print(1) } else { print(0) }}"
+try 0 "func main() { if 9 >= 10 { print(1) } else { print(0) }}"
 
-try 1 "func main(): int { if 9.0 < 10.0 { return 1 } return 0}"
-try 0 "func main(): int { if 10.0 < 10.0 { return 1 } return 0}"
-try 1 "func main(): int { if 10.0 <= 10.0 { return 1 } return 0}"
-try 0 "func main(): int { if 10.0 <= 9.0 { return 1 } return 0}"
-try 1 "func main(): int { if 10.0 > 9.0 { return 1 } return 0}"
-try 0 "func main(): int { if 10.0 > 10.0 { return 1 } return 0}"
-try 1 "func main(): int { if 10.0 >= 10.0 { return 1 } return 0}"
-try 0 "func main(): int { if 9.0 >= 10.0 { return 1 } return 0}"
+try 1 "func main() { if 9.0 < 10.0 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10.0 < 10.0 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10.0 <= 10.0 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10.0 <= 9.0 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10.0 > 9.0 { print(1) } else { print(0) }}"
+try 0 "func main() { if 10.0 > 10.0 { print(1) } else { print(0) }}"
+try 1 "func main() { if 10.0 >= 10.0 { print(1) } else { print(0) }}"
+try 0 "func main() { if 9.0 >= 10.0 { print(1) } else { print(0) }}"
 
 try 10 \
-"func main(): int {
+"func main() {
   var a = 10
-  return a
+  print(a)
 }"
 
 try 5 \
-"func main(): int {
+"func main() {
   var a = 10
-  return a - 5
+  print(a - 5)
 }"
 
 try 10 \
-"func main(): int {
+"func main() {
   var a = 5
   a = a + 5
-  return a
+  print(a)
 }"
 
 try 7 \
-"func main(): int {
+"func main() {
   var a = 5
   a += 2
-  return a
+  print(a)
 }"
 
 try 3 \
-"func main(): int {
+"func main() {
   var a = 5
   a -= 2
-  return a
+  print(a)
 }"
 
 try 10 \
-"func main(): int {
+"func main() {
   var a = 5
   a *= 2
-  return a
+  print(a)
 }"
 
 try 2 \
-"func main(): int {
+"func main() {
   var a = 5
   a /= 2
-  return a
+  print(a)
 }"
 
 try 1 \
-"func main(): int {
+"func main() {
   var a = 5
   a %= 2
-  return a
+  print(a)
 }"
 
 try 12 \
-"func main(): int {
+"func main() {
   var a = 3
   a <<= 2
-  return a
+  print(a)
 }"
 
 try 5 \
-"func main(): int {
+"func main() {
   var a = 20
   a >>= 2
-  return a
+  print(a)
 }"
 
 try 2 "func num(): int { return 2 }
-func main(): int { return num() }"
+func main() { print(num()) }"
 try 4 "func add(n: int): int { return n + 2 }
-func main(): int { return add(2) }"
+func main() { print(add(2)) }"
 
 try 6 "func add(a: int, b: int): int { return a + b }
-func main(): int { return add(2, 4) }"
+func main() { print(add(2, 4)) }"
 
 try 2 \
-"func main(): int {
+"func main() {
   if true {
-    return 2
+    print(2)
+    return;
   } else {
-    return 1
+    print(1)
+    return;
   }
-  return 0
+  print(0)
 }"
 
 try 1 \
-"func main(): int {
+"func main() {
   if false {
-    return 2
+    print(2)
+    return;
   } else {
-    return 1
+    print(1)
+    return;
   }
-  return 0
+  print(0)
 }"
 
 try 2 \
-"func main(): int {
+"func main() {
   if true {
     if false {
-      return 3
+      print(3)
+      return;
     } else {
-      return 2
+      print(2)
+      return;
     }
   } else {
-    return 1
+    print(1)
+    return;
   }
-  return 0
+  print(0)
 }"
 
 try 0 \
-"func main(): int {
+"func main() {
   if true {
 
   }
-  return 0
+  print(0)
 }"
 
 try 1 \
-"func main(): int {
+"func main() {
   if true {
-    return 1
+    print(1)
+    return;
   } else {
 
   }
 
-  return 2
+  print(2)
 }"
 
 try 0 \
-"func main(): int {
+"func main() {
   if true {
 
   } else {
-    return 1
+    print(1)
+    return;
   }
 
-  return 0
+  print(0)
 }"
 
-try 1 \
-"func main(n: int): int {
+try 0 \
+"func main() {
+  var n: int
   if n == 1 {
-    return n
+    print(n)
+    return;
   } else {
 
   }
-  return n
+  print(n)
 }"
 
 try 55 \
@@ -235,85 +245,87 @@ try 55 \
   return fib(n - 1) + fib(n - 2)
 }
 
-func main(): int {
-  return fib(10)
+func main() {
+  print(fib(10))
 }"
 
 try 10 \
-"func main(): int {
+"func main() {
   var a = 5
   if a > 3 {
-    return 10
+    print(10)
+    return;
   } if a > 2 {
-    return 5
+    print(5)
+    return;
   }
-    return 0
+  print(0)
 }"
 
 try 45 \
-"func main(): int {
+"func main() {
   var sum = 0
   for var i = 0; i < 10; i = i + 1 {
     sum = sum + i
   }
-  return sum
+  print(sum)
 }"
 
 
 try 45 \
-"func main(): int {
+"func main() {
   var sum = 0
   for var i = 0; i <= 9; i = i + 1 {
     sum = sum + i
   }
-  return sum
+  print(sum)
 }"
 
 try 10 \
-"func main(): int {
-// return 0
-  return 10 // 0
+"func main() {
+// print(0)
+  print(10) // 0
 }"
 
 try 10 \
-"func main(): int {
+"func main() {
   for
     var i = 0; // i < 5;
     i < 10; // i = i + 3
     i = i + 1 // {
   {
   }
-  return i
+  print(i)
 }"
 
 try 55 \
-"func main(): int {
+"func main() {
   var sum = 0
   for i in 0..10 {
     sum += i
   }
-  return sum
+  print(sum)
 }"
 
 try 0 \
-"func main(): int {
+"func main() {
   var a: [3]int
-  return a[0]
+  print(a[0])
 }"
 
 try 3 \
-"func main(): int {
+"func main() {
   var a: [3]int
   var b = 2
   a[0] = 1
   a[b - 1] = 2
   a[b * 1] = b + 1
-  return a[b]
+  print(a[b])
 }"
 
 try 20 \
-"func main(): int {
-  return test1(10)
+"func main() {
+  print(test1(10))
 }
 
 func test1(a: int): int {
@@ -324,12 +336,12 @@ try 10 \
 "struct Foo {
   X: int
 }
-func main(): int {
+func main() {
   var foo1 = new Foo
   foo1.X = 10
   var foo2 = new Foo
   foo2.X = 20
-  return foo1.X
+  print(foo1.X)
 }"
 
 
@@ -340,20 +352,20 @@ try 20 \
 struct Bar {
   A: Foo
 }
-func main(): int {
+func main() {
   var bar = new Bar
   bar.A = new Foo
   bar.A.X = 20
-  return bar.A.X
+  print(bar.A.X)
 }"
 
 try 0 \
 "struct Foo {
   X: int
 }
-func main(): int {
+func main() {
   var foo1 = new Foo
-  return foo1.X
+  print(foo1.X)
 }"
 
 try 0 \
@@ -363,19 +375,19 @@ try 0 \
 struct Bar {
   A: Foo
 }
-func main(): int {
+func main() {
   var bar = new Bar
-  return bar.A.X
+  print(bar.A.X)
 }"
 
 try 10 \
 "func test(ref i: int) {
   i = 10
 }
-func main(): int {
+func main() {
   var i = 0
   test(i)
-  return i
+  print(i)
 }"
 
 try 5 \
@@ -385,10 +397,10 @@ try 5 \
 func test2(ref i: int) {
   i = 5
 }
-func main(): int {
+func main() {
   var i = 0
   test1(i)
-  return i
+  print(i)
 }"
 
 try 10 \
@@ -398,10 +410,26 @@ try 10 \
 func test(ref foo: Foo) {
   foo.X = 10
 }
-func main(): int {
+func main() {
   var foo: Foo
   test(foo)
-  return foo.X
+  print(foo.X)
 }"
+
+try 5 \
+"var i = 5
+func main() { print(i) }"
+
+try 0 \
+"var i: int
+func main() { print(i) }"
+
+try 10 \
+"var i: int = 5
+func main() {
+  i = 10
+  print(i)
+}"
+
 
 echo "all tests passed"

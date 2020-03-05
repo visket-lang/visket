@@ -5,6 +5,7 @@ import (
 	"github.com/arata-nvm/visket/compiler/ast"
 	. "github.com/arata-nvm/visket/compiler/codegen/internal"
 	"github.com/arata-nvm/visket/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/token"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
@@ -33,29 +34,33 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	}
 }
 
+func (c *CodeGen) genGlobalVarStatement(stmt *ast.VarStatement) {
+	_, ok := c.context.findVariable(stmt.Ident.Name)
+	if ok {
+		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Var, stmt.Ident.Name))
+	}
+
+	c.contextBlock = c.initFunc.Blocks[0]
+
+	typ, val := c.checkTypeAndValue(stmt.Type, stmt.Value, stmt.Var)
+
+	global := c.module.NewGlobalDef(stmt.Ident.Name, constant.NewZeroInitializer(typ))
+	c.contextBlock.NewStore(val, global)
+	c.context.addVariable(global.Name(), Value{
+		Value:      global,
+		IsVariable: true,
+	})
+
+	c.contextBlock = nil
+}
+
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	_, ok := c.context.findVariable(stmt.Ident.Name)
 	if ok {
 		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Var, stmt.Ident.Name))
 	}
 
-	var typ types.Type
-	var val value.Value
-	if stmt.Value != nil {
-		val = c.genExpression(stmt.Value).Load(c.contextBlock)
-		typ = val.Type()
-	} else {
-		typ = c.llvmType(stmt.Type)
-		val = constant.NewZeroInitializer(typ)
-	}
-
-	if stmt.Type != nil {
-		typ = c.llvmType(stmt.Type)
-	}
-
-	if !typ.Equal(val.Type()) {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Var, typ, val.Type()))
-	}
+	_, val := c.checkTypeAndValue(stmt.Type, stmt.Value, stmt.Var)
 
 	named := c.contextEntryBlock.NewAlloca(val.Type())
 	named.SetName(stmt.Ident.Name)
@@ -66,10 +71,35 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	c.contextBlock.NewStore(val, named)
 }
 
+func (c *CodeGen) checkTypeAndValue(typ *ast.Type, val ast.Expression, pos token.Position) (llTyp types.Type, llVal value.Value) {
+	if val != nil {
+		llVal = c.genExpression(val).Load(c.contextBlock)
+		llTyp = llVal.Type()
+	} else {
+		llTyp = c.llvmType(typ)
+		llVal = constant.NewZeroInitializer(llTyp)
+	}
+
+	if typ != nil {
+		llTyp = c.llvmType(typ)
+	}
+
+	if !llTyp.Equal(llVal.Type()) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", pos, llTyp, llVal.Type()))
+	}
+
+	return
+}
+
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 	retType := c.contextFunction.Sig.RetType
 
 	if stmt.Value == nil {
+		if c.contextFunction.Name() == "main" {
+			c.contextBlock.NewRet(constant.NewInt(types.I32, 0))
+			return
+		}
+
 		if retType != types.Void {
 			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Return, retType, types.Void))
 		}
@@ -87,6 +117,10 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 }
 
 func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
+	if stmt.Ident.Name == "main" {
+		return
+	}
+
 	_, ok := c.context.findFunction(stmt.Ident.Name)
 	if ok {
 		errors.ErrorExit(fmt.Sprintf("%s | already declared function '%s'", stmt.Func, stmt.Ident.Name))
@@ -118,7 +152,20 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	c.contextFunction = f
 
 	c.into()
-	c.contextBlock = c.contextFunction.NewBlock("entry")
+	if stmt.Ident.Name == "main" {
+		retTyp := stmt.Sig.RetType.Name
+		if retTyp != "void" {
+			errors.ErrorExit(fmt.Sprintf("%s | main func cannot have a return type", stmt.Func))
+		}
+
+		if len(stmt.Sig.Params) != 0 {
+			errors.ErrorExit(fmt.Sprintf("%s | main func cannot have parameters", stmt.Func))
+		}
+
+		c.contextBlock = c.contextFunction.Blocks[0]
+	} else {
+		c.contextBlock = c.contextFunction.NewBlock("entry")
+	}
 	c.contextEntryBlock = c.contextBlock
 
 	for i, p := range stmt.Sig.Params {
@@ -137,6 +184,10 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 
 	if f.Sig.RetType == types.Void {
 		c.contextBlock.NewRet(nil)
+	}
+
+	if stmt.Ident.Name == "main" {
+		c.contextBlock.NewRet(constant.NewInt(types.I32, 0))
 	}
 
 	if c.contextBlock.Term == nil {

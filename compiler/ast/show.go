@@ -12,6 +12,9 @@ func Show(node Node) string {
 		for _, stmt := range node.Structs {
 			b.WriteString(Show(stmt))
 		}
+		for _, stmt := range node.Globals {
+			b.WriteString(Show(stmt))
+		}
 		for _, stmt := range node.Functions {
 			b.WriteString(Show(stmt))
 		}

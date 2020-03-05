@@ -89,20 +89,20 @@ try "tmp.sl:2 | unknown type 'Hoge'" \
 }"
 
 try "tmp.sl:2 | missing return at end of function" \
-"func main(): int {
+"func test(): int {
 }"
 
-try "tmp.sl:2 | already declared function 'main'" \
-"func main() {}
-func main() {}"
+try "tmp.sl:2 | already declared function 'test'" \
+"func test() {}
+func test() {}"
 
 try "tmp.sl:2 | type mismatch 'void' and 'i32'" \
-"func main() {
+"func test() {
   return 1
 }"
 
 try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
-"func main(): int {
+"func test(): int {
   return 1.0
 }"
 
@@ -118,7 +118,7 @@ try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
 }"
 
 try "tmp.sl:1 | unknown type 'hoge'" \
-"func main(): hoge {
+"func test(): hoge {
 }"
 
 try "tmp.sl:1 | illegal charactor '@'" \
@@ -134,5 +134,13 @@ try "tmp.sl:3 | a ref value must be an assignable variable" \
 func main() {
   test(1)
 }"
+
+try "tmp.sl:1 | main func cannot have a return type" \
+"func main(): int {}"
+
+try "tmp.sl:1 | main func cannot have parameters" \
+"func main(i: int) {}"
+
+
 
 echo "all tests passed"
