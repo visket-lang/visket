@@ -21,6 +21,7 @@ type CodeGen struct {
 	initFunc *ir.Func
 	mainFunc *ir.Func
 
+	contextModuleName string
 	contextFunction   *ir.Func
 	contextEntryBlock *ir.Block
 	contextBlock      *ir.Block
@@ -67,12 +68,20 @@ func (c *CodeGen) GenerateCode() {
 		c.genFunctionDeclaration(s)
 	}
 
+	for _, s := range c.program.Modules {
+		c.genModuleDeclaration(s)
+	}
+
 	for _, s := range c.program.Globals {
 		c.genGlobalVarStatement(s)
 	}
 
 	for _, s := range c.program.Functions {
 		c.genFunctionBody(s)
+	}
+
+	for _, s := range c.program.Modules {
+		c.genModuleBody(s)
 	}
 
 	irCode := c.module.String()

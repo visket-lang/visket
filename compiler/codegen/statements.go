@@ -34,6 +34,28 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	}
 }
 
+func (c *CodeGen) genModuleDeclaration(stmt *ast.ModuleStatement) {
+	tmpModName := c.contextModuleName
+	c.contextModuleName = stmt.Ident.Name
+
+	for _, f := range stmt.Functions {
+		c.genFunctionDeclaration(f)
+	}
+
+	c.contextModuleName = tmpModName
+}
+
+func (c *CodeGen) genModuleBody(stmt *ast.ModuleStatement) {
+	tmpModName := c.contextModuleName
+	c.contextModuleName = stmt.Ident.Name
+
+	for _, f := range stmt.Functions {
+		c.genFunctionBody(f)
+	}
+
+	c.contextModuleName = tmpModName
+}
+
 func (c *CodeGen) genGlobalVarStatement(stmt *ast.VarStatement) {
 	_, ok := c.context.findVariable(stmt.Ident.Name)
 	if ok {
@@ -118,14 +140,24 @@ func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {
 	c.contextBlock.NewRet(result)
 }
 
+func (c *CodeGen) moduleFuncName(funcName string) string {
+	if c.contextModuleName == "" {
+		return funcName
+	}
+
+	return fmt.Sprintf("%s_%s", c.contextModuleName, funcName)
+}
+
 func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
-	if stmt.Ident.Name == "main" {
+	funcName := c.moduleFuncName(stmt.Ident.Name)
+
+	if funcName == "main" {
 		return
 	}
 
-	_, ok := c.context.findFunction(stmt.Ident.Name)
+	_, ok := c.context.findFunction(funcName)
 	if ok {
-		errors.ErrorExit(fmt.Sprintf("%s | already declared function '%s'", stmt.Func, stmt.Ident.Name))
+		errors.ErrorExit(fmt.Sprintf("%s | already declared function '%s'", stmt.Func, funcName))
 	}
 
 	var params []*ir.Param
@@ -143,23 +175,25 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 
 	returnTyp := c.llvmType(stmt.Sig.RetType)
 
-	function := c.module.NewFunc(stmt.Ident.Name, returnTyp, params...)
-	c.context.addFunction(stmt.Ident.Name, &Func{
+	function := c.module.NewFunc(funcName, returnTyp, params...)
+	c.context.addFunction(funcName, &Func{
 		Func:        function,
 		IsReference: isReferece,
 	})
 }
 
 func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
-	f, ok := c.context.findFunction(stmt.Ident.Name)
+	funcName := c.moduleFuncName(stmt.Ident.Name)
+
+	f, ok := c.context.findFunction(funcName)
 	if !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | undeclared function '%s'", stmt.Func, stmt.Ident.Name))
+		errors.ErrorExit(fmt.Sprintf("%s | undeclared function '%s'", stmt.Func, funcName))
 	}
 
 	c.contextFunction = f.Func
 
 	c.into()
-	if stmt.Ident.Name == "main" {
+	if funcName == "main" {
 		retTyp := stmt.Sig.RetType.Name
 		if retTyp != "void" {
 			errors.ErrorExit(fmt.Sprintf("%s | main func cannot have a return type", stmt.Func))
@@ -193,7 +227,7 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 		c.contextBlock.NewRet(nil)
 	}
 
-	if stmt.Ident.Name == "main" {
+	if funcName == "main" {
 		c.contextBlock.NewRet(constant.NewInt(types.I32, 0))
 	}
 
