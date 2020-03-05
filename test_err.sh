@@ -121,7 +121,7 @@ try "tmp.sl:1 | unknown type 'hoge'" \
 "func main(): hoge {
 }"
 
-try "tmp.sl:1 | Illegal charactor '@'" \
+try "tmp.sl:1 | illegal charactor '@'" \
 "@"
 
 try "tmp.sl:2 | type mismatch 'i32' and 'float'" \

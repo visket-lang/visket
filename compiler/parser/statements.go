@@ -62,11 +62,11 @@ func (p *Parser) parseStructStatement() *ast.StructStatement {
 		}
 		m.Ident = p.parseIdentifier()
 
-		if p.peekTokenIs(token.COLON) {
-			p.nextToken()
-			p.nextToken()
-			m.Type = p.parseType()
+		if !p.expectPeek(token.COLON) {
+			return nil
 		}
+		p.nextToken()
+		m.Type = p.parseType()
 
 		stmt.Members = append(stmt.Members, m)
 	}
@@ -103,6 +103,11 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 		return nil
 	}
 	stmt.Ident = p.parseIdentifier()
+
+	if !p.peekTokenIs(token.COLON) && !p.peekTokenIs(token.ASSIGN) {
+		p.error(fmt.Sprintf("%s | expected next token to be : or =, got %s instead", p.curPos, p.peekToken.Literal))
+		return nil
+	}
 
 	if p.peekTokenIs(token.COLON) {
 		p.nextToken()
