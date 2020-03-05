@@ -18,6 +18,10 @@ func TestParseProgram(t *testing.T) {
 		{"func add(n: int): int {return n + 2} func main(): int {return num(1)}", "(def-func add(n: int): int ((return (n + 2))))(def-func main(): int ((return (func-call num(1)))))"},
 		{"func add(a: int, b: int): int {return a + b} func main(): int {return num(1, 2)}", "(def-func add(a: int, b: int): int ((return (a + b))))(def-func main(): int ((return (func-call num(1, 2)))))"},
 		{"struct Foo { X: int Y: float }", "(struct Foo(X: int, Y: float))"},
+
+		{"var i:int", "(var i: int)"},
+		{"var i = 10", "(var i = 10)"},
+		{"var i: int = 10", "(var i: int = 10)"},
 	}
 
 	for i, test := range tests {

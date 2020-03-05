@@ -12,6 +12,8 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseFunctionStatement()
 	case token.STRUCT:
 		return p.parseStructStatement()
+	case token.VAR:
+		return p.parseVarStatement()
 	case token.IMPORT:
 		return p.parseImportStatement()
 	}
