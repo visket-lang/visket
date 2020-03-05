@@ -9,7 +9,7 @@ import (
 
 type Context struct {
 	variables map[string]Value
-	functions map[string]*ir.Func
+	functions map[string]*Func
 	types     map[string]llvmType.Type
 	structs   map[string]*Struct
 	parent    *Context
@@ -40,10 +40,16 @@ func (v Value) Dereference(block *ir.Block) Value {
 	return v
 }
 
+// TODO rewrite
+type Func struct {
+	Func        *ir.Func
+	IsReference []bool
+}
+
 func newContext(parent *Context) *Context {
 	c := &Context{
 		variables: make(map[string]Value),
-		functions: make(map[string]*ir.Func),
+		functions: make(map[string]*Func),
 		types:     make(map[string]llvmType.Type),
 		structs:   make(map[string]*Struct),
 		parent:    parent,
@@ -83,11 +89,11 @@ func (c *Context) findVariable(name string) (Value, bool) {
 	return v, ok
 }
 
-func (c *Context) addFunction(name string, f *ir.Func) {
+func (c *Context) addFunction(name string, f *Func) {
 	c.functions[name] = f
 }
 
-func (c *Context) findFunction(name string) (*ir.Func, bool) {
+func (c *Context) findFunction(name string) (*Func, bool) {
 	f, ok := c.functions[name]
 
 	if !ok && c.parent != nil {
