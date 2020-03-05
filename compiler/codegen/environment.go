@@ -19,6 +19,7 @@ type Value struct {
 	Value       value.Value
 	IsVariable  bool
 	IsReference bool
+	IsConstant  bool
 }
 
 func (v Value) Load(block *ir.Block) value.Value {

@@ -135,12 +135,24 @@ func main() {
   test(1)
 }"
 
+try "tmp.sl:4 | a ref value must be an assignable variable" \
+"func test(ref i: int){}
+func main() {
+  val i = 1
+  test(i)
+}"
+
 try "tmp.sl:1 | main func cannot have a return type" \
 "func main(): int {}"
 
 try "tmp.sl:1 | main func cannot have parameters" \
 "func main(i: int) {}"
 
+try "tmp.sl:3 | constant 'i' cannot be reassigned" \
+"func main() {
+  val i = 10
+  i = 1
+}"
 
 
 echo "all tests passed"
