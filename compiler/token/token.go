@@ -21,7 +21,8 @@ const (
 	SHL = "<<"
 	SHR = ">>"
 
-	RANGE = ".."
+	RANGE  = ".."
+	MODSEP = "::"
 
 	ADD_ASSIGN = "+="
 	SUB_ASSIGN = "-="
