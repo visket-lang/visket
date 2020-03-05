@@ -132,6 +132,8 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	op := p.curToken.Literal
 
 	switch op {
+	case "::":
+		return p.parseCallModFuncExpression(left)
 	case "(":
 		return p.parseCallExpression(left)
 	case "[":
@@ -154,6 +156,28 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	precedence := p.curPrecedence()
 	p.nextToken()
 	expr.Right = p.parseExpression(precedence)
+
+	return expr
+}
+
+func (p *Parser) parseCallModFuncExpression(left ast.Expression) *ast.CallExpression {
+	modName, ok := left.(*ast.Identifier)
+	if !ok {
+		return nil
+	}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	funcName := p.parseIdentifier()
+
+	p.nextToken()
+	expr := p.parseCallExpression(funcName)
+	if expr == nil {
+		return nil
+	}
+
+	expr.Function.Name = fmt.Sprintf("%s_%s", modName.Name, expr.Function.Name)
 
 	return expr
 }

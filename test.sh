@@ -431,5 +431,19 @@ func main() {
   print(i)
 }"
 
+try 9 \
+"module Lib {
+  func test(): int { return 9 }
+}
+func main() { print(Lib::test()) }"
+
+try 4 \
+"module Lib {
+  func test(): int { return 3 }
+}
+func test(): int { return 1 }
+func main() { print(Lib::test() + test()) }"
+
+
 
 echo "all tests passed"

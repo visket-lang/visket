@@ -18,6 +18,9 @@ func Show(node Node) string {
 		for _, stmt := range node.Functions {
 			b.WriteString(Show(stmt))
 		}
+		for _, stmt := range node.Modules {
+			b.WriteString(Show(stmt))
+		}
 		return b.String()
 	case *Identifier:
 		return node.Name
@@ -48,6 +51,16 @@ func Show(node Node) string {
 		return fmt.Sprintf("(new %s)", node.Type.Name)
 	case *LoadMemberExpression:
 		return fmt.Sprintf("(%s.%s)", Show(node.Left), node.MemberIdent.Name)
+	case *ModuleStatement:
+		var b bytes.Buffer
+		b.WriteString("(module ")
+		b.WriteString(Show(node.Ident))
+		b.WriteString(" ")
+		for _, stmt := range node.Functions {
+			b.WriteString(Show(stmt))
+		}
+		b.WriteString(")")
+		return b.String()
 	case *BlockStatement:
 		var b bytes.Buffer
 		for _, stmt := range node.Statements {

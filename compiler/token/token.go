@@ -21,7 +21,8 @@ const (
 	SHL = "<<"
 	SHR = ">>"
 
-	RANGE = ".."
+	RANGE  = ".."
+	MODSEP = "::"
 
 	ADD_ASSIGN = "+="
 	SUB_ASSIGN = "-="
@@ -66,6 +67,7 @@ const (
 	IMPORT   = "import"
 	REF      = "ref"
 	VAL      = "val"
+	MODULE   = "module"
 )
 
 var keywords = map[string]TokenType{
@@ -82,6 +84,7 @@ var keywords = map[string]TokenType{
 	"import": IMPORT,
 	"ref":    REF,
 	"val":    VAL,
+	"module": MODULE,
 }
 
 type Token struct {

@@ -16,6 +16,8 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseVarStatement()
 	case token.IMPORT:
 		return p.parseImportStatement()
+	case token.MODULE:
+		return p.parseModuleStatement()
 	}
 
 	p.error(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
@@ -39,6 +41,35 @@ func (p *Parser) parseStatement() ast.Statement {
 	default:
 		return p.parseExpressionStatement()
 	}
+}
+
+func (p *Parser) parseModuleStatement() *ast.ModuleStatement {
+	stmt := &ast.ModuleStatement{
+		Module: p.curPos,
+	}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	stmt.Ident = p.parseIdentifier()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+	stmt.LBrace = p.curPos
+
+	p.nextToken()
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		s := p.parseFunctionStatement()
+		if s != nil {
+			stmt.Functions = append(stmt.Functions, s)
+		}
+		p.nextToken()
+	}
+
+	stmt.RBrace = p.curPos
+
+	return stmt
 }
 
 func (p *Parser) parseStructStatement() *ast.StructStatement {

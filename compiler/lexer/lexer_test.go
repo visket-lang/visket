@@ -55,6 +55,8 @@ import "std"
 func f(ref i: int) {}
 f(ref i)
 val i = 10
+module Math {}
+Math::cos()
 `
 
 	tests := []struct {
@@ -283,6 +285,17 @@ val i = 10
 		{token.IDENT, "i"},
 		{token.ASSIGN, "="},
 		{token.INT, "10"},
+
+		{token.MODULE, "module"},
+		{token.IDENT, "Math"},
+		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+
+		{token.IDENT, "Math"},
+		{token.MODSEP, "::"},
+		{token.IDENT, "cos"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
 
 		{token.EOF, ""},
 	}
