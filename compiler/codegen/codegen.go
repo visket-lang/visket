@@ -47,7 +47,10 @@ func (c *CodeGen) addGlobal() {
 	block.NewRet(nil)
 
 	c.mainFunc = c.module.NewFunc("main", types.I32)
-	c.context.addFunction(c.mainFunc.Name(), c.mainFunc)
+	c.context.addFunction(c.mainFunc.Name(), &Func{
+		Func:        c.mainFunc,
+		IsReference: []bool{},
+	})
 	block = c.mainFunc.NewBlock("entry")
 	block.NewCall(c.initFunc)
 	block.NewRet(constant.NewInt(types.I32, 0))

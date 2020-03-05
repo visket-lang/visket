@@ -19,13 +19,19 @@ func (c CodeGen) genGlibcFunc() {
 	{
 		printf := c.module.NewFunc("printf", types.I32, ir.NewParam("", types.I8Ptr))
 		printf.Sig.Variadic = true
-		c.context.addFunction("printf", printf)
+		c.context.addFunction("printf", &Func{
+			Func:        printf,
+			IsReference: []bool{false},
+		})
 	}
 
 	{
 		scanf := c.module.NewFunc("scanf", types.I32, ir.NewParam("", types.I8Ptr))
 		scanf.Sig.Variadic = true
-		c.context.addFunction("scanf", scanf)
+		c.context.addFunction("scanf", &Func{
+			Func:        scanf,
+			IsReference: []bool{false},
+		})
 	}
 }
 
@@ -56,11 +62,14 @@ func (c *CodeGen) genPrintFunction() {
 
 	zero := constant.NewInt(types.I64, 0)
 	formatArg := constant.NewGetElementPtr(format.Typ.ElemType, format, zero, zero)
-	entryBlock.NewCall(printf, formatArg, printParam)
+	entryBlock.NewCall(printf.Func, formatArg, printParam)
 
 	entryBlock.NewRet(constant.NewInt(types.I32, 0))
 
-	c.context.addFunction(print.Name(), print)
+	c.context.addFunction(print.Name(), &Func{
+		Func:        print,
+		IsReference: []bool{false},
+	})
 }
 
 func (c *CodeGen) genInputFunction() {
@@ -77,12 +86,15 @@ func (c *CodeGen) genInputFunction() {
 
 	zero := constant.NewInt(types.I64, 0)
 	scanfArg := constant.NewGetElementPtr(format.Typ.ElemType, format, zero, zero)
-	entryBlock.NewCall(scanf, scanfArg, scanfRet)
+	entryBlock.NewCall(scanf.Func, scanfArg, scanfRet)
 
 	result := entryBlock.NewLoad(types.I32, scanfRet)
 
 	entryBlock.NewRet(result)
 
-	c.context.addFunction(input.Name(), input)
+	c.context.addFunction(input.Name(), &Func{
+		Func:        input,
+		IsReference: []bool{false},
+	})
 
 }

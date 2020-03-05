@@ -137,9 +137,9 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		errors.ErrorExit(fmt.Sprintf("%s | undefined function '%s'", expr.LParen, expr.Function.Name))
 	}
 
-	if len(expr.Args) < len(f.Params) {
+	if len(expr.Args) < len(f.Func.Params) {
 		errors.ErrorExit(fmt.Sprintf("%s | not enough arguments in call to '%s'", expr.LParen, expr.Function.Name))
-	} else if !f.Sig.Variadic && len(expr.Args) > len(f.Params) {
+	} else if !f.Func.Sig.Variadic && len(expr.Args) > len(f.Func.Params) {
 		errors.ErrorExit(fmt.Sprintf("%s | too many arguments in call to '%s'", expr.LParen, expr.Function.Name))
 	}
 
@@ -150,7 +150,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		// isReference
 		exprVal := c.genExpression(param)
 		var v value.Value
-		if _, ok := f.Params[i].Typ.(*types.PointerType); ok {
+		if f.IsReference[i] {
 			if !exprVal.IsVariable || exprVal.IsConstant {
 				errors.ErrorExit(fmt.Sprintf("%s | a ref value must be an assignable variable", expr.RParen))
 			}
@@ -159,16 +159,16 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 			v = exprVal.Load(c.contextBlock)
 		}
 		params = append(params, v)
-		if i >= len(f.Sig.Params) {
+		if i >= len(f.Func.Sig.Params) {
 			// variadic function
 			continue
 		}
-		if !v.Type().Equal(f.Sig.Params[i]) {
-			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.LParen, v.Type(), f.Sig.Params[i].String()))
+		if !v.Type().Equal(f.Func.Sig.Params[i]) {
+			errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", expr.LParen, v.Type(), f.Func.Sig.Params[i]))
 		}
 	}
 
-	funcRet := c.contextBlock.NewCall(f, params...)
+	funcRet := c.contextBlock.NewCall(f.Func, params...)
 
 	return Value{
 		Value:      funcRet,

@@ -129,11 +129,13 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 	}
 
 	var params []*ir.Param
+	isReferece := make([]bool, len(stmt.Sig.Params))
 
-	for _, p := range stmt.Sig.Params {
+	for i, p := range stmt.Sig.Params {
 		typ := c.llvmType(p.Type)
 		if p.IsReference {
 			typ = types.NewPointer(typ)
+			isReferece[i] = true
 		}
 		param := ir.NewParam("", typ)
 		params = append(params, param)
@@ -142,7 +144,10 @@ func (c *CodeGen) genFunctionDeclaration(stmt *ast.FunctionStatement) {
 	returnTyp := c.llvmType(stmt.Sig.RetType)
 
 	function := c.module.NewFunc(stmt.Ident.Name, returnTyp, params...)
-	c.context.addFunction(stmt.Ident.Name, function)
+	c.context.addFunction(stmt.Ident.Name, &Func{
+		Func:        function,
+		IsReference: isReferece,
+	})
 }
 
 func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
@@ -151,7 +156,7 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 		errors.ErrorExit(fmt.Sprintf("%s | undeclared function '%s'", stmt.Func, stmt.Ident.Name))
 	}
 
-	c.contextFunction = f
+	c.contextFunction = f.Func
 
 	c.into()
 	if stmt.Ident.Name == "main" {
@@ -171,10 +176,10 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 	c.contextEntryBlock = c.contextBlock
 
 	for i, p := range stmt.Sig.Params {
-		typ := f.Params[i].Typ
+		typ := f.Func.Params[i].Typ
 		val := c.contextBlock.NewAlloca(typ)
 		val.SetName(p.Ident.Name)
-		c.contextBlock.NewStore(f.Params[i], val)
+		c.contextBlock.NewStore(f.Func.Params[i], val)
 		c.context.addVariable(p.Ident.Name, Value{
 			Value:       val,
 			IsVariable:  true,
@@ -184,7 +189,7 @@ func (c *CodeGen) genFunctionBody(stmt *ast.FunctionStatement) {
 
 	c.genBlockStatement(stmt.Body)
 
-	if f.Sig.RetType == types.Void {
+	if f.Func.Sig.RetType == types.Void {
 		c.contextBlock.NewRet(nil)
 	}
 
