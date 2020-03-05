@@ -106,6 +106,8 @@ func TestParseStatement(t *testing.T) {
 		{"foo.m1().m2()", "(func-call m2((func-call m1(foo))))"},
 
 		{"func f(ref a: int): int {return 1}", "(def-func f(ref a: int): int ((return 1)))"},
+
+		{"Math::cos()", "(func-call Math_cos())"},
 	}
 
 	for i, test := range tests {
