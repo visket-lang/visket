@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 )
 
 func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
@@ -98,6 +99,7 @@ func getFileNameWithoutExt(path string) string {
 func onPanicked() {
 	if err := recover(); err != nil {
 		errors.Error("failed compiling")
-		errors.ErrorExit(fmt.Sprintf("%+v", err))
+		errors.Error(fmt.Sprintf("%+v", err))
+		errors.ErrorExit(string(debug.Stack()))
 	}
 }
