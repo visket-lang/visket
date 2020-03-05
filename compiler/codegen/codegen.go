@@ -18,6 +18,7 @@ type CodeGen struct {
 
 	module *ir.Module
 
+	initFunc *ir.Func
 	mainFunc *ir.Func
 
 	contextFunction   *ir.Func
@@ -41,9 +42,14 @@ func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
 }
 
 func (c *CodeGen) addGlobal() {
+	c.initFunc = c.module.NewFunc("global-init", types.Void)
+	block := c.initFunc.NewBlock("entry")
+	block.NewRet(nil)
+
 	c.mainFunc = c.module.NewFunc("main", types.I32)
 	c.context.addFunction(c.mainFunc.Name(), c.mainFunc)
-	block := c.mainFunc.NewBlock("entry")
+	block = c.mainFunc.NewBlock("entry")
+	block.NewCall(c.initFunc)
 	block.NewRet(constant.NewInt(types.I32, 0))
 }
 
@@ -56,6 +62,10 @@ func (c *CodeGen) GenerateCode() {
 
 	for _, s := range c.program.Functions {
 		c.genFunctionDeclaration(s)
+	}
+
+	for _, s := range c.program.Globals {
+		c.genGlobalVarStatement(s)
 	}
 
 	for _, s := range c.program.Functions {

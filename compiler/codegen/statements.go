@@ -5,6 +5,7 @@ import (
 	"github.com/arata-nvm/visket/compiler/ast"
 	. "github.com/arata-nvm/visket/compiler/codegen/internal"
 	"github.com/arata-nvm/visket/compiler/errors"
+	"github.com/arata-nvm/visket/compiler/token"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
@@ -33,29 +34,33 @@ func (c *CodeGen) genStatement(stmt ast.Statement) {
 	}
 }
 
+func (c *CodeGen) genGlobalVarStatement(stmt *ast.VarStatement) {
+	_, ok := c.context.findVariable(stmt.Ident.Name)
+	if ok {
+		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Var, stmt.Ident.Name))
+	}
+
+	c.contextBlock = c.initFunc.Blocks[0]
+
+	typ, val := c.checkTypeAndValue(stmt.Type, stmt.Value, stmt.Var)
+
+	global := c.module.NewGlobalDef(stmt.Ident.Name, constant.NewZeroInitializer(typ))
+	c.contextBlock.NewStore(val, global)
+	c.context.addVariable(global.Name(), Value{
+		Value:      global,
+		IsVariable: true,
+	})
+
+	c.contextBlock = nil
+}
+
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 	_, ok := c.context.findVariable(stmt.Ident.Name)
 	if ok {
 		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Var, stmt.Ident.Name))
 	}
 
-	var typ types.Type
-	var val value.Value
-	if stmt.Value != nil {
-		val = c.genExpression(stmt.Value).Load(c.contextBlock)
-		typ = val.Type()
-	} else {
-		typ = c.llvmType(stmt.Type)
-		val = constant.NewZeroInitializer(typ)
-	}
-
-	if stmt.Type != nil {
-		typ = c.llvmType(stmt.Type)
-	}
-
-	if !typ.Equal(val.Type()) {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", stmt.Var, typ, val.Type()))
-	}
+	_, val := c.checkTypeAndValue(stmt.Type, stmt.Value, stmt.Var)
 
 	named := c.contextEntryBlock.NewAlloca(val.Type())
 	named.SetName(stmt.Ident.Name)
@@ -64,6 +69,26 @@ func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
 		IsVariable: true,
 	})
 	c.contextBlock.NewStore(val, named)
+}
+
+func (c *CodeGen) checkTypeAndValue(typ *ast.Type, val ast.Expression, pos token.Position) (llTyp types.Type, llVal value.Value) {
+	if val != nil {
+		llVal = c.genExpression(val).Load(c.contextBlock)
+		llTyp = llVal.Type()
+	} else {
+		llTyp = c.llvmType(typ)
+		llVal = constant.NewZeroInitializer(llTyp)
+	}
+
+	if typ != nil {
+		llTyp = c.llvmType(typ)
+	}
+
+	if !llTyp.Equal(llVal.Type()) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", pos, llTyp, llVal.Type()))
+	}
+
+	return
 }
 
 func (c *CodeGen) genReturnStatement(stmt *ast.ReturnStatement) {

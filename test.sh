@@ -416,4 +416,20 @@ func main() {
   print(foo.X)
 }"
 
+try 5 \
+"var i = 5
+func main() { print(i) }"
+
+try 0 \
+"var i: int
+func main() { print(i) }"
+
+try 10 \
+"var i: int = 5
+func main() {
+  i = 10
+  print(i)
+}"
+
+
 echo "all tests passed"
