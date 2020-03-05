@@ -12,6 +12,16 @@ type BlockStatement struct {
 
 func (bs *BlockStatement) statementNode() {}
 
+type ModuleStatement struct {
+	Module    token.Position
+	Ident     *Identifier
+	LBrace    token.Position
+	Functions []*FunctionStatement
+	RBrace    token.Position
+}
+
+func (ms *ModuleStatement) statementNode() {}
+
 type ExpressionStatement struct {
 	Expression Expression
 }

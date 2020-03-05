@@ -17,4 +17,5 @@ type Program struct {
 	Functions []*FunctionStatement
 	Structs   []*StructStatement
 	Globals   []*VarStatement
+	Modules   []*ModuleStatement
 }

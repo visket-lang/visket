@@ -65,6 +65,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 	for !p.curTokenIs(token.EOF) {
 		stmt := p.parseTopLevelStatement()
 		switch stmt := stmt.(type) {
+		case *ast.ModuleStatement:
+			program.Modules = append(program.Modules, stmt)
 		case *ast.FunctionStatement:
 			program.Functions = append(program.Functions, stmt)
 		case *ast.StructStatement:
