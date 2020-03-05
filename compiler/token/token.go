@@ -65,6 +65,7 @@ const (
 	NEW      = "new"
 	IMPORT   = "import"
 	REF      = "ref"
+	VAL      = "val"
 )
 
 var keywords = map[string]TokenType{
@@ -80,6 +81,7 @@ var keywords = map[string]TokenType{
 	"new":    NEW,
 	"import": IMPORT,
 	"ref":    REF,
+	"val":    VAL,
 }
 
 type Token struct {

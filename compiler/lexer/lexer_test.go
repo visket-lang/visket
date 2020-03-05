@@ -54,6 +54,7 @@ import "std"
 1.upto(10)
 func f(ref i: int) {}
 f(ref i)
+val i = 10
 `
 
 	tests := []struct {
@@ -277,6 +278,11 @@ f(ref i)
 		{token.REF, "ref"},
 		{token.IDENT, "i"},
 		{token.RPAREN, ")"},
+
+		{token.VAL, "val"},
+		{token.IDENT, "i"},
+		{token.ASSIGN, "="},
+		{token.INT, "10"},
 
 		{token.EOF, ""},
 	}
