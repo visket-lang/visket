@@ -74,6 +74,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 			program.Structs = append(program.Structs, stmt)
 		case *ast.VarStatement:
 			program.Globals = append(program.Globals, stmt)
+		case *ast.IncludeStatement:
+			program.Includes = append(program.Includes, stmt)
 		case *ast.ImportStatement:
 			if ok := p.importFile(stmt.File.Name); !ok {
 				errors.ErrorExit(fmt.Sprintf("%s | cannot import '%s'", stmt.Import, stmt.File.Name))

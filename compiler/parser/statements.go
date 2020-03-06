@@ -16,6 +16,8 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseVarStatement()
 	case token.IMPORT:
 		return p.parseImportStatement()
+	case token.INCLUDE:
+		return p.parseIncludeStatement()
 	case token.MODULE:
 		return p.parseModuleStatement()
 	}
@@ -125,6 +127,23 @@ func (p *Parser) parseImportStatement() *ast.ImportStatement {
 		Pos:  p.peekToken.Pos,
 		Name: p.peekToken.Literal,
 	}
+
+	return stmt
+}
+
+func (p *Parser) parseIncludeStatement() *ast.IncludeStatement {
+	stmt := &ast.IncludeStatement{Include: p.curPos}
+
+	if !p.peekTokenIs(token.STRING) {
+		p.error(fmt.Sprintf("%s | expected next token to be %s, got %s instead", p.curToken.Pos, token.STRING, p.peekToken.Type))
+		return nil
+	}
+
+	stmt.File = &ast.Identifier{
+		Pos:  p.peekToken.Pos,
+		Name: p.peekToken.Literal,
+	}
+	p.nextToken()
 
 	return stmt
 }

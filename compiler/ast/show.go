@@ -21,6 +21,9 @@ func Show(node Node) string {
 		for _, stmt := range node.Modules {
 			b.WriteString(Show(stmt))
 		}
+		for _, stmt := range node.Includes {
+			b.WriteString(Show(stmt))
+		}
 		return b.String()
 	case *Identifier:
 		return node.Name
@@ -171,6 +174,8 @@ func Show(node Node) string {
 
 		buf.WriteString(node.Name)
 		return buf.String()
+	case *IncludeStatement:
+		return fmt.Sprintf("(include \"%s\")", node.File.Name)
 	}
 	return fmt.Sprintf("unknown: %s", node)
 }
