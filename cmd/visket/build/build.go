@@ -3,7 +3,6 @@ package build
 import (
 	"fmt"
 	"github.com/arata-nvm/visket/compiler"
-	"github.com/arata-nvm/visket/compiler/ast"
 	"github.com/arata-nvm/visket/compiler/errors"
 	"io/ioutil"
 	"os"
@@ -12,14 +11,11 @@ import (
 	"runtime/debug"
 )
 
-func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
+func EmitLLVM(filename, outputPath string, optimize bool) error {
 	defer onPanicked()
 	fmt.Printf("Compiling %s\n", filename)
-	c := compiler.New(isDebug)
+	c := compiler.New()
 	c.Compile(filename).ShowExit()
-	if isDebug {
-		ast.Show(c.Program)
-	}
 	if optimize {
 		fmt.Println("Optimizing")
 		c.Optimize()
@@ -40,14 +36,11 @@ func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
 	return nil
 }
 
-func Build(filename, outputPath string, isDebug, optimize bool) error {
+func Build(filename, outputPath string, optimize bool) error {
 	defer onPanicked()
 	fmt.Printf("Compiling %s\n", filename)
-	c := compiler.New(isDebug)
+	c := compiler.New()
 	c.Compile(filename).ShowExit()
-	if isDebug {
-		ast.Show(c.Program)
-	}
 	if optimize {
 		fmt.Println("Optimizing")
 		c.Optimize()

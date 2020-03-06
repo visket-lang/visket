@@ -13,13 +13,10 @@ import (
 
 type Compiler struct {
 	Program *ast.Program
-	isDebug bool
 }
 
-func New(isDebug bool) *Compiler {
-	return &Compiler{
-		isDebug: isDebug,
-	}
+func New() *Compiler {
+	return &Compiler{}
 }
 
 func (c *Compiler) Compile(filename string) errors.ErrorList {
@@ -40,7 +37,7 @@ func (c *Compiler) Optimize() {
 
 func (c *Compiler) GenIR() string {
 	var b bytes.Buffer
-	cg := codegen.New(c.Program, c.isDebug, &b)
+	cg := codegen.New(c.Program, &b)
 	cg.GenerateCode()
 	return b.String()
 }
