@@ -13,14 +13,11 @@ import (
 
 func EmitLLVM(filename, outputPath string, optimize bool) error {
 	defer onPanicked()
-	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New()
 	c.Compile(filename).ShowExit()
 	if optimize {
-		fmt.Println("Optimizing")
 		c.Optimize()
 	}
-	fmt.Println("Building")
 	compiled := c.GenIR()
 
 	if outputPath == "" {
@@ -32,20 +29,16 @@ func EmitLLVM(filename, outputPath string, optimize bool) error {
 		return err
 	}
 
-	fmt.Println("Finished")
 	return nil
 }
 
 func Build(filename, outputPath string, optimize bool) error {
 	defer onPanicked()
-	fmt.Printf("Compiling %s\n", filename)
 	c := compiler.New()
 	c.Compile(filename).ShowExit()
 	if optimize {
-		fmt.Println("Optimizing")
 		c.Optimize()
 	}
-	fmt.Println("Building")
 	compiled := c.GenIR()
 
 	tmpDir, err := ioutil.TempDir("", "visket")
@@ -81,7 +74,6 @@ func Build(filename, outputPath string, optimize bool) error {
 
 	os.RemoveAll(tmpDir)
 
-	fmt.Println("Finished")
 	return nil
 }
 

@@ -26,16 +26,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Printf("Compiling %s\n", filename)
+
 	if *emitLLVM {
 		err := build.EmitLLVM(filename, *output, *optimize)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return
+	} else {
+		err := build.Build(filename, *output, *optimize)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	err := build.Build(filename, *output, *optimize)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("Finished")
 }
