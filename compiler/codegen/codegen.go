@@ -13,7 +13,6 @@ import (
 type CodeGen struct {
 	program *ast.Program
 	output  io.Writer
-	isDebug bool
 	context *Context
 
 	module *ir.Module
@@ -28,10 +27,9 @@ type CodeGen struct {
 	contextCondAfter  []*ir.Block
 }
 
-func New(program *ast.Program, isDebug bool, w io.Writer) *CodeGen {
+func New(program *ast.Program, w io.Writer) *CodeGen {
 	c := &CodeGen{
 		program: program,
-		isDebug: isDebug,
 		output:  w,
 		context: newContext(nil),
 		module:  ir.NewModule(),
@@ -77,7 +75,9 @@ func (c *CodeGen) GenerateCode() {
 	}
 
 	for _, s := range c.program.Functions {
-		c.genFunctionBody(s)
+		if s.Body != nil {
+			c.genFunctionBody(s)
+		}
 	}
 
 	for _, s := range c.program.Modules {

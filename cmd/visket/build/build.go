@@ -1,105 +1,93 @@
 package build
 
 import (
-	"fmt"
 	"github.com/arata-nvm/visket/compiler"
-	"github.com/arata-nvm/visket/compiler/ast"
-	"github.com/arata-nvm/visket/compiler/errors"
 	"io/ioutil"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"runtime/debug"
+	"path"
 )
 
-func EmitLLVM(filename, outputPath string, isDebug, optimize bool) error {
-	defer onPanicked()
-	fmt.Printf("Compiling %s\n", filename)
-	c := compiler.New(isDebug)
-	c.Compile(filename).ShowExit()
-	if isDebug {
-		ast.Show(c.Program)
-	}
-	if optimize {
-		fmt.Println("Optimizing")
-		c.Optimize()
-	}
-	fmt.Println("Building")
-	compiled := c.GenIR()
-
-	if outputPath == "" {
-		outputPath = getFileNameWithoutExt(filename) + ".ll"
-	}
-
-	err := ioutil.WriteFile(outputPath, []byte(compiled), 0666)
+func EmitLLVM(filePath, outputPath string, doOptimize bool) error {
+	llPath, err := GenLl(filePath, doOptimize)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Finished")
-	return nil
+	// 出力先のデフォルト値を設定する
+	if outputPath == "" {
+		outputPath = getFileNameWithoutExt(filePath) + ".ll"
+	}
+
+	// 出力先にファイルをコピーする
+	data, err := ioutil.ReadFile(llPath)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(outputPath, data, 0666)
+	return err
 }
 
-func Build(filename, outputPath string, isDebug, optimize bool) error {
-	defer onPanicked()
-	fmt.Printf("Compiling %s\n", filename)
-	c := compiler.New(isDebug)
-	c.Compile(filename).ShowExit()
-	if isDebug {
-		ast.Show(c.Program)
+func Build(filePath, outputPath string, doOptimize bool) error {
+	llPath, err := GenLl(filePath, doOptimize)
+	if err != nil {
+		return err
 	}
-	if optimize {
-		fmt.Println("Optimizing")
+
+	// 出力先のデフォルト値を設定する
+	if outputPath == "" {
+		outputPath = getFileNameWithoutExt(filePath)
+	}
+
+	// 実行可能ファイルにコンパイルする
+	err = buildLlFile(llPath, outputPath, doOptimize)
+	return err
+}
+
+func GenLl(filePath string, doOptimize bool) (string, error) {
+	// .slファイルをコンパイルする
+	c := compiler.New()
+	c.Compile(filePath).ShowExit()
+	if doOptimize {
 		c.Optimize()
 	}
-	fmt.Println("Building")
-	compiled := c.GenIR()
 
+	// 一時ディレクトリを作成する
 	tmpDir, err := ioutil.TempDir("", "visket")
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	err = ioutil.WriteFile(tmpDir+"/main.ll", []byte(compiled), 0666)
+	// コンパイル結果をファイルに出力する
+	llPath := path.Join(tmpDir, getFileNameWithoutExt(filePath)+".ll")
+	err = ioutil.WriteFile(llPath, []byte(c.GenIR()), 0666)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if outputPath == "" {
-		outputPath = getFileNameWithoutExt(filename)
+	// インクルードしたファイルをコンパイル、ファイルに出力する
+	var llPaths []string
+	llPaths = append(llPaths, llPath)
+	for _, includedFile := range c.IncludeFiles() {
+		// ファイルの存在確認
+		if _, err = os.Stat(includedFile); err != nil {
+			return "", err
+		}
+
+		llPath = path.Join(tmpDir, getFileNameWithoutExt(includedFile)+".ll")
+		err = buildIncludedFile(includedFile, llPath, doOptimize)
+		if err != nil {
+			return "", err
+		}
+
+		llPaths = append(llPaths, llPath)
 	}
 
-	clangArgs := []string{
-		"-Wno-override-module",
-		tmpDir + "/main.ll",
-		"-o", outputPath,
-	}
-
-	if optimize {
-		clangArgs = append(clangArgs, "-O3")
-	}
-
-	cmd := exec.Command("clang", clangArgs...)
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	// コンパイルされたファイルをリンクする
+	llPath = path.Join(tmpDir, "main.ll")
+	err = linkLlFiles(llPaths, llPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	os.RemoveAll(tmpDir)
-
-	fmt.Println("Finished")
-	return nil
-}
-
-func getFileNameWithoutExt(path string) string {
-	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
-}
-
-func onPanicked() {
-	if err := recover(); err != nil {
-		errors.Error("failed compiling")
-		errors.Error(fmt.Sprintf("%+v", err))
-		errors.ErrorExit(string(debug.Stack()))
-	}
+	return llPath, nil
 }

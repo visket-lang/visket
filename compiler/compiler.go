@@ -9,20 +9,21 @@ import (
 	"github.com/arata-nvm/visket/compiler/optimizer"
 	"github.com/arata-nvm/visket/compiler/parser"
 	"log"
+	"path"
 )
 
 type Compiler struct {
-	Program *ast.Program
-	isDebug bool
+	Filename string
+	Program  *ast.Program
 }
 
-func New(isDebug bool) *Compiler {
-	return &Compiler{
-		isDebug: isDebug,
-	}
+func New() *Compiler {
+	return &Compiler{}
 }
 
 func (c *Compiler) Compile(filename string) errors.ErrorList {
+	c.Filename = filename
+
 	l, err := lexer.NewFromFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +41,16 @@ func (c *Compiler) Optimize() {
 
 func (c *Compiler) GenIR() string {
 	var b bytes.Buffer
-	cg := codegen.New(c.Program, c.isDebug, &b)
+	cg := codegen.New(c.Program, &b)
 	cg.GenerateCode()
 	return b.String()
+}
+
+func (c *Compiler) IncludeFiles() []string {
+	var filenames []string
+	dir, _ := path.Split(c.Filename)
+	for _, s := range c.Program.Includes {
+		filenames = append(filenames, path.Join(dir, s.File.Name))
+	}
+	return filenames
 }

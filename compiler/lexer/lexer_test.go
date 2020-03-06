@@ -57,6 +57,7 @@ f(ref i)
 val i = 10
 module Math {}
 Math::cos()
+include "math.c"
 `
 
 	tests := []struct {
@@ -296,6 +297,9 @@ Math::cos()
 		{token.IDENT, "cos"},
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
+
+		{token.INCLUDE, "include"},
+		{token.STRING, "math.c"},
 
 		{token.EOF, ""},
 	}

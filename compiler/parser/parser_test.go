@@ -24,6 +24,8 @@ func TestParseProgram(t *testing.T) {
 		{"var i: int = 10", "(var i: int = 10)"},
 
 		{"module Lib { func a() {} func b() {} }", "(module Lib (def-func a(): void ())(def-func b(): void ()))"},
+
+		{"include \"math.c\"", "(include \"math.c\")"},
 	}
 
 	for i, test := range tests {

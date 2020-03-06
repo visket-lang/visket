@@ -134,3 +134,10 @@ type ImportStatement struct {
 }
 
 func (is *ImportStatement) statementNode() {}
+
+type IncludeStatement struct {
+	Include token.Position
+	File    *Identifier
+}
+
+func (is *IncludeStatement) statementNode() {}

@@ -18,4 +18,5 @@ type Program struct {
 	Structs   []*StructStatement
 	Globals   []*VarStatement
 	Modules   []*ModuleStatement
+	Includes  []*IncludeStatement
 }

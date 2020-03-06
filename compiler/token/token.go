@@ -68,23 +68,25 @@ const (
 	REF      = "ref"
 	VAL      = "val"
 	MODULE   = "module"
+	INCLUDE  = "include"
 )
 
 var keywords = map[string]TokenType{
-	"var":    VAR,
-	"return": RETURN,
-	"func":   FUNCTION,
-	"if":     IF,
-	"else":   ELSE,
-	"while":  WHILE,
-	"for":    FOR,
-	"in":     IN,
-	"struct": STRUCT,
-	"new":    NEW,
-	"import": IMPORT,
-	"ref":    REF,
-	"val":    VAL,
-	"module": MODULE,
+	"var":     VAR,
+	"return":  RETURN,
+	"func":    FUNCTION,
+	"if":      IF,
+	"else":    ELSE,
+	"while":   WHILE,
+	"for":     FOR,
+	"in":      IN,
+	"struct":  STRUCT,
+	"new":     NEW,
+	"import":  IMPORT,
+	"ref":     REF,
+	"val":     VAL,
+	"module":  MODULE,
+	"include": INCLUDE,
 }
 
 type Token struct {
