@@ -7,12 +7,14 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime/debug"
 )
 
 func EmitLLVM(filename, outputPath string, optimize bool) error {
 	defer onPanicked()
+
 	c := compiler.New()
 	c.Compile(filename).ShowExit()
 	if optimize {
@@ -34,19 +36,15 @@ func EmitLLVM(filename, outputPath string, optimize bool) error {
 
 func Build(filename, outputPath string, optimize bool) error {
 	defer onPanicked()
-	c := compiler.New()
-	c.Compile(filename).ShowExit()
-	if optimize {
-		c.Optimize()
-	}
-	compiled := c.GenIR()
 
 	tmpDir, err := ioutil.TempDir("", "visket")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(tmpDir+"/main.ll", []byte(compiled), 0666)
+	llFilePath := path.Join(tmpDir, "/main.ll")
+
+	err = EmitLLVM(filename, llFilePath, optimize)
 	if err != nil {
 		return err
 	}
@@ -57,7 +55,7 @@ func Build(filename, outputPath string, optimize bool) error {
 
 	clangArgs := []string{
 		"-Wno-override-module",
-		tmpDir + "/main.ll",
+		llFilePath,
 		"-o", outputPath,
 	}
 
@@ -72,7 +70,10 @@ func Build(filename, outputPath string, optimize bool) error {
 		return err
 	}
 
-	os.RemoveAll(tmpDir)
+	err = os.RemoveAll(tmpDir)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
