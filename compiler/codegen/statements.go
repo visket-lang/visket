@@ -50,7 +50,9 @@ func (c *CodeGen) genModuleBody(stmt *ast.ModuleStatement) {
 	c.contextModuleName = stmt.Ident.Name
 
 	for _, f := range stmt.Functions {
-		c.genFunctionBody(f)
+		if f.Body != nil {
+			c.genFunctionBody(f)
+		}
 	}
 
 	c.contextModuleName = tmpModName

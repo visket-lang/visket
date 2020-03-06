@@ -75,7 +75,9 @@ func (c *CodeGen) GenerateCode() {
 	}
 
 	for _, s := range c.program.Functions {
-		c.genFunctionBody(s)
+		if s.Body != nil {
+			c.genFunctionBody(s)
+		}
 	}
 
 	for _, s := range c.program.Modules {

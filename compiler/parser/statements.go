@@ -212,9 +212,10 @@ func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
 
 	stmt.Sig.RetType = retType
 
-	if !p.expectPeek(token.LBRACE) {
-		return nil
+	if !p.peekTokenIs(token.LBRACE) {
+		return stmt
 	}
+	p.nextToken()
 
 	stmt.Body = p.parseBlockStatement()
 
