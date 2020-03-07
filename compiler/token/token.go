@@ -56,7 +56,7 @@ const (
 
 	VAR      = "var"
 	RETURN   = "return"
-	FUNCTION = "func"
+	FUNCTION = "fun"
 	IF       = "if"
 	ELSE     = "else"
 	WHILE    = "while"
@@ -74,7 +74,7 @@ const (
 var keywords = map[string]TokenType{
 	"var":     VAR,
 	"return":  RETURN,
-	"func":    FUNCTION,
+	"fun":     FUNCTION,
 	"if":      IF,
 	"else":    ELSE,
 	"while":   WHILE,
