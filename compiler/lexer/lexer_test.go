@@ -34,7 +34,7 @@ b >>= 3
 var a = 1
 return a
 { 1 }
-func f(arg) {}
+fun f(arg) {}
 if a { return 1 }
 else { return 0 }
 while 1 { 1 }
@@ -52,7 +52,7 @@ bar.X
 "\a\b\f\n\r\t\v\"\\"
 import "std"
 1.upto(10)
-func f(ref i: int) {}
+fun f(ref i: int) {}
 f(ref i)
 val i = 10
 module Math {}
@@ -166,7 +166,7 @@ include "math.c"
 		{token.INT, "1"},
 		{token.RBRACE, "}"},
 
-		{token.FUNCTION, "func"},
+		{token.FUNCTION, "fun"},
 		{token.IDENT, "f"},
 		{token.LPAREN, "("},
 		{token.IDENT, "arg"},
@@ -266,7 +266,7 @@ include "math.c"
 		{token.INT, "10"},
 		{token.RPAREN, ")"},
 
-		{token.FUNCTION, "func"},
+		{token.FUNCTION, "fun"},
 		{token.IDENT, "f"},
 		{token.LPAREN, "("},
 		{token.REF, "ref"},

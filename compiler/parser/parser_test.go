@@ -11,12 +11,12 @@ func TestParseProgram(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"func f(a: int): int {return 1}", "(def-func f(a: int): int ((return 1)))"},
-		{"func hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
+		{"fun f(a: int): int {return 1}", "(def-func f(a: int): int ((return 1)))"},
+		{"fun hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
 
-		{"func num(): int {return 2} func main(): int {return num()}", "(def-func num(): int ((return 2)))(def-func main(): int ((return (func-call num()))))"},
-		{"func add(n: int): int {return n + 2} func main(): int {return num(1)}", "(def-func add(n: int): int ((return (n + 2))))(def-func main(): int ((return (func-call num(1)))))"},
-		{"func add(a: int, b: int): int {return a + b} func main(): int {return num(1, 2)}", "(def-func add(a: int, b: int): int ((return (a + b))))(def-func main(): int ((return (func-call num(1, 2)))))"},
+		{"fun num(): int {return 2} fun main(): int {return num()}", "(def-func num(): int ((return 2)))(def-func main(): int ((return (func-call num()))))"},
+		{"fun add(n: int): int {return n + 2} fun main(): int {return num(1)}", "(def-func add(n: int): int ((return (n + 2))))(def-func main(): int ((return (func-call num(1)))))"},
+		{"fun add(a: int, b: int): int {return a + b} fun main(): int {return num(1, 2)}", "(def-func add(a: int, b: int): int ((return (a + b))))(def-func main(): int ((return (func-call num(1, 2)))))"},
 		{"struct Foo { X: int Y: float }", "(struct Foo(X: int, Y: float))"},
 
 		{"var i:int", "(var i: int)"},
@@ -84,8 +84,8 @@ func TestParseStatement(t *testing.T) {
 		{"return 0", "(return 0)"},
 		{"return hoge", "(return hoge)"},
 
-		{"func f(a: int): int {return 1}", "(def-func f(a: int): int ((return 1)))"},
-		{"func hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
+		{"fun f(a: int): int {return 1}", "(def-func f(a: int): int ((return 1)))"},
+		{"fun hoge(fuga: int): int {return fuga}", "(def-func hoge(fuga: int): int ((return fuga)))"},
 
 		{"if 1 { 1 } else { 0 }", "(if 1(1)(0))"},
 		{"if 1 { 1 } else if 0 { 2 } else { 3 }", "(if 1(1)((if 0(2)(3))))"},
@@ -107,7 +107,7 @@ func TestParseStatement(t *testing.T) {
 		{"foo.set(1, \"hoge\", fuga)", "(func-call set(foo, 1, \"hoge\", fuga))"},
 		{"foo.m1().m2()", "(func-call m2((func-call m1(foo))))"},
 
-		{"func f(ref a: int): int {return 1}", "(def-func f(ref a: int): int ((return 1)))"},
+		{"fun f(ref a: int): int {return 1}", "(def-func f(ref a: int): int ((return 1)))"},
 
 		{"Math::cos()", "(func-call Math_cos())"},
 	}

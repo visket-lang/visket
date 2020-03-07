@@ -21,135 +21,135 @@ try() {
 
 #
 try "tmp.sl:3 | type mismatch 'i32' and 'float'" \
-"func main() {
+"fun main() {
   var a = 1
   a = 1.0
 }"
 
 try "tmp.sl:2 | undefined function 'notFound'" \
-"func main() {
+"fun main() {
   notFound()
 }"
 
 try "tmp.sl:2 | not enough arguments in call to 'test'" \
-"func main() {
+"fun main() {
   test()
 }
-func test(a: int) {}"
+fun test(a: int) {}"
 
 try "tmp.sl:2 | too many arguments in call to 'test'" \
-"func main() {
+"fun main() {
   test(1, 1)
 }
-func test(a: int) {}"
+fun test(a: int) {}"
 
 try "tmp.sl:2 | type mismatch 'float' and 'i32'" \
-"func main() {
+"fun main() {
   test(1.0)
 }
-func test(a: int) {}"
+fun test(a: int) {}"
 
 try "tmp.sl:2 | unresolved variable 'a'" \
-"func main() {
+"fun main() {
   a
 }"
 
 try "tmp.sl:3 | cannot index 'i32'" \
-"func main() {
+"fun main() {
   var a = 1
   a[1]
 }"
 
 try "tmp.sl:2 | unexpected operator: float % float" \
-"func main() {
+"fun main() {
   1.0 % 1.0
 }"
 
 try "tmp.sl:2 | unexpected operator: i32.1" \
-"func main() {
+"fun main() {
   1 . 1
 }"
 
 try "tmp.sl:3 | unexpected operator: i32.A" \
-"func main() {
+"fun main() {
   var a = 1
   a.A
 }"
 
 try "tmp.sl:4 | unresolved member 'A'" \
 "struct Foo { X: int }
-func main() {
+fun main() {
   var foo = new Foo
   foo.A
 }"
 
 try "tmp.sl:2 | unknown type 'Hoge'" \
-"func main() {
+"fun main() {
   var a = new Hoge
 }"
 
 try "tmp.sl:2 | missing return at end of function" \
-"func test(): int {
+"fun test(): int {
 }"
 
 try "tmp.sl:2 | already declared function 'test'" \
-"func test() {}
-func test() {}"
+"fun test() {}
+fun test() {}"
 
 try "tmp.sl:2 | type mismatch 'void' and 'i32'" \
-"func test() {
+"fun test() {
   return 1
 }"
 
 try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
-"func test(): int {
+"fun test(): int {
   return 1.0
 }"
 
 try "tmp.sl:3 | already declared variable 'a'" \
-"func main() {
+"fun main() {
   var a = 1
   var a = 1
 }"
 
 try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
-"func main() {
+"fun main() {
   var a: int = 1.0
 }"
 
 try "tmp.sl:1 | unknown type 'hoge'" \
-"func test(): hoge {
+"fun test(): hoge {
 }"
 
 try "tmp.sl:1 | illegal charactor '@'" \
 "@"
 
 try "tmp.sl:2 | type mismatch 'i32' and 'float'" \
-"func main() {
+"fun main() {
   for i in 0..1.0 {}
 }"
 
 try "tmp.sl:3 | a ref value must be an assignable variable" \
-"func test(ref i: int){}
-func main() {
+"fun test(ref i: int){}
+fun main() {
   test(1)
 }"
 
 try "tmp.sl:4 | a ref value must be an assignable variable" \
-"func test(ref i: int){}
-func main() {
+"fun test(ref i: int){}
+fun main() {
   val i = 1
   test(i)
 }"
 
 try "tmp.sl:1 | main func cannot have a return type" \
-"func main(): int {}"
+"fun main(): int {}"
 
 try "tmp.sl:1 | main func cannot have parameters" \
-"func main(i: int) {}"
+"fun main(i: int) {}"
 
 try "tmp.sl:3 | constant 'i' cannot be reassigned" \
-"func main() {
+"fun main() {
   val i = 10
   i = 1
 }"
