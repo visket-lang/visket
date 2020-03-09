@@ -1,10 +1,19 @@
-# Visket
 
-![](https://img.shields.io/github/workflow/status/arata-nvm/visket/Go?style=for-the-badge)
-![](https://img.shields.io/github/license/visket-lang/visket?style=for-the-badge)
-![](https://img.shields.io/codecov/c/github/arata-nvm/visket?style=for-the-badge)
+<h1 align="center">
+    Visket
+</h1>
 
-A compiled programming language
+<p align="center">
+    <img src="https://img.shields.io/github/workflow/status/arata-nvm/visket/Go?style=for-the-badge" alt="GitHub Actions">
+    <img src="https://img.shields.io/github/license/visket-lang/visket?style=for-the-badge" alt="Licence MIT">
+    <img src="https://img.shields.io/codecov/c/github/arata-nvm/visket?style=for-the-badge" alt="Coverage">
+</p>
+
+<p align="center">
+    A compiled programming language
+</p>
+
+<br>
 
 ## Example
 ```
