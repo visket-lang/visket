@@ -48,3 +48,8 @@ func GetStringLength(v value.Value, block *ir.Block) value.Value {
 	strLen := block.NewGetElementPtr(STRING, v, zero, one)
 	return strLen
 }
+
+func GetIndexedStringValue(v value.Value, index value.Value, block *ir.Block) value.Value {
+	strVal := GetStringValue(v, block)
+	return block.NewGetElementPtr(types.I8, strVal, index)
+}
