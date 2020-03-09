@@ -8,14 +8,22 @@ import (
 
 type ErrorList []string
 
-func (el ErrorList) ShowExit() {
-	if len(el) != 0 {
-		Error(fmt.Sprintf("parser has %d errors", len(el)))
+func (el ErrorList) ShowExit(verbose bool) {
+	if len(el) == 0 {
+		return
+	}
+
+	if !verbose {
+		Error(el[0])
+		if len(el) > 1 {
+			Error(fmt.Sprintf("(and %d more errors)", len(el) - 1))
+		}
+	} else {
 		for _, e := range el {
 			Error(e)
 		}
-		os.Exit(1)
 	}
+	os.Exit(1)
 }
 
 func Error(msg string) {
