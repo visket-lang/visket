@@ -1,6 +1,8 @@
-![](https://img.shields.io/github/workflow/status/arata-nvm/visket/Go?style=for-the-badge)
-![](https://img.shields.io/codecov/c/github/arata-nvm/visket?style=for-the-badge)
 # Visket
+
+![](https://img.shields.io/github/workflow/status/arata-nvm/visket/Go?style=for-the-badge)
+![](https://img.shields.io/github/license/visket-lang/visket?style=for-the-badge)
+![](https://img.shields.io/codecov/c/github/arata-nvm/visket?style=for-the-badge)
 
 A compiled programming language
 
@@ -8,10 +10,9 @@ A compiled programming language
 ```
 func main() {
   print(fib(41))
-  return 0
 }
 
-func fib(n) {
+func fib(n: int): int {
   if n <= 1 {
     return n
   }
@@ -24,24 +25,31 @@ More examples can be found [here](https://github.com/arata-nvm/visket/tree/maste
 ## Try it on Docker
 1. `git clone https://github.com/arata-nvm/visket && cd visket`
 2. `make docker/run`
+
 ## Features
 
 ### Language Features
 - [x] variables
+- [x] constants
 - [x] functions
-- [ ] modules
+- [x] comments
+- [x] modules
+- [x] import
 - [x] if / else / then
 - [x] for
 - [x] while
+- [ ] if expression
 
 ### Types
+- [x] bool
 - [x] int
-- [ ] string
-- [ ] struct
-- [ ] array
+- [x] float
+- [x] string
+- [x] struct
+- [x] array
 - [ ] map
-- [ ] bool
 - [ ] func
+- [ ] tagged union
 
 ## Dependencies
 - Clang == 9.x
@@ -55,6 +63,3 @@ More examples can be found [here](https://github.com/arata-nvm/visket/tree/maste
 
 ### Compiling a Visket program
 1. `./bin/visket -O <filename>`
-
-## License
-MIT
