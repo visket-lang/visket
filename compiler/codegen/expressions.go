@@ -49,14 +49,17 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 
 	lhsTyp := lhs.Type()
 	rhsTyp := rhs.Type()
-	if lhsTyp.Equal(types.I32) && rhsTyp.Equal(types.I32) {
-		return c.genInfixInteger(ie.Op, lhs, rhs, ie.OpPos)
-	} else if lhsTyp.Equal(types.Float) && rhsTyp.Equal(types.Float) {
+
+	if !lhsTyp.Equal(rhsTyp) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", ie.OpPos, lhsTyp.Name(), rhsTyp.Name()))
+	}
+
+	if lhsTyp.Equal(types.Float) {
 		return c.genInfixFloat(ie.Op, lhs, rhs, ie.OpPos)
 	}
 
-	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s", lhsTyp, ie.Op, rhsTyp))
-	return Value{} // unreachable
+	// TODO make default infix expr gen
+	return c.genInfixInteger(ie.Op, lhs, rhs, ie.OpPos)
 }
 
 func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value, pos token.Position) Value {
