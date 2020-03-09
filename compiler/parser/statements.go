@@ -22,7 +22,7 @@ func (p *Parser) parseTopLevelStatement() ast.Statement {
 		return p.parseModuleStatement()
 	}
 
-	p.error(fmt.Sprintf("%s | func expected, got '%s'", p.curToken.Pos, p.curToken.Literal))
+	p.error(fmt.Sprintf("%s | unexpected token '%s'", p.curToken.Pos, p.curToken.Literal))
 	return nil
 }
 
