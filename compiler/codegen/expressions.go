@@ -204,14 +204,31 @@ func (c *CodeGen) genIndexExpression(expr *ast.IndexExpression) Value {
 	left := c.genExpression(expr.Left).Value
 	leftTyp := internal.PtrElmType(left)
 
-	if _, ok := leftTyp.(*types.ArrayType); !ok {
-		errors.ErrorExit(fmt.Sprintf("%s | cannot index '%s'", expr.LBrack, leftTyp))
-
+	if _, ok := leftTyp.(*types.ArrayType); ok {
+		return c.genArrayIndexing(left, leftTyp, expr)
 	}
 
+	if leftTyp.Equal(builtin.STRING) {
+		return c.genStringIndexing(left, expr)
+	}
+
+	errors.ErrorExit(fmt.Sprintf("%s | cannot index '%s'", expr.LBrack, leftTyp))
+	return Value{} // unreachable
+}
+
+func (c *CodeGen) genArrayIndexing(left value.Value, leftTyp types.Type, expr *ast.IndexExpression) Value {
 	index := c.genExpression(expr.Index).Load(c.contextBlock)
 	val := c.contextBlock.NewGetElementPtr(leftTyp, left, constant.NewInt(types.I64, 0), index)
 	val.InBounds = true
+	return Value{
+		Value:      val,
+		IsVariable: true,
+	}
+}
+
+func (c *CodeGen) genStringIndexing(left value.Value, expr *ast.IndexExpression) Value {
+	index := c.genExpression(expr.Index).Load(c.contextBlock)
+	val := builtin.GetIndexedStringValue(left, index, c.contextBlock)
 	return Value{
 		Value:      val,
 		IsVariable: true,
