@@ -1,4 +1,5 @@
 ![](https://img.shields.io/github/workflow/status/arata-nvm/visket/Go?style=for-the-badge)
+![](https://img.shields.io/github/license/visket-lang/visket?style=for-the-badge)
 ![](https://img.shields.io/codecov/c/github/arata-nvm/visket?style=for-the-badge)
 # Visket
 
@@ -55,6 +56,3 @@ More examples can be found [here](https://github.com/arata-nvm/visket/tree/maste
 
 ### Compiling a Visket program
 1. `./bin/visket -O <filename>`
-
-## License
-MIT
