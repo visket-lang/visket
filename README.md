@@ -10,10 +10,9 @@ A compiled programming language
 ```
 func main() {
   print(fib(41))
-  return 0
 }
 
-func fib(n) {
+func fib(n: int): int {
   if n <= 1 {
     return n
   }
