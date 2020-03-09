@@ -46,7 +46,7 @@ func Build(filePath, outputPath string, doOptimize bool) error {
 func GenLl(filePath string, doOptimize bool) (string, error) {
 	// .slファイルをコンパイルする
 	c := compiler.New()
-	c.Compile(filePath).ShowExit()
+	c.Compile(filePath).ShowExit(false)
 	if doOptimize {
 		c.Optimize()
 	}
