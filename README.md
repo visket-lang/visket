@@ -25,24 +25,31 @@ More examples can be found [here](https://github.com/arata-nvm/visket/tree/maste
 ## Try it on Docker
 1. `git clone https://github.com/arata-nvm/visket && cd visket`
 2. `make docker/run`
+
 ## Features
 
 ### Language Features
 - [x] variables
+- [x] constants
 - [x] functions
-- [ ] modules
+- [x] comments
+- [x] modules
+- [x] import
 - [x] if / else / then
 - [x] for
 - [x] while
+- [ ] if expression
 
 ### Types
+- [x] bool
 - [x] int
-- [ ] string
-- [ ] struct
-- [ ] array
+- [x] float
+- [x] string
+- [x] struct
+- [x] array
 - [ ] map
-- [ ] bool
 - [ ] func
+- [ ] tagged union
 
 ## Dependencies
 - Clang == 9.x
