@@ -444,6 +444,17 @@ try 4 \
 fun test(): int { return 1 }
 fun main() { print(Lib::test() + test()) }"
 
+try 1 \
+"fun main() {
+  var s = \"hoge\nfugapiyo\"
+  if s[0] == 'h' {
+    if s[4] == '\n' {
+      print(1)
+      return;
+    }
+  }
+  print(0)
+}"
 
 
 echo "all tests passed"

@@ -154,5 +154,14 @@ try "tmp.sl:3 | constant 'i' cannot be reassigned" \
   i = 1
 }"
 
+try "tmp.sl:2 | closing ' expected" \
+"fun main() {
+  var c = 'hoge'
+}"
+
+try "tmp.sl:2 | invalid escape sequence" \
+"fun main() {
+  var c = '\j'
+}"
 
 echo "all tests passed"
