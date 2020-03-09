@@ -1,6 +1,6 @@
 
 <h1 align="center">
-    Visket
+    <img src="https://raw.githubusercontent.com/visket-lang/design/master/logo.svg?sanitize=true">
 </h1>
 
 <p align="center">
