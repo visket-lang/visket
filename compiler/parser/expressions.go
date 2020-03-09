@@ -41,6 +41,8 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 		return p.parseFloatLiteral()
 	case token.STRING:
 		return p.parseStringLiteral()
+	case token.CHAR:
+		return p.parseCharLiteral()
 	case token.LPAREN:
 		return p.parseGroupedExpression()
 	case token.IDENT:
@@ -96,6 +98,15 @@ func (p *Parser) parseStringLiteral() *ast.StringLiteral {
 	lit := &ast.StringLiteral{
 		Token: p.curToken,
 		Value: p.curToken.Literal,
+	}
+
+	return lit
+}
+
+func (p *Parser) parseCharLiteral() *ast.CharLiteral {
+	lit := &ast.CharLiteral{
+		Token: p.curToken,
+		Value: p.curToken.Literal[0],
 	}
 
 	return lit
