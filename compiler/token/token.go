@@ -11,6 +11,7 @@ const (
 	INT    = "INT"
 	FLOAT  = "FLOAT"
 	STRING = "STRING"
+	CHAR   = "CHAR"
 
 	ADD = "+"
 	SUB = "-"

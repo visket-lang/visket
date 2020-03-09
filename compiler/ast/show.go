@@ -33,6 +33,8 @@ func Show(node Node) string {
 		return fmt.Sprintf("%f", node.Value)
 	case *StringLiteral:
 		return fmt.Sprintf("\"%s\"", node.Value)
+	case *CharLiteral:
+		return fmt.Sprintf("'%c'", node.Value)
 	case *PrefixExpression:
 		return fmt.Sprintf("(%s%s)", node.Op, Show(node.Right))
 	case *InfixExpression:

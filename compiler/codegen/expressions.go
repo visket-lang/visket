@@ -29,6 +29,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genFloatLiteral(expr)
 	case *ast.StringLiteral:
 		return c.genStringLiteral(expr)
+	case *ast.CharLiteral:
+		return c.genCharLiteral(expr)
 	case *ast.Identifier:
 		return c.genIdentifier(expr)
 	case *ast.NewExpression:
@@ -47,14 +49,17 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 
 	lhsTyp := lhs.Type()
 	rhsTyp := rhs.Type()
-	if lhsTyp.Equal(types.I32) && rhsTyp.Equal(types.I32) {
-		return c.genInfixInteger(ie.Op, lhs, rhs, ie.OpPos)
-	} else if lhsTyp.Equal(types.Float) && rhsTyp.Equal(types.Float) {
+
+	if !lhsTyp.Equal(rhsTyp) {
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", ie.OpPos, lhsTyp.Name(), rhsTyp.Name()))
+	}
+
+	if lhsTyp.Equal(types.Float) {
 		return c.genInfixFloat(ie.Op, lhs, rhs, ie.OpPos)
 	}
 
-	errors.ErrorExit(fmt.Sprintf("unexpected operator: %s %s %s", lhsTyp, ie.Op, rhsTyp))
-	return Value{} // unreachable
+	// TODO make default infix expr gen
+	return c.genInfixInteger(ie.Op, lhs, rhs, ie.OpPos)
 }
 
 func (c *CodeGen) genInfixInteger(op string, lhs value.Value, rhs value.Value, pos token.Position) Value {
@@ -253,6 +258,13 @@ func (c *CodeGen) genStringLiteral(expr *ast.StringLiteral) Value {
 	str := builtin.NewString(expr.Value, c.contextBlock, c.module)
 	return Value{
 		Value:      c.contextBlock.NewLoad(builtin.STRING, str),
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genCharLiteral(expr *ast.CharLiteral) Value {
+	return Value{
+		Value:      constant.NewInt(types.I8, int64(expr.Value)),
 		IsVariable: false,
 	}
 }

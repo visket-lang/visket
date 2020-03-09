@@ -32,6 +32,13 @@ type StringLiteral struct {
 
 func (sl *StringLiteral) expressionNode() {}
 
+type CharLiteral struct {
+	Token token.Token
+	Value byte
+}
+
+func (cl *CharLiteral) expressionNode() {}
+
 type PrefixExpression struct {
 	OpPos token.Position
 	Op    string

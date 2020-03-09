@@ -58,6 +58,8 @@ val i = 10
 module Math {}
 Math::cos()
 include "math.c"
+'a'
+'\n'
 `
 
 	tests := []struct {
@@ -300,6 +302,9 @@ include "math.c"
 
 		{token.INCLUDE, "include"},
 		{token.STRING, "math.c"},
+
+		{token.CHAR, "a"},
+		{token.CHAR, "\n"},
 
 		{token.EOF, ""},
 	}

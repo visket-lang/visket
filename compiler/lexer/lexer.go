@@ -185,6 +185,8 @@ func (l *Lexer) NextToken() token.Token {
 	case '"':
 		strLit := l.readString()
 		tok = l.newToken(token.STRING, strLit)
+	case '\'':
+		tok = l.readCharLiteral()
 	default:
 		if isLetter(l.ch) {
 			ident := l.readIdentifier()
@@ -199,6 +201,22 @@ func (l *Lexer) NextToken() token.Token {
 	l.readChar()
 
 	return tok
+}
+
+func (l *Lexer) readCharLiteral() token.Token {
+	l.readChar()
+	charLit := l.ch
+
+	if l.ch == '\\' {
+		charLit = l.readEscapeSequence()
+	}
+
+	if l.peekChar() != '\'' {
+		errors.ErrorExit(fmt.Sprintf("%s | closing ' expected", l.getCurrentPos()))
+	}
+
+	l.readChar()
+	return l.newToken(token.CHAR, string(charLit))
 }
 
 func (l *Lexer) readNumberLiteral() token.Token {
@@ -260,29 +278,7 @@ func (l *Lexer) readString() string {
 		l.readChar()
 
 		if l.ch == '\\' {
-			switch l.peekChar() {
-			case 'a':
-				buf.WriteByte('\a')
-			case 'b':
-				buf.WriteByte('\b')
-			case 'f':
-				buf.WriteByte('\f')
-			case 'n':
-				buf.WriteByte('\n')
-			case 'r':
-				buf.WriteByte('\r')
-			case 't':
-				buf.WriteByte('\t')
-			case 'v':
-				buf.WriteByte('\v')
-			case '"':
-				buf.WriteByte('"')
-			case '\\':
-				buf.WriteByte('\\')
-			default:
-				errors.ErrorExit(fmt.Sprintf("%s | invalid escape sequence'", l.getCurrentPos()))
-			}
-			l.readChar()
+			buf.WriteByte(l.readEscapeSequence())
 			continue
 		}
 
@@ -294,6 +290,35 @@ func (l *Lexer) readString() string {
 	}
 
 	return buf.String()
+}
+
+func (l *Lexer) readEscapeSequence() byte {
+	var ch byte
+	switch l.peekChar() {
+	case 'a':
+		ch = '\a'
+	case 'b':
+		ch = '\b'
+	case 'f':
+		ch = '\f'
+	case 'n':
+		ch = '\n'
+	case 'r':
+		ch = '\r'
+	case 't':
+		ch = '\t'
+	case 'v':
+		ch = '\v'
+	case '"':
+		ch = '"'
+	case '\\':
+		ch = '\\'
+	default:
+		errors.ErrorExit(fmt.Sprintf("%s | invalid escape sequence", l.getCurrentPos()))
+	}
+
+	l.readChar()
+	return ch
 }
 
 func (l *Lexer) readLine() string {
