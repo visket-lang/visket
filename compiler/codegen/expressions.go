@@ -29,6 +29,8 @@ func (c *CodeGen) genExpression(expr ast.Expression) Value {
 		return c.genFloatLiteral(expr)
 	case *ast.StringLiteral:
 		return c.genStringLiteral(expr)
+	case *ast.CharLiteral:
+		return c.genCharLiteral(expr)
 	case *ast.Identifier:
 		return c.genIdentifier(expr)
 	case *ast.NewExpression:
@@ -253,6 +255,13 @@ func (c *CodeGen) genStringLiteral(expr *ast.StringLiteral) Value {
 	str := builtin.NewString(expr.Value, c.contextBlock, c.module)
 	return Value{
 		Value:      c.contextBlock.NewLoad(builtin.STRING, str),
+		IsVariable: false,
+	}
+}
+
+func (c *CodeGen) genCharLiteral(expr *ast.CharLiteral) Value {
+	return Value{
+		Value:      constant.NewInt(types.I8, int64(expr.Value)),
 		IsVariable: false,
 	}
 }
