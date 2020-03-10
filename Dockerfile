@@ -1,15 +1,9 @@
-FROM ubuntu:18.04 
+FROM golang:1.13.8-alpine
 
 RUN set -x \
-  && apt-get update \
-  && apt-get upgrade -y \
-  && apt-get install software-properties-common -y \
-  && add-apt-repository ppa:longsleep/golang-backports \
-  && apt-get update \
-  && apt-get install make clang-9 golang-1.13 -y \
-  && ln -s /usr/bin/clang-9 /usr/bin/clang
-
-ENV PATH /usr/lib/go-1.13/bin:$PATH
+  && apk update \
+  && apk add --update --no-cache vim git make musl-dev curl \
+  && apk add --update --no-cache clang llvm9 binutils gcc
 
 ADD . /visket
 
