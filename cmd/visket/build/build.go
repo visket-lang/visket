@@ -73,7 +73,7 @@ func GenLl(filePath string, doOptimize bool) (string, error) {
 			return "", err
 		}
 
-		llPath = path.Join(tmpDir, getFileNameWithoutExt(includedFile)+".ll")
+		llPath = path.Join(tmpDir, getFileNameWithoutExt(includedFile)+".c.ll")
 		err = buildIncludedFile(includedFile, llPath, doOptimize)
 		if err != nil {
 			return "", err
