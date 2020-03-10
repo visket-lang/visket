@@ -16,6 +16,18 @@ fun inputi(): int {
   return i
 }
 
+fun inputf(): float {
+  var f: float
+  scanf("%f".cstring(), f)
+  return f
+}
+
+fun inputd(): float64 {
+  var f: float64
+  scanf("%f".cstring(), f)
+  return f
+}
+
 // TODO for test
 fun printi(i: int) {
   printf("%d\n".cstring(), i)
