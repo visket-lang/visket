@@ -304,6 +304,10 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 		errors.ErrorExit(fmt.Sprintf("%s | unexpected operator: %s.%s", expr.Period, lhsTyp, expr.MemberIdent.Name))
 	}
 
+	if structTyp.IsIncomplete {
+		errors.ErrorExit(fmt.Sprintf("%s | cannot load the member of incomplete structure: %s.%s", expr.Period, lhsTyp.Name(), expr.MemberIdent.Name))
+	}
+
 	id := structTyp.findMember(expr.MemberIdent.Name)
 	if id == -1 {
 		errors.ErrorExit(fmt.Sprintf("%s | unresolved member '%s'", expr.Period, expr.MemberIdent.Name))

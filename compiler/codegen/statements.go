@@ -392,22 +392,28 @@ func (c *CodeGen) genBlockStatement(stmt *ast.BlockStatement) {
 
 func (c *CodeGen) genStructStatement(stmt *ast.StructStatement) {
 	s := &Struct{
-		Name: stmt.Ident.Name,
+		Name:         stmt.Ident.Name,
+		IsIncomplete: stmt.IsIncomplete,
 	}
 
-	var llvmMembers []types.Type
-	for i, m := range stmt.Members {
-		typ := c.llvmType(m.Type)
-		s.Members = append(s.Members, &Member{
-			Name: m.Ident.Name,
-			Id:   i,
-			Type: typ,
-		})
+	if stmt.IsIncomplete {
+		s.Type = types.NewStruct()
+		s.Type.Opaque = true
+	} else {
+		var llvmMembers []types.Type
+		for i, m := range stmt.Members {
+			typ := c.llvmType(m.Type)
+			s.Members = append(s.Members, &Member{
+				Name: m.Ident.Name,
+				Id:   i,
+				Type: typ,
+			})
 
-		llvmMembers = append(llvmMembers, typ)
+			llvmMembers = append(llvmMembers, typ)
+		}
+
+		s.Type = types.NewStruct(llvmMembers...)
 	}
-
-	s.Type = types.NewStruct(llvmMembers...)
 
 	c.module.NewTypeDef(s.Name, s.Type)
 	c.context.addStruct(s.Name, s)

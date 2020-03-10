@@ -24,6 +24,8 @@ type Struct struct {
 	Name    string
 	Members []*Member
 	Type    *types.StructType
+
+	IsIncomplete bool
 }
 
 type Member struct {
