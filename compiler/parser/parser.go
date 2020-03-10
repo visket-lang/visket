@@ -100,7 +100,7 @@ func (p *Parser) nextToken() {
 		p.nextToken()
 	}
 
-	if p.curTokenIs(token.EOF) && len(p.l) > 1 {
+	if p.curTokenIs(token.EOF) && p.peekTokenIs(token.EOF) && len(p.l) > 1 {
 		p.l = p.l[:len(p.l)-1]
 		p.nextToken()
 		p.nextToken()
