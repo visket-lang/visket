@@ -4,15 +4,12 @@ import (
 	"github.com/arata-nvm/visket/compiler/codegen/builtin"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
-	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 )
 
 func (c *CodeGen) genStdlib() {
 	c.genGlibcFunc()
-	c.genTypes()
-	c.genPrintFunction()
-	c.genInputFunction()
+	c.genString()
 }
 
 func (c CodeGen) genGlibcFunc() {
@@ -49,52 +46,35 @@ func (c *CodeGen) genTypes() {
 	})
 }
 
-func (c *CodeGen) genPrintFunction() {
-	format := c.module.NewGlobalDef(".str.print", constant.NewCharArrayFromString("%d\x0A\x00"))
-	format.Linkage = enum.LinkagePrivate
-	format.UnnamedAddr = enum.UnnamedAddrUnnamedAddr
+func (c *CodeGen) genString() {
+	c.module.NewTypeDef("string", builtin.STRING)
+	c.context.addType("string", builtin.STRING)
 
-	printf, _ := c.context.findFunction("printf")
+	{
+		strParam := ir.NewParam("", builtin.STRING)
+		cstring := c.module.NewFunc("cstring", types.I8Ptr, strParam)
+		block := cstring.NewBlock("entry")
+		tmpVar := block.NewAlloca(builtin.STRING)
+		block.NewStore(strParam, tmpVar)
+		strVal := builtin.GetStringValue(tmpVar, block)
+		block.NewRet(strVal)
+		c.context.addFunction(cstring.Name(), &Func{
+			Func:        cstring,
+			IsReference: []bool{false},
+		})
+	}
 
-	printParam := ir.NewParam("", types.I32)
-	print := c.module.NewFunc("print", types.I32, printParam)
-	entryBlock := print.NewBlock("entry")
-
-	zero := constant.NewInt(types.I64, 0)
-	formatArg := constant.NewGetElementPtr(format.Typ.ElemType, format, zero, zero)
-	entryBlock.NewCall(printf.Func, formatArg, printParam)
-
-	entryBlock.NewRet(constant.NewInt(types.I32, 0))
-
-	c.context.addFunction(print.Name(), &Func{
-		Func:        print,
-		IsReference: []bool{false},
-	})
-}
-
-func (c *CodeGen) genInputFunction() {
-	format := c.module.NewGlobalDef(".str.scanf", constant.NewCharArrayFromString("%d\x00"))
-	format.Linkage = enum.LinkagePrivate
-	format.UnnamedAddr = enum.UnnamedAddrUnnamedAddr
-
-	scanf, _ := c.context.findFunction("scanf")
-
-	input := c.module.NewFunc("input", types.I32)
-	entryBlock := input.NewBlock("entry")
-
-	scanfRet := entryBlock.NewAlloca(types.I32)
-
-	zero := constant.NewInt(types.I64, 0)
-	scanfArg := constant.NewGetElementPtr(format.Typ.ElemType, format, zero, zero)
-	entryBlock.NewCall(scanf.Func, scanfArg, scanfRet)
-
-	result := entryBlock.NewLoad(types.I32, scanfRet)
-
-	entryBlock.NewRet(result)
-
-	c.context.addFunction(input.Name(), &Func{
-		Func:        input,
-		IsReference: []bool{false},
-	})
-
+	{
+		strParam := ir.NewParam("", builtin.STRING)
+		length := c.module.NewFunc("length", types.I32, strParam)
+		block := length.NewBlock("entry")
+		tmpVar := block.NewAlloca(builtin.STRING)
+		block.NewStore(strParam, tmpVar)
+		strLen := builtin.GetStringLength(tmpVar, block)
+		block.NewRet(strLen)
+		c.context.addFunction(length.Name(), &Func{
+			Func:        length,
+			IsReference: []bool{false},
+		})
+	}
 }
