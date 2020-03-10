@@ -9,7 +9,6 @@ import (
 	"github.com/arata-nvm/visket/compiler/optimizer"
 	"github.com/arata-nvm/visket/compiler/parser"
 	"log"
-	"path"
 )
 
 type Compiler struct {
@@ -48,9 +47,8 @@ func (c *Compiler) GenIR() string {
 
 func (c *Compiler) IncludeFiles() []string {
 	var filenames []string
-	dir, _ := path.Split(c.Filename)
 	for _, s := range c.Program.Includes {
-		filenames = append(filenames, path.Join(dir, s.File.Name))
+		filenames = append(filenames, s.File.Name)
 	}
 	return filenames
 }
