@@ -155,7 +155,7 @@ func (c *CodeGen) genCallExpression(expr *ast.CallExpression) Value {
 		// isReference
 		exprVal := c.genExpression(param)
 		var v value.Value
-		if f.IsReference[i] {
+		if i < len(f.Func.Sig.Params) && f.IsReference[i] {
 			if !exprVal.IsVariable || exprVal.IsConstant {
 				errors.ErrorExit(fmt.Sprintf("%s | a ref value must be an assignable variable", expr.RParen))
 			}

@@ -80,7 +80,7 @@ func (c *CodeGen) genGlobalVarStatement(stmt *ast.VarStatement) {
 }
 
 func (c *CodeGen) genVarStatement(stmt *ast.VarStatement) {
-	_, ok := c.context.findVariable(stmt.Ident.Name)
+	_, ok := c.context.findVariableCurrent(stmt.Ident.Name)
 	if ok {
 		errors.ErrorExit(fmt.Sprintf("%s | already declared variable '%s'", stmt.Var, stmt.Ident.Name))
 	}

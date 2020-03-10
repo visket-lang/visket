@@ -45,7 +45,8 @@ func GetStringValue(v value.Value, block *ir.Block) value.Value {
 func GetStringLength(v value.Value, block *ir.Block) value.Value {
 	zero := constant.NewInt(types.I32, 0)
 	one := constant.NewInt(types.I32, 1)
-	strLen := block.NewGetElementPtr(STRING, v, zero, one)
+	strLenPtr := block.NewGetElementPtr(STRING, v, zero, one)
+	strLen := block.NewLoad(types.I32, strLenPtr)
 	return strLen
 }
 

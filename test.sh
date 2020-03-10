@@ -7,7 +7,8 @@ try() {
   expected="$1"
   input="$2"
 
-  echo "$input" > tmp.sl
+  echo 'import "lib/testlib"' > tmp.sl
+  echo "$input" >> tmp.sl
   cat tmp.sl
   $TARGET $OPT -o tmp tmp.sl > /dev/null
   if [ "$?" != "0" ]; then
