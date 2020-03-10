@@ -16,7 +16,7 @@ func (el ErrorList) ShowExit(verbose bool) {
 	if !verbose {
 		Error(el[0])
 		if len(el) > 1 {
-			Error(fmt.Sprintf("(and %d more errors)", len(el) - 1))
+			Error(fmt.Sprintf("(and %d more errors)", len(el)-1))
 		}
 	} else {
 		for _, e := range el {
