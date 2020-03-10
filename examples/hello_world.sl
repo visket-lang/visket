@@ -1,5 +1,5 @@
 import "../lib/std"
 
 fun main() {
-  print("Hello World!")
+  println("Hello World!")
 }
