@@ -84,9 +84,11 @@ func (p *Parser) parseStructStatement() *ast.StructStatement {
 	}
 	stmt.Ident = p.parseIdentifier()
 
-	if !p.expectPeek(token.LBRACE) {
-		return nil
+	if !p.peekTokenIs(token.LBRACE) {
+		stmt.IsIncomplete = true
+		return stmt
 	}
+	p.nextToken()
 	stmt.LBrace = p.curPos
 
 	for p.peekTokenIs(token.IDENT) {

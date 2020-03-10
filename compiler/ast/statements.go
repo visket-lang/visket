@@ -119,6 +119,8 @@ type StructStatement struct {
 	LBrace  token.Position
 	Members []*MemberDecl
 	RBrace  token.Position
+
+	IsIncomplete bool
 }
 
 func (ss *StructStatement) statementNode() {}
