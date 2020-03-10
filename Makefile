@@ -21,6 +21,12 @@ docker/build:
 	docker build -t $(NAME):$(VERSION) .
 
 docker/run: docker/build
-	docker run -it --name "Visket" $(NAME):$(VERSION) /bin/bash
+	docker run -it --name "Visket" $(NAME):$(VERSION) /bin/ash
+
+docker/stop:
+	docker stop Visket
+
+docker/rm:
+	docker rm Visket
 
 .PHONY: build run test clean

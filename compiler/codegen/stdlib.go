@@ -26,7 +26,7 @@ func (c CodeGen) genGlibcFunc() {
 		scanf.Sig.Variadic = true
 		c.context.addFunction("scanf", &Func{
 			Func:        scanf,
-			IsReference: []bool{false},
+			IsReference: []bool{false, true},
 		})
 	}
 }

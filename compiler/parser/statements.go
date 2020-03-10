@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/arata-nvm/visket/compiler/ast"
 	"github.com/arata-nvm/visket/compiler/token"
+	"path"
 )
 
 func (p *Parser) parseTopLevelStatement() ast.Statement {
@@ -141,9 +142,12 @@ func (p *Parser) parseIncludeStatement() *ast.IncludeStatement {
 		return nil
 	}
 
+	dir, _ := path.Split(p.l[len(p.l)-1].Filename())
+	fullFilePath := path.Join(dir, p.peekToken.Literal)
+
 	stmt.File = &ast.Identifier{
 		Pos:  p.peekToken.Pos,
-		Name: p.peekToken.Literal,
+		Name: fullFilePath,
 	}
 	p.nextToken()
 
