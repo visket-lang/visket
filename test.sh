@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 OPT=$*
 TARGET=bin/visket
