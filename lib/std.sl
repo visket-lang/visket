@@ -1,3 +1,22 @@
 val false = (0 != 0)
 val true = (0 == 0)
 
+fun print(s: string) {
+  printf(s.cstring())
+}
+
+fun println(s: string) {
+  print(s)
+  print("\n")
+}
+
+fun inputi(): int {
+  var i: int
+  scanf("%d".cstring(), i)
+  return i
+}
+
+// TODO for test
+fun printi(i: int) {
+  printf("%d\n".cstring(), i)
+}
