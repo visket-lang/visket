@@ -89,6 +89,11 @@ func (c *Context) findVariable(name string) (Value, bool) {
 	return v, ok
 }
 
+func (c *Context) findVariableCurrent(name string) (Value, bool) {
+	v, ok := c.variables[name]
+	return v, ok
+}
+
 func (c *Context) addFunction(name string, f *Func) {
 	c.functions[name] = f
 }
