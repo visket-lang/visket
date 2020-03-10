@@ -3,7 +3,6 @@ package codegen
 import (
 	"github.com/arata-nvm/visket/compiler/codegen/builtin"
 	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 )
 
@@ -30,20 +29,6 @@ func (c CodeGen) genGlibcFunc() {
 			IsReference: []bool{false},
 		})
 	}
-}
-
-func (c *CodeGen) genTypes() {
-	c.module.NewTypeDef("string", builtin.STRING)
-	c.context.addType("string", builtin.STRING)
-
-	c.context.addVariable("false", Value{
-		Value:      constant.False,
-		IsVariable: false,
-	})
-	c.context.addVariable("true", Value{
-		Value:      constant.True,
-		IsVariable: false,
-	})
 }
 
 func (c *CodeGen) genString() {
