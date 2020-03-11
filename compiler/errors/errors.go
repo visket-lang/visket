@@ -8,6 +8,14 @@ import (
 
 type ErrorList []string
 
+// TODO fix
+var UseColors = false
+
+const (
+	errPrefix        = "error: "
+	coloredErrPrefix = "\x1b[31merror\x1b[0m: "
+)
+
 func (el ErrorList) ShowExit(verbose bool) {
 	if len(el) == 0 {
 		return
@@ -27,14 +35,19 @@ func (el ErrorList) ShowExit(verbose bool) {
 }
 
 func Error(msg string) {
-	msg = strings.ReplaceAll(msg, "\n", "\n\x1b[31merror\x1b[0m: ")
-	fmt.Fprint(os.Stderr, "\x1b[31merror\x1b[0m: ")
+	var prefix string
+	if UseColors {
+		prefix = coloredErrPrefix
+	} else {
+		prefix = errPrefix
+	}
+
+	msg = strings.ReplaceAll(msg, "\n", "\n"+prefix)
+	fmt.Fprint(os.Stderr, prefix)
 	fmt.Fprintln(os.Stderr, msg)
 }
 
 func ErrorExit(msg string) {
-	msg = strings.ReplaceAll(msg, "\n", "\n\x1b[31merror\x1b[0m: ")
-	fmt.Fprint(os.Stderr, "\x1b[31merror\x1b[0m: ")
-	fmt.Fprintln(os.Stderr, msg)
+	Error(msg)
 	os.Exit(1)
 }
