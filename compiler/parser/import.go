@@ -12,6 +12,12 @@ func (p *Parser) importFile(filename string) bool {
 		return false
 	}
 
+	if _, ok := p.importedFiles[filePath]; ok {
+		p.nextToken()
+		return true
+	}
+	p.importedFiles[filePath] = true
+
 	lex, err := lexer.NewFromFile(filePath)
 	if err != nil {
 		return false

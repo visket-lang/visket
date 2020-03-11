@@ -8,6 +8,7 @@ import (
 func buildLlFile(path, outputPath string, doOptimize bool) error {
 	clangArgs := []string{
 		"-Wno-override-module",
+		"-lm",
 		path,
 		"-o", outputPath,
 	}

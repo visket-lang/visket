@@ -10,7 +10,7 @@ try() {
   echo "$input" > tmp.sl
   actual=`$TARGET $OPT -o tmp tmp.sl 2>&1 > /dev/null`
   # 'error:' を取り除く
-  actual=${actual:16}
+  actual=${actual:7}
   if [ "$actual" == "$expected" ]; then
     echo "=> \"$actual\""
   else
