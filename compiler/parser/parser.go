@@ -48,11 +48,14 @@ type Parser struct {
 	peekToken  token.Token
 
 	Errors errors.ErrorList
+
+	importedFiles map[string]bool
 }
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
-		l: []*lexer.Lexer{l},
+		l:             []*lexer.Lexer{l},
+		importedFiles: make(map[string]bool),
 	}
 
 	p.nextToken()
