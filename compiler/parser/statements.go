@@ -261,16 +261,18 @@ func (p *Parser) parseFunctionParameters() []*ast.Param {
 	}
 	p.nextToken()
 
+	var curTyp *ast.Type
+
 	ident := p.parseIdentifier()
-	if !p.expectPeek(token.COLON) {
-		return nil
+	if p.peekTokenIs(token.COLON) {
+		p.nextToken()
+		p.nextToken()
+		curTyp = p.parseType()
 	}
-	p.nextToken()
-	typ := p.parseType()
 
 	params = append(params, &ast.Param{
 		Ident:       ident,
-		Type:        typ,
+		Type:        curTyp,
 		IsReference: isReference,
 	})
 
@@ -283,19 +285,36 @@ func (p *Parser) parseFunctionParameters() []*ast.Param {
 		p.nextToken()
 		ident = p.parseIdentifier()
 
-		p.expectPeek(token.COLON)
-		p.nextToken()
-		typ = p.parseType()
+		curTyp = nil
+		if p.peekTokenIs(token.COLON) {
+			p.nextToken()
+			p.nextToken()
+			curTyp = p.parseType()
+		}
 
 		params = append(params, &ast.Param{
 			Ident:       ident,
-			Type:        typ,
+			Type:        curTyp,
 			IsReference: isReference,
 		})
 	}
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil
+	}
+
+	if curTyp == nil {
+		p.error(fmt.Sprintf("%s | type specification is needed", p.curPos))
+		return nil
+	}
+
+	// resolve types
+	for i := len(params) - 1; i >= 0; i-- {
+		if params[i].Type != nil {
+			curTyp = params[i].Type
+		}
+
+		params[i].Type = curTyp
 	}
 
 	return params
