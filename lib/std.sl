@@ -10,6 +10,8 @@ fun println(s: string) {
   print("\n")
 }
 
+// TODO for test
+
 fun inputi(): int {
   var i: int
   scanf("%d".cstring(), i)
@@ -24,11 +26,14 @@ fun inputf(): float {
 
 fun inputd(): float64 {
   var f: float64
-  scanf("%f".cstring(), f)
+  scanf("%lf".cstring(), f)
   return f
 }
 
-// TODO for test
 fun printi(i: int) {
   printf("%d\n".cstring(), i)
+}
+
+fun printd(f: float64) {
+  printf("%lf\n".cstring(), f)
 }
