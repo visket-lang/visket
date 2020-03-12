@@ -1,7 +1,7 @@
 TARGET = visket
 BINDIR = bin
 
-NAME=aratanvm/$(TARGET)
+NAME=visket
 VERSION=0.0.1
 
 build:
@@ -21,12 +21,12 @@ docker/build:
 	docker build -t $(NAME):$(VERSION) .
 
 docker/run: docker/build
-	docker run -it --name "Visket" $(NAME):$(VERSION) /bin/ash
+	docker run -it --name $(NAME) $(NAME):$(VERSION) /bin/ash
 
 docker/stop:
-	docker stop Visket
+	docker stop $(NAME)
 
 docker/rm:
-	docker rm Visket
+	docker rm $(NAME)
 
 .PHONY: build run test clean
