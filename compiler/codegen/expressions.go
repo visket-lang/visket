@@ -51,7 +51,7 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	rhsTyp := rhs.Type()
 
 	if !lhsTyp.Equal(rhsTyp) {
-		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", ie.OpPos, lhsTyp.Name(), rhsTyp.Name()))
+		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", ie.OpPos, lhsTyp, rhsTyp))
 	}
 
 	if lhsTyp.Equal(types.Float) {
@@ -305,7 +305,7 @@ func (c *CodeGen) genLoadMemberExpression(expr *ast.LoadMemberExpression) Value 
 	}
 
 	if structTyp.IsIncomplete {
-		errors.ErrorExit(fmt.Sprintf("%s | cannot load the member of incomplete structure: %s.%s", expr.Period, lhsTyp.Name(), expr.MemberIdent.Name))
+		errors.ErrorExit(fmt.Sprintf("%s | cannot load the member of incomplete structure: %s.%s", expr.Period, lhsTyp, expr.MemberIdent.Name))
 	}
 
 	id := structTyp.findMember(expr.MemberIdent.Name)
