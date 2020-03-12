@@ -15,22 +15,6 @@
 
 <br>
 
-## Example
-```
-func main() {
-  print(fib(41))
-}
-
-func fib(n: int): int {
-  if n <= 1 {
-    return n
-  }
-  return fib(n - 1) + fib(n - 2)
-}
-```
-
-More examples can be found [here](https://github.com/arata-nvm/visket/tree/master/examples).
-
 ## Docker上での実行方法
 
 ### コンパイラのビルド
@@ -71,7 +55,23 @@ Visketのプログラムはコンテナ内で以下のコマンドを入力す�
 
 サンプルプログラムは`/visket/examples`ディレクトリ以下に保存されています。
 
-まだαバージョンの段階であるため、バグを見つけた場合はIsuuesを立てていただけると私が助かります。
+まだαバージョンの段階なのでバグを見つけた場合はIsuueを立てていただけると私が助かります。
+
+## Example
+```
+func main() {
+  print(fib(41))
+}
+
+func fib(n: int): int {
+  if n <= 1 {
+    return n
+  }
+  return fib(n - 1) + fib(n - 2)
+}
+```
+
+More examples can be found [here](https://github.com/arata-nvm/visket/tree/master/examples).
 
 ## Features
 
