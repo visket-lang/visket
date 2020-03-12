@@ -17,6 +17,8 @@ func TestParseProgram(t *testing.T) {
 		{"fun num(): int {return 2} fun main(): int {return num()}", "(def-func num(): int ((return 2)))(def-func main(): int ((return (func-call num()))))"},
 		{"fun add(n: int): int {return n + 2} fun main(): int {return num(1)}", "(def-func add(n: int): int ((return (n + 2))))(def-func main(): int ((return (func-call num(1)))))"},
 		{"fun add(a: int, b: int): int {return a + b} fun main(): int {return num(1, 2)}", "(def-func add(a: int, b: int): int ((return (a + b))))(def-func main(): int ((return (func-call num(1, 2)))))"},
+		{"fun f(a, b, c, d: int): int {return 1}", "(def-func f(a: int, b: int, c: int, d: int): int ((return 1)))"},
+
 		{"struct Foo { X: int Y: float }", "(struct Foo(X: int, Y: float))"},
 		{"struct Bar", "(struct Bar())"},
 
