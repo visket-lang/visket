@@ -31,9 +31,47 @@ func fib(n: int): int {
 
 More examples can be found [here](https://github.com/arata-nvm/visket/tree/master/examples).
 
-## Try it on Docker
-1. `git clone https://github.com/arata-nvm/visket && cd visket`
-2. `make docker/run`
+## Docker上での実行方法
+
+### コンパイラのビルド
+
+以下のツールがインストールされていることを確認してください。
+
+- Git
+- GNU Make
+- Docker
+
+確認できれば、以下のコマンドを任意のターミナルにて実行します。
+
+```
+$ git clone https://github.com/visket-lang/visket && cd visket
+$ make docker/run
+```
+
+処理が完了するとコンテナの中に入った状態になるので、そのまま以下のコマンドを実行します。
+
+```
+# make build
+```
+
+これでコンパイラがビルドされ、準備が完了しました。
+
+### プログラムの実行
+
+Visketのプログラムはコンテナ内で以下のコマンドを入力することにより実行できます。
+
+```
+# ./bin/visket -O -color <ファイル名>.sl && ./<ファイル名>
+```
+
+例として、`/visket/examples/hello_world.sl`を実行する際のコマンドは以下のようになります。
+```
+# ./bin/visket -O -color ./examples/hello_world.sl && ./hello_world
+```
+
+サンプルプログラムは`/visket/examples`ディレクトリ以下に保存されています。
+
+まだαバージョンの段階であるため、バグを見つけた場合はIsuuesを立てていただけると私が助かります。
 
 ## Features
 
