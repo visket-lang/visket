@@ -50,6 +50,12 @@ func (c *CodeGen) genInfix(ie *ast.InfixExpression) Value {
 	lhsTyp := lhs.Type()
 	rhsTyp := rhs.Type()
 
+	// for - prefix
+	if lhsTyp.Equal(types.I32) && rhsTyp.Equal(types.Float) {
+		lhs = c.contextBlock.NewSIToFP(lhs, types.Float)
+		lhsTyp = types.Float
+	}
+
 	if !lhsTyp.Equal(rhsTyp) {
 		errors.ErrorExit(fmt.Sprintf("%s | type mismatch '%s' and '%s'", ie.OpPos, lhsTyp, rhsTyp))
 	}
