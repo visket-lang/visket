@@ -164,7 +164,7 @@ try "tmp.sl:2 | invalid escape sequence" \
   var c = '\j'
 }"
 
-try "tmp.sl:4 | cannot load the member of incomplete structure: Foo.A" \
+try "tmp.sl:4 | cannot load the member of incomplete structure: %Foo.A" \
 "struct Foo
 fun main() {
   var foo: Foo
